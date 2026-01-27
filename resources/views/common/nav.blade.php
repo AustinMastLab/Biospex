@@ -97,14 +97,18 @@
                        type="button">{{ t('Updates') }}</a>
                     <a href="{{ route('admin.users.edit', [Auth::user()]) }}" class="dropdown-item text-uppercase"
                        type="button">{{ t('Account') }}</a>
-                    <a href="{{ route('app.get.logout') }}" class="dropdown-item text-uppercase"
-                       type="button">{{ t('Logout') }}</a>
-                </div>
-            </li>
-        @else
-            <li class="nav-item nav-btn">
-                <a class="nav-link text-uppercase mx-auto" href="{{ route('app.get.login') }}">{{ t('Login') }}</a>
-            </li>
-        @endif
+                    <form method="POST" action="{{ route('app.post.logout') }}">
+                        @csrf
+                        <button type="submit" class="dropdown-item text-uppercase">
+                            {{ t('Logout') }}
+                        </button>
+                    </form>
+                    </div>
+                </li>
+            @else
+                <li class="nav-item nav-btn">
+                    <a class="nav-link text-uppercase mx-auto" href="{{ route('app.get.login') }}">{{ t('Login') }}</a>
+                </li>
+            @endif
     </ul>
 </div>

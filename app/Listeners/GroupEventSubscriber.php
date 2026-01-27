@@ -68,6 +68,7 @@ class GroupEventSubscriber
      */
     public function onUserLogin($event)
     {
+        \Log::info('User logged in: '.Auth::id());
         $this->setUserGroupSession();
     }
 
@@ -76,6 +77,7 @@ class GroupEventSubscriber
      */
     public function onUserLogout($event)
     {
+        \Log::info('User logged out: '.Auth::id());
         Session::flush();
     }
 
@@ -89,6 +91,8 @@ class GroupEventSubscriber
         $groupIds = $this->groupService->getUserGroupIds(Auth::id());
 
         $groups = $groupId === null ? $groupIds : $groupIds->diff([$groupId]);
+
+        \Log::info('User group session updated for user: '.Auth::id());
 
         Session::put('groupIds', $groups->toArray());
     }

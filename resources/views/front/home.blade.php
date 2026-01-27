@@ -113,6 +113,7 @@
                 <div class="col-sm-6 mt-5 p-1 pb-md-3">
                     <h2 class="home-header-cta">{{ t('A Project') }}</h2>
 
+                    @if($expedition)
                     <div class="card mb-5 px-4 box-shadow" data-aos="fade-down" data-aos-easing="ease-in"
                          data-aos-duration="2000" data-aos-once="true">
                         <h2 class="text-center pt-4">{{ $expedition->project->title }}</h2>
@@ -147,6 +148,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
 
                     <h2>{{ t('The Progress') }}</h2>
 
@@ -167,6 +169,7 @@
 
                 <div class="col-sm-6 p-1 p-md-5 tutorial-right-section">
                     <h2 class="home-header-cta flex-nowrap">An Expedition</h2>
+                    @if($expedition)
                     <div class="card black mb-4 box-shadow" data-aos="fade-up" data-aos-duration="1500"
                          data-aos-anchor-placement="bottom-bottom" data-aos-once="true">
                         <div class="card-top m-0 p-0">
@@ -202,6 +205,7 @@
                             </div>
                         </div>
                     </div>
+                    @endif
                 </div>
             </div>
         </div>

@@ -47,6 +47,10 @@ return Application::configure(basePath: dirname(__DIR__))
         }
     )
     ->withMiddleware(function (Middleware $middleware) {
+        $middleware->web(append: [
+            \Spatie\Honeypot\ProtectAgainstSpam::class,
+        ]);
+
         // Global middleware stack (runs on every request)
         $middleware->use([
             \Illuminate\Foundation\Http\Middleware\InvokeDeferredCallbacks::class,

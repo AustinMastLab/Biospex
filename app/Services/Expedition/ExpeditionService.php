@@ -390,7 +390,7 @@ class ExpeditionService
     /**
      * Get expedition for home page visuals.
      */
-    public function getHomePageProjectExpedition(): \Illuminate\Database\Eloquent\Model
+    public function getHomePageProjectExpedition(): ?\Illuminate\Database\Eloquent\Model
     {
         return $this->expedition->with([
             'project' => function ($q) {

@@ -22,14 +22,18 @@
     <div class="col-12 col-md-10 offset-md-1">
         <div class="card white box-shadow py-5 my-5 p-sm-5">
             <div class="col-8 mx-auto">
-                @if (session('resent'))
+                @if (session('status') == 'verification-link-sent')
                     <div class="alert alert-success" role="alert">
                         {{ t('A fresh verification link has been sent to your email address.') }}
                     </div>
                 @endif
 
                 {{ t('Before proceeding, please check your email for a verification link.') }}
-                {{ t('If you did not receive the email') }}, <a href="{{ route('verification.resend') }}">{{ t('click here to request another') }}</a>.
+                {{ t('If you did not receive the email') }},
+                <form class="d-inline" method="POST" action="{{ route('verification.send') }}">
+                    @csrf
+                    <button type="submit" class="btn btn-link p-0 m-0 align-baseline">{{ t('click here to request another') }}</button>.
+                </form>
             </div>
         </div>
     </div>

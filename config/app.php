@@ -185,10 +185,13 @@ return [
         App\Providers\AppServiceProvider::class,
         App\Providers\AuthServiceProvider::class,
         App\Providers\BroadcastServiceProvider::class,
-        App\Providers\EventServiceProvider::class,
         App\Providers\Filament\AdminPanelProvider::class,
-        App\Providers\BiospexServiceProvider::class,
-        App\Providers\ImageServiceProvider::class,
+        App\Providers\InfrastructureServiceProvider::class,
+        App\Providers\SupportServiceProvider::class,
+        App\Providers\HelpersServiceProvider::class,
+        App\Providers\ViewServiceProvider::class,
+        App\Providers\GroupEventServiceProvider::class,
+
     ],
 
     /*

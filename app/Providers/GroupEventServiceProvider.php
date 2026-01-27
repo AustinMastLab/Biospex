@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -20,16 +20,26 @@
 
 namespace App\Providers;
 
+use App\Listeners\GroupEventSubscriber;
+use Illuminate\Support\Facades\Event;
 use Illuminate\Support\ServiceProvider;
-use Intervention\Image\Drivers\Imagick\Driver as ImagickDriver;
-use Intervention\Image\ImageManager;
 
-class ImageServiceProvider extends ServiceProvider
+/**
+ * Service provider for registering group-related event subscribers.
+ * TODO: After convertain all Reverb and Echo code to Livewire, can remove.
+ *
+ * This provider registers the GroupEventSubscriber to handle group-related
+ * events such as user login, logout, and group modifications.
+ */
+class GroupEventServiceProvider extends ServiceProvider
 {
-    public function register(): void
+    /**
+     * Bootstrap any application services.
+     *
+     * Registers the GroupEventSubscriber to listen for group-related events.
+     */
+    public function boot(): void
     {
-        $this->app->singleton(ImageManager::class, function ($app) {
-            return new ImageManager(new ImagickDriver);
-        });
+        Event::subscribe(GroupEventSubscriber::class);
     }
 }

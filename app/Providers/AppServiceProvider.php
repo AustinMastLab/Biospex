@@ -20,10 +20,6 @@
 
 namespace App\Providers;
 
-use Aws\Lambda\LambdaClient;
-use Aws\S3\S3Client;
-use Aws\Sfn\SfnClient;
-use Aws\Sqs\SqsClient;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Redis;
@@ -31,77 +27,41 @@ use Illuminate\Support\ServiceProvider;
 use Schema;
 
 /**
- * Class AppServiceProvider
+ * Application service provider.
+ *
+ * Configures global application settings, database defaults, Redis events,
+ * pagination rendering, and Eloquent model behaviors for development environments.
  */
 class AppServiceProvider extends ServiceProvider
 {
     /**
      * Bootstrap any application services.
-     * creating, created, updating, updated, saving, saved, deleting, deleted, restoring, restored
      *
-     * @return void
+     * Configures database schema defaults, enables Redis events, sets Bootstrap
+     * pagination style, and enables strict Eloquent behaviors in non-production
+     * environments to prevent lazy loading and missing attribute access.
      */
-    public function boot()
+    public function boot(): void
     {
         Schema::defaultStringLength(191);
 
         Redis::enableEvents();
         Paginator::useBootstrap();
 
-        $this->setupBlade();
-
         Model::preventLazyLoading(! $this->app->isProduction());
         Model::preventAccessingMissingAttributes(! $this->app->isProduction());
     }
 
     /**
-     * Set up blade extension.
-     */
-    protected function setupBlade()
-    {
-        $blade = $this->app['view']->getEngineResolver()->resolve('blade')->getCompiler();
-
-        $blade->extend(function ($value) {
-            return preg_replace('/(\s*)@(break|continue)(\s*)/', '$1<?php $2; ?>$3', $value);
-        });
-    }
-
-    /**
      * Register any application services.
      *
-     * This service provider is a great spot to register your various container
-     * bindings with the application. As you can see, we are registering our
-     * "Registrar" implementation here. You can add your own bindings too!
-     *
-     * @return void
+     * Registers IDE helper service provider in non-production environments
+     * to provide enhanced IDE support and autocompletion.
      */
-    public function register()
+    public function register(): void
     {
         if ($this->app->environment() !== 'production') {
             $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
         }
-
-        $awsConfig = [
-            'version' => 'latest',
-            'region' => config('services.aws.region', 'us-east-2'),
-        ];
-
-        $key = config('services.aws.credentials.key');
-        $secret = config('services.aws.credentials.secret');
-
-        // If keys are in .env, use them. If not, the SDK automatically
-        // uses the IAM Role (for EC2/Production).
-        if (! empty($key) && ! empty($secret)) {
-            $awsConfig['credentials'] = [
-                'key' => $key,
-                'secret' => $secret,
-            ];
-        }
-
-        // Register AWS Clients as singletons
-        $this->app->singleton(SqsClient::class, fn () => new SqsClient($awsConfig));
-        $this->app->singleton(S3Client::class, fn () => new S3Client($awsConfig));
-        $this->app->singleton(SfnClient::class, fn () => new SfnClient($awsConfig));
-        $this->app->singleton(LambdaClient::class, fn () => new LambdaClient($awsConfig));
     }
 }

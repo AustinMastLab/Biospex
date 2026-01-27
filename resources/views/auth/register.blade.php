@@ -22,29 +22,19 @@
     <div class="col-12 col-md-10 offset-md-1">
         <div class="card white box-shadow py-5 my-5 p-sm-5">
             <div class="col-6 mx-auto">
-                <form action="{{ route('app.post.register', [$invite]) }}" method="post" role="form"
-                      class="form-horizontal recaptcha">
+                <form action="{{ route('app.post.register', ['invite' => $invite]) }}" method="post" role="form"
+                      class="form-horizontal">
                     @csrf
+                    @honeypot
                     <div class="form-group">
-                        <label for="first_name" class="col-form-label required">{{ t('First Name') }}:</label>
-                        <input type="text" class="form-control @error('first_name') is-invalid @enderror"
-                               id="first_name" name="first_name"
-                               value="{{ old('first_name') }}" required>
-                        @error('first_name')
+                        <label for="name" class="col-form-label required">{{ t('Display Name') }}:</label>
+                        <input type="text" class="form-control @error('name') is-invalid @enderror"
+                               id="name" name="name"
+                               value="{{ old('name') }}" required>
+                        @error('name')
                         <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                            </span>
-                        @enderror
-                    </div>
-                    <div class="form-group">
-                        <label for="last_name" class="col-form-label required">{{ t('Last Name') }}:</label>
-                        <input type="text" class="form-control @error('last_name') is-invalid @enderror"
-                               id="last_name" name="last_name"
-                               value="{{ old('last_name') }}" required>
-                        @error('last_name')
-                        <span class="invalid-feedback" role="alert">
-                            <strong>{{ $message }}</strong>
-                            </span>
+                                    <strong>{{ $message }}</strong>
+                                </span>
                         @enderror
                     </div>
                     <div class="form-group">
@@ -82,22 +72,6 @@
                         @enderror
                     </div>
 
-                    <div class="form-group">
-                        <label for="group_id"
-                               class="col-form-label required">{{ t('Timezone') }}
-                            :</label>
-                        <select name="timezone" id="timezone"
-                                class="form-control custom-select {{ ($errors->has('timezone')) ? 'is-invalid' : '' }}"
-                                required>
-                            @foreach($timezones as $key => $timezone)
-                                {{ $key }}
-                                <option {{ $key == old('timezone') ?
-                                        ' selected=selected' : '' }} value="{{ $key }}">{{ $timezone }}</option>
-                            @endforeach
-                        </select>
-                        <span class="invalid-feedback">{{ $errors->first('timezone') }}</span>
-                    </div>
-                    @include('common.recaptcha')
                     @include('common.submit-button')
                 </form>
                 <div class="mt-4 text-center">

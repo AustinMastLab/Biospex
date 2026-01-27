@@ -22,9 +22,10 @@
     <div class="col-12 col-md-10 offset-md-1">
         <div class="card white box-shadow py-5 my-5 p-sm-5">
             <div class="col-6 mx-auto">
-                <form action="{{ route('password.update') }}" method="post" role="form" class="form-horizontal recaptcha">
+                <form action="{{ route('password.update') }}" method="post" role="form" class="form-horizontal">
                     @csrf
-                    <input type="hidden" name="token" value="{{ $token }}">
+                    @honeypot
+                    <input type="hidden" name="token" value="{{ $request->route('token') }}">
                     <div class="form-group">
                         <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
                         <input type="email" class="form-control @error('email') is-invalid @enderror"

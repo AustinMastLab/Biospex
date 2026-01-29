@@ -55,9 +55,13 @@ laradumps.yaml
 /remove-env-params
 /.ai/
 /generate-env
-/.ai/
 /.github/
 /.vscode/
 /clean-logs.sh
 /pa11y-report.json
 /.pa11yci.json
+/.claude/
+/.github/copilot-instructions.md
+/CLAUDE.md
+/AGENTS.md
+/.mcp.json

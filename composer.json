@@ -50,7 +50,7 @@
     "fakerphp/faker": "^1.23",
     "kitloong/laravel-migrations-generator": "^v7.0.1",
     "laradumps/laradumps": "^4.0",
-    "laravel/boost": "^1.8",
+    "laravel/boost": "^v2.0.0",
     "laravel/breeze": "^2.3",
     "laravel/pail": "^1.2.2",
     "laravel/pint": "^1.24",
@@ -105,7 +105,8 @@
       "@php artisan key:generate --ansi"
     ],
     "post-update-cmd": [
-      "Illuminate\\Foundation\\ComposerScripts::postUpdate"
+      "Illuminate\\Foundation\\ComposerScripts::postUpdate",
+      "@php artisan boost:update --ansi"
     ],
     "dev-post-update-cmd": [
       "@php artisan ide-helper:generate",

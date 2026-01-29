@@ -41,7 +41,7 @@ am4core.ready(function () {
         // Refresh chart every 5 minutes. TODO: can this be handled by amCharts?
         // https://www.amcharts.com/docs/v4/concepts/data/loading-external-data/
         // chart.dataSource.reloadFrequency = 300000;
-        setInterval(createChart, 300000);
+        interval = setInterval(createChart, 300000);
     }).on('hidden.bs.modal', function () {
         am4core.disposeAllCharts();
         clearInterval(interval);
@@ -76,7 +76,8 @@ function buildChart(url, projects) {
         chart.svgContainer.htmlElement.style.height = targetHeight + "px";
     });
 
-    weDigBioRateChart.scrollbarX = new am4core.Scrollbar();
+    // Remove the amCharts scrollbar to resolve Axe nested-interactive.
+    weDigBioRateChart.scrollbarX = null;
 
     let dateAxis = weDigBioRateChart.xAxes.push(new am4charts.DateAxis());
 
@@ -97,6 +98,21 @@ function buildChart(url, projects) {
         target.horizontalCenter = "left";
         return -90;
     });
+
+    // Enable scroll-like navigation on time without a scrollbar:
+    // - drag to pan horizontally
+    // - mouse wheel / trackpad to zoom on X (time)
+    let cursor = new am4charts.XYCursor();
+    cursor.behavior = "panX";
+    cursor.lineY.disabled = true;
+    cursor.lineX.disabled = true; // optional: hide the crosshair line for a cleaner look
+    weDigBioRateChart.cursor = cursor;
+
+    // Trackpad/mouse wheel zoom on time axis
+    weDigBioRateChart.mouseWheelBehavior = "zoomX";
+
+    // Optional: allow touch panning on mobile
+    weDigBioRateChart.chartContainer.wheelable = true;
 
     let valueAxis = weDigBioRateChart.yAxes.push(new am4charts.ValueAxis());
     //valueAxis.min = -0.1;

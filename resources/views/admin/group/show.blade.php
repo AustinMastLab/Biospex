@@ -38,15 +38,19 @@
                                     <td><a href="{{ route('admin.groups-user.destroy', [$group, $user]) }}"
                                            class="prevent-default"
                                            title="{{ t('Delete Member') }}"
+                                           aria-label="{{ t('Delete Member') }}"
                                            data-hover="tooltip"
                                            data-method="delete"
                                            data-confirm="confirmation"
                                            data-title="{{ t('Delete Member') }}?"
                                            data-content="{{ t('This will permanently delete the member') }}">
-                                            <i class="fas fa-trash-alt"></i></a></td>
-                                    <td>{{ $user->present()->full_name_or_email }}</td>
-                                </tr>
-                            @endforeach
+                                            <i class="fas fa-trash-alt" aria-hidden="true"></i>
+                                            <span class="sr-only">{{ t('Delete Member') }}</span>
+                                            </a>
+                                        </td>
+                                        <td>{{ $user->present()->full_name_or_email }}</td>
+                                    </tr>
+                                @endforeach
                             </tbody>
                         </table>
                     @endif

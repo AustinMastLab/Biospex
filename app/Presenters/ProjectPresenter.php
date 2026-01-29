@@ -73,9 +73,10 @@ class ProjectPresenter extends Presenter
     {
         $route = route('front.projects.show', [$this->model->slug]);
 
-        return $this->model->slug == null ? '' : '<a href="'.$route.'" 
-            data-hover="tooltip" 
-            title="'.t('Project Public Page').'"><i class="fas fa-project-diagram"></i></a>';
+        return $this->model->slug == null ? '' : '<a href="'.$route.'"
+                data-hover="tooltip"
+                title="'.t('Project Public Page').'"
+                aria-label="'.t('Project Public Page').'"><i class="fas fa-project-diagram" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -87,10 +88,12 @@ class ProjectPresenter extends Presenter
     {
         $route = route('front.projects.show', [$this->model->slug]);
 
-        return $this->model->slug == null ? '' : '<a href="'.$route.'" 
-            target="_blank" 
-            data-hover="tooltip" 
-            title="'.t('Project Public Page').'"><i class="fas fa-project-diagram fa-2x"></i></a>';
+        return $this->model->slug == null ? '' : '<a href="'.$route.'"
+                target="_blank"
+                rel="noopener noreferrer"
+                data-hover="tooltip"
+                title="'.t('Project Public Page').'"
+                aria-label="'.t('Project Public Page').'"><i class="fas fa-project-diagram fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -102,9 +105,10 @@ class ProjectPresenter extends Presenter
     {
         $route = route('admin.projects.show', [$this->model]);
 
-        return $this->model->id == null ? '' : '<a href="'.$route.'" 
-            data-hover="tooltip" 
-            title="'.t('Show Project Admin Page').'"><i class="fas fa-project-diagram fa-2x"></i></a>';
+        return $this->model->id == null ? '' : '<a href="'.$route.'"
+                data-hover="tooltip"
+                title="'.t('Show Project Admin Page').'"
+                aria-label="'.t('Show Project Admin Page').'"><i class="fas fa-project-diagram fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -116,8 +120,8 @@ class ProjectPresenter extends Presenter
     {
         $route = route('front.projects.show', [$this->model->slug]);
 
-        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'">
-                <i class="far fa-calendar-alt"></i></a>';
+        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'" aria-label="'.t('Events').'">
+                    <i class="far fa-calendar-alt" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -129,8 +133,8 @@ class ProjectPresenter extends Presenter
     {
         $route = route('front.projects.show', [$this->model->slug]);
 
-        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'">
-                <i class="far fa-calendar-alt fa-2x"></i></a>';
+        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'" aria-label="'.t('Events').'">
+                    <i class="far fa-calendar-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -140,8 +144,8 @@ class ProjectPresenter extends Presenter
      */
     public function organizationIcon()
     {
-        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" data-hover="tooltip" title="'.t('Organization').'">
-                <i class="fas fa-building"></i></a>';
+        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Organization').'" aria-label="'.t('Organization').'">
+                    <i class="fas fa-building" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -151,8 +155,8 @@ class ProjectPresenter extends Presenter
      */
     public function organizationIconLrg()
     {
-        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" data-hover="tooltip" title="'.t('Organization').'">
-                <i class="fas fa-building fa-2x"></i></a>';
+        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Organization').'" aria-label="'.t('Organization').'">
+                    <i class="fas fa-building fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -162,8 +166,8 @@ class ProjectPresenter extends Presenter
      */
     public function twitterIcon()
     {
-        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" data-hover="tooltip" title="'.t('Twitter').'">
-                <i class="fab fa-twitter"></i></a>';
+        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Twitter').'" aria-label="'.t('Twitter').'">
+                    <i class="fab fa-twitter" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -173,8 +177,8 @@ class ProjectPresenter extends Presenter
      */
     public function twitterIconLrg()
     {
-        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" data-hover="tooltip" title="'.t('Twitter').'">
-                <i class="fab fa-twitter fa-2x"></i></a>';
+        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Twitter').'" aria-label="'.t('Twitter').'">
+                    <i class="fab fa-twitter fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -184,8 +188,8 @@ class ProjectPresenter extends Presenter
      */
     public function facebookIcon()
     {
-        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" data-hover="tooltip" title="'.t('Facebook').'">
-                <i class="fab fa-facebook"></i></a>';
+        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Facebook').'" aria-label="'.t('Facebook').'">
+                    <i class="fab fa-facebook" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -195,8 +199,8 @@ class ProjectPresenter extends Presenter
      */
     public function facebookIconLrg()
     {
-        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" data-hover="tooltip" title="'.t('Facebook').'">
-                <i class="fab fa-facebook fa-2x"></i></a>';
+        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Facebook').'" aria-label="'.t('Facebook').'">
+                    <i class="fab fa-facebook fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -206,8 +210,8 @@ class ProjectPresenter extends Presenter
      */
     public function blogIcon()
     {
-        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" data-hover="tooltip" title="'.t('Blog').'">
-                <i class="fab fa-blogger-b"></i></a>';
+        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Blog').'" aria-label="'.t('Blog').'">
+                    <i class="fab fa-blogger-b" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -217,8 +221,8 @@ class ProjectPresenter extends Presenter
      */
     public function blogIconLrg()
     {
-        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" data-hover="tooltip" title="'.t('Blog').'">
-                <i class="fab fa-blogger-b fa-2x"></i></a>';
+        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Blog').'" aria-label="'.t('Blog').'">
+                    <i class="fab fa-blogger-b fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -228,8 +232,8 @@ class ProjectPresenter extends Presenter
      */
     public function contactEmailIcon()
     {
-        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'">
-                <i class="fas fa-envelope"></i></a>';
+        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.t('Contact').'">
+                    <i class="fas fa-envelope" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -239,8 +243,8 @@ class ProjectPresenter extends Presenter
      */
     public function contactEmailIconLrg()
     {
-        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'">
-                <i class="fas fa-envelope fa-2x"></i></a>';
+        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.t('Contact').'">
+                    <i class="fas fa-envelope fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -250,7 +254,7 @@ class ProjectPresenter extends Presenter
      */
     public function projectExpeditionsIcon()
     {
-        return '<a href="#expeditions" data-hover="tooltip" title="'.t('Expeditions').'"><i class="fas fa-binoculars"></i></a>';
+        return '<a href="#expeditions" data-hover="tooltip" title="'.t('Expeditions').'" aria-label="'.t('Expeditions').'"><i class="fas fa-binoculars" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -260,7 +264,7 @@ class ProjectPresenter extends Presenter
      */
     public function projectExpeditionsIconLrg()
     {
-        return '<a href="#expeditions" data-hover="tooltip" title="'.t('Expeditions').'"><i class="fas fa-binoculars fa-2x"></i></a>';
+        return '<a href="#expeditions" data-hover="tooltip" title="'.t('Expeditions').'" aria-label="'.t('Expeditions').'"><i class="fas fa-binoculars fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**

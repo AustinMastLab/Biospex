@@ -1,9 +1,9 @@
 @if(is_null($event))
-    <div class="text-center" style="background-color:#e83f29;">
+    <div class="text-center bg-brand-red">
         <span class="scoreboard-title">{{ t('Error: Event not found.') }}</span>
     </div>
 @else
-    <div class="text-center" style="background-color:#e83f29;">
+    <div class="text-center bg-brand-red">
         <span class="scoreboard-title">{{ $event->title }}</span>
         <h2 class="text-white text modal-number mt-3">{{ $event->transcriptions_count }}</h2>
         <span class="scoreboard-title">Transcriptions</span>

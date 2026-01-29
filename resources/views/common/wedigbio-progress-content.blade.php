@@ -1,9 +1,9 @@
 @if($weDigBioEvent === null)
-    <div class="text-center" style="background-color:#e83f29;">
+    <div class="text-center bg-brand-red"">
         <span class="scoreboard-title">{{ t('No current WeDigBio Event') }}</span>
     </div>
 @else
-    <div class="text-center" style="background-color:#e83f29;">
+    <div class="text-center bg-brand-red">
         <span class="scoreboard-title">{{ $weDigBioEvent->present()->progress_title }}</span>
         <h2 class="text-white text modal-number mt-3">{{ $weDigBioEvent->transcriptions_count }}</h2>
         <span class="scoreboard-title">{{ t('Transcriptions') }}</span>

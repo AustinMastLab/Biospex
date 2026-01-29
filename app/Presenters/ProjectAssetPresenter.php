@@ -42,12 +42,12 @@ class ProjectAssetPresenter extends Presenter
             if (! empty($this->model->download_path) && Storage::disk('s3')->exists($this->model->download_path)) {
                 $url = Storage::disk('s3')->url($this->model->download_path);
 
-                return '<a href="'.$url.'" target="_blank" data-hover="tooltip" title="'.$description.'">
-                <i class="fas fa-file"></i> '.$name.'</a>';
+                return '<a href="'.$url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.$description.'">
+                <i class="fas fa-file" aria-hidden="true"></i> '.$name.'</a>';
             }
         }
 
-        return '<a href="'.$name.'" target="_blank" data-hover="tooltip" title="'.$description.'">
-            <i class="fas fa-link"></i> '.$name.'</a>';
+        return '<a href="'.$name.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.$description.'">
+            <i class="fas fa-link" aria-hidden="true"></i> '.$name.'</a>';
     }
 }

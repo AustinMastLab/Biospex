@@ -59,3 +59,5 @@ laradumps.yaml
 /.github/
 /.vscode/
 /clean-logs.sh
+/pa11y-report.json
+/.pa11yci.json

@@ -39,7 +39,7 @@ class SiteAssetPresenter extends Presenter
             $url = Storage::disk('s3')->url($this->model->download_path);
             $filename = basename($this->model->download_path);
 
-            return '<a href="'.$url.'" target="_blank"><i class="fas fa-file"></i> '.$filename.'</a>';
+            return '<a href="'.$url.'" target="_blank" rel="noopener noreferrer"><i class="fas fa-file" aria-hidden="true"></i> '.$filename.'</a>';
         }
 
         return '';

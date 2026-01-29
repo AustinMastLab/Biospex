@@ -16,6 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+/* Brand colors */
+$brand-red: #c83f29; /* updated from #e83f29 to meet WCAG AA where used with white text */
+
 html, body {
   height: 100%;
 }
@@ -25,15 +28,11 @@ html, body {
 }
 
 a {
-  -webkit-transform: .25s ease-out;
-  -moz-transform: .25s ease-out;
-  -ms-transform: .25s ease-out;
-  -o-transform: .25s ease-out;
-  transform: .25s ease-out;
+  transition: color .25s ease-out, background-color .25s ease-out, border-color .25s ease-out;
 }
 
 .color-action, a {
-  color: #e83f29;
+  color: $brand-red;
 }
 
 a:hover {
@@ -41,17 +40,12 @@ a:hover {
   color: #383333;
 }
 
-
 a > i {
-  -webkit-transition: all .25s ease-in-out;
-  -moz-transition: all .25s ease-in-out;
-  -ms-transition: all .25s ease-in-out;
-  -o-transition: all .25s ease-in-out;
-  transition: all .25s ease-in-out;
+  transition: color .25s ease-in-out;
 }
 
 a:hover i {
-  color: #e83f29 !important;
+  color: $brand-red !important;
 }
 
 button {
@@ -63,8 +57,8 @@ button {
   font-size: 1.25rem;
   line-height: 1;
   color: white;
-  background-color: #e83f29;
-  border: 1px solid #e83f29;
+  background-color: $brand-red;
+  border: 1px solid $brand-red;
   border-radius: .2rem;
 }
 
@@ -135,19 +129,15 @@ h2.modal-number > small {
 }
 
 .btn.btn-primary {
-  background-color: #e83f29; /*red -- link or call to action color */
-  border-color: #e83f29;
+  background-color: $brand-red;
+  border-color: $brand-red;
   padding: 10px 30px;
   color: white;
-  -webkit-transition: .25s ease-out;
-  -moz-transition: .25s ease-out;
-  -ms-transition: .25s ease-out;
-  -o-transition: .25s ease-out;
   transition: .25s ease-out;
 }
 
 .btn.btn-primary.green {
-  background-color: #1e7e34; /*red -- link or call to action color */
+  background-color: #1e7e34; /* green */
   border-color: #1e7e34;
 }
 
@@ -156,13 +146,13 @@ h2.modal-number > small {
 }
 
 .btn.btn-primary:hover i {
-  color: #e83f29;
+  color: $brand-red;
 }
 
 .btn.btn-primary:hover {
   background-color: transparent;
-  color: #e83f29;
-  border-color: #e83f29;
+  color: $brand-red;
+  border-color: $brand-red;
 }
 
 .btn.btn-primary.green:hover {
@@ -174,8 +164,8 @@ h2.modal-number > small {
 .btn-transcription-year, .btn-transcription-year:hover {
   padding: 10px 30px;
   background-color: transparent;
-  color: #e83f29;
-  border-color: #e83f29;
+  color: $brand-red;
+  border-color: $brand-red;
 }
 
 
@@ -186,15 +176,11 @@ h2.modal-number > small {
 .btn.btn-danger {
   background-color: transparent;
   color: white;
-  -webkit-transition: .25s ease-out;
-  -moz-transition: .25s ease-out;
-  -ms-transition: .25s ease-out;
-  -o-transition: .25s ease-out;
   transition: .25s ease-out;
 }
 
 .btn.btn-danger:hover {
-  background-color: #e83f29;
+  background-color: $brand-red;
   color: white;
 }
 
@@ -219,8 +205,8 @@ h2.modal-number > small {
 
 
   .btn.btn-danger:hover {
-    background-color: #e83f29; /*red -- link or call to action color */
-    border-color: #e83f29;
+    background-color: $brand-red; /* red -- link or call to action color */
+    border-color: $brand-red;
     color: white;
   }
 
@@ -283,8 +269,6 @@ header#header-img {
   width: 100%;
   left: 0;
   background: rgb(85, 99, 117);
-  background: -moz-linear-gradient(-45deg, rgba(85, 99, 117, 1) 0%, rgba(17, 20, 33, 1) 72%);
-  background: -webkit-linear-gradient(-45deg, rgba(85, 99, 117, 1) 0%, rgba(17, 20, 33, 1) 72%);
   background: linear-gradient(135deg, rgba(85, 99, 117, 1) 0%, rgba(17, 20, 33, 1) 72%);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#556375', endColorstr='#111421', GradientType=1);
   zoom: 1;
@@ -404,10 +388,6 @@ contributor logos*/
 }
 
 .dropdown-item {
-  -webkit-transition: all .2s ease-in-out;
-  -moz-transition: all .2s ease-in-out;
-  -ms-transition: all .2s ease-in-out;
-  -o-transition: all .2s ease-in-out;
   transition: all .2s ease-in-out;
 }
 
@@ -423,17 +403,17 @@ contributor logos*/
 
 
 .btn-outline-primary {
-  color: #e83f29;
+  color: $brand-red;
   background-color: transparent;
   background-image: none;
-  border-color: #e83f29;
+  border-color: $brand-red;
 }
 
 .btn-outline-primary:hover {
   color: white;
-  background-color: #e83f29;
+  background-color: $brand-red;
   background-image: none;
-  border-color: #e83f29;
+  border-color: $brand-red;
 }
 
 
@@ -466,7 +446,7 @@ home page*/
 h2.home-header-cta {
   font-size: 3.5rem;
   //opacity: .35;
-  color: #e83f29;
+  color: #c83f29;
 }
 
 .tutorial-right-section {
@@ -629,12 +609,12 @@ h2.home-header-cta {
 }
 
 .card .btn-outline-primary {
-  border-color: #e83f29;
-  color: #e83f29;
+  border-color: $brand-red;
+  color: $brand-red;
 }
 
 .card .btn-outline-primary:hover {
-  background-color: #e83f29;
+  background-color: $brand-red;
   color: white;
 }
 
@@ -652,7 +632,11 @@ h2.home-header-cta {
 }
 
 .faq.btn:hover, .update.btn:hover {
-  color: #e83f29;
+  color: #7a1b10; /* was #e83f29; darkened to meet contrast on the light FAQ card background */
+}
+
+.faq.btn:focus, .update.btn:focus {
+  color: #7a1b10; /* match hover for keyboard accessibility */
 }
 
 .import.btn {
@@ -673,8 +657,6 @@ footer {
   padding-top: 1rem;
   padding-bottom: 1rem;
   background: rgb(64, 98, 136);
-  background: -moz-linear-gradient(left, rgba(64, 98, 136, 1) 0%, rgba(33, 48, 76, 1) 99%);
-  background: -webkit-linear-gradient(left, rgba(64, 98, 136, 1) 0%, rgba(33, 48, 76, 1) 99%);
   background: linear-gradient(to right, rgba(64, 98, 136, 1) 0%, rgba(33, 48, 76, 1) 99%);
   filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#406288', endColorstr='#21304c', GradientType=1);
 }
@@ -691,7 +673,7 @@ hr.white {
 }
 
 hr.header {
-  border: 1px solid rgba(232, 63, 41, 1) !important;
+  border: 1px solid rgba($brand-red, 1) !important;
 }
 
 /* hamburger menu toggle */
@@ -796,7 +778,7 @@ h1.project-wide {
 }
 
 #hamburger-9.is-active .line:nth-child(1) {
-  background-color: #e83f29;
+  background-color: $brand-red;
   -webkit-transform: translateY(13px);
   -ms-transform: translateY(13px);
   -o-transform: translateY(13px);
@@ -804,7 +786,7 @@ h1.project-wide {
 }
 
 #hamburger-9.is-active .line:nth-child(3) {
-  background-color: #e83f29;
+  background-color: $brand-red;
   -webkit-transform: translateY(-13px) rotate(90deg);
   -ms-transform: translateY(-13px) rotate(90deg);
   -o-transform: translateY(-13px) rotate(90deg);
@@ -818,7 +800,7 @@ h1.project-wide {
   width: 500px;
   height: 500px;
   background-color: #ffffff;
-  border: 2px solid #e83f29;
+  border: 2px solid $brand-red;
   background-size: cover;
   border-radius: 50%;
   margin: 0 auto;
@@ -841,7 +823,7 @@ h1.project-wide {
 .smallertext {
   padding-top: 5px;
   font-size: 0.875rem;
-  color: #9BA2AB;
+  color: #495057;
 }
 
 #external-carousel-btns > li {
@@ -850,7 +832,7 @@ h1.project-wide {
   font-size: 1.875rem;
   text-align-all: center;
   color: #9BA2AB;
-  border: 2px solid #e83f29;
+  border: 2px solid $brand-red;
   border-radius: 50%;
   background-color: #ffffff;
   box-shadow: 0 0 10px rgba(0, 0, 0, .25);
@@ -858,18 +840,18 @@ h1.project-wide {
 }
 
 #external-carousel-btns > li:hover {
-  background-color: #e83f29;
+  background-color: $brand-red;
   color: #ffffff;
   cursor: pointer;
 }
 
 #external-carousel-btns li.active {
-  background-color: #e83f29;
+  background-color: $brand-red;
   color: #ffffff;
 }
 
 .circle-slider h3 {
-  color: #e83f29;
+  color: $brand-red;
   font-size: 1.4375rem;
   text-transform: uppercase;
 }
@@ -897,7 +879,7 @@ li.nav-btn {
 }
 
 li.nav-btn:hover {
-  background-color: #e83f29;
+  background-color: $brand-red;
   color: white;
 }
 
@@ -916,15 +898,15 @@ li.nav-btn.show {
   }
 
   li.nav-btn:hover {
-    background-color: #e83f29; /*red -- link or call to action color */
-    border-color: #e83f29;
+    background-color: $brand-red; /* red -- link or call to action color */
+    border-color: $brand-red;
     color: white;
   }
 }
 
 .loader {
   border: 16px solid #f3f3f3; /* Light grey */
-  border-top: 16px solid #e83f29; /* Blue */
+  border-top: 16px solid $brand-red; /* was #e83f29 */
   border-radius: 50%;
   width: 120px;
   height: 120px;
@@ -948,7 +930,7 @@ li.nav-btn.show {
 .col-form-label.required:after {
   font-family: 'Work Sans', sans-serif;
   font-size: .7rem;
-  color: #e83f29;
+  color: $brand-red;
   content: '*';
 }
 
@@ -1042,7 +1024,7 @@ li.nav-btn.show {
 }
 
 .bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:hover {
-  color: #c83f29;
+  color: $brand-red;
 }
 
 div.sort {
@@ -1051,11 +1033,21 @@ div.sort {
 }
 
 .sort-highlight {
-  border: 1px solid #c83f29;
+  border: 1px solid $brand-red;
   font-weight: bold;
   font-size: 45px;
   width: 200px;
   background-color: #333333;
+}
+
+.sort-page {
+  color: $brand-red;
+  cursor: pointer;
+}
+
+.sort-page:hover,
+.sort-page:focus {
+  color: #383333;
 }
 
 /* \f142 is ellipsis-v */
@@ -1073,7 +1065,7 @@ div.sort {
 }
 
 .need-review {
-  color: red;
+  color: $brand-red;
 }
 
 [x-cloak] { display: none !important; }
@@ -1085,4 +1077,11 @@ div.sort {
   &:hover {
     background-color: rgba(0, 0, 0, 0.05) !important;
   }
+}
+
+.bg-brand-red { background-color: $brand-red; }
+
+/* Admin: lighten striped rows to improve contrast with $brand-red links */
+#projects-tbl.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #fafafa; /* was effectively ~#f2f2f2 */
 }

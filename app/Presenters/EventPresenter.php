@@ -127,137 +127,97 @@ class EventPresenter extends Presenter
         $url = config('app.url').'/events/'.$uuid.'&text='.$title.'&hashtags='.$hashtag;
 
         return '<a href="https://twitter.com/intent/tweet?url='.$url.'" 
-            target="_blank" 
+            target="_blank"
+            rel="noopener noreferrer"
             data-hover="tooltip" 
-            title="'.t('Share on Twitter').'">
-            <i class="fab fa-twitter"></i> <span class="d-none text d-sm-inline"></span></a>';
+            title="'.t('Share on Twitter').'"
+            aria-label="'.t('Share on Twitter').'">
+            <i class="fab fa-twitter" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return facebook with Icon awesome button
-     *
-     * http://www.facebook.com/share.php?u=$url&title=$title
-     *
-     * @return string
-     */
     public function facebookIcon()
     {
         $url = urlencode(config('app.url').'/events/'.$this->model->uuid);
         $title = urlencode($this->model->title);
 
         return '<a href="http://www.facebook.com/share.php?u='.$url.'&title='.$title.'" 
-            target="_blank" 
+            target="_blank"
+            rel="noopener noreferrer"
             data-hover="tooltip" 
-            title="'.t('Share on Facebook').'">
-            <i class="fab fa-facebook"></i> <span class="d-none text d-sm-inline"></span></a>';
+            title="'.t('Share on Facebook').'"
+            aria-label="'.t('Share on Facebook').'">
+            <i class="fab fa-facebook" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return contact with Icon awesome button
-     *
-     * @return string
-     */
     public function contactEmailIcon()
     {
         return $this->model->contact_email === null ? '' :
             '<a href="mailto:'.$this->model->contact_email.'" 
             data-hover="tooltip" 
-            title="'.t('Contact').'">
-            <i class="far fa-envelope"></i> <span class="d-none text d-sm-inline"></span></a>';
+            title="'.t('Contact').'"
+            aria-label="'.t('Contact').'">
+            <i class="far fa-envelope" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return show icon.
-     *
-     * @return string
-     */
     public function eventShowIcon()
     {
         return '<a href="'.route('front.events.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Event').'">
-                <i class="fas fa-eye"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('View Event').'" aria-label="'.t('View Event').'">
+                <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return show icon for admin.
-     *
-     * @return string
-     */
     public function eventAdminShowIcon()
     {
         return '<a href="'.route('admin.events.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Event').'">
-                <i class="fas fa-eye"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('View Event').'" aria-label="'.t('View Event').'">
+                <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function eventEditIcon()
     {
         return '<a href="'.route('admin.events.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Event').'">
-                <i class="fas fa-edit"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('Edit Event').'" aria-label="'.t('Edit Event').'">
+                <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function eventEditIconLrg()
     {
         return '<a href="'.route('admin.events.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Event').'"><i class="fas fa-edit fa-2x"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('Edit Event').'" aria-label="'.t('Edit Event').'"><i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function eventDeleteIcon()
     {
         return '<a href="'.route('admin.events.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Event').'" 
+            title="'.t('Delete Event').'"
+            aria-label="'.t('Delete Event').'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Event').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt"></i></a>';
+            <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function eventDeleteIconLrg()
     {
         return '<a href="'.route('admin.events.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Event').'" 
+            title="'.t('Delete Event').'"
+            aria-label="'.t('Delete Event').'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Event').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt fa-2x"></i></a>';
+            <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return download icon lrg.
-     *
-     * @return string
-     */
     public function eventDownloadUsersIconLrg()
     {
         $route = route('admin.events_users.index', [
@@ -265,17 +225,13 @@ class EventPresenter extends Presenter
         ]);
 
         return '<a href="#" class="prevent-default event-export"
+        aria-label="'.t('Download Participants File').'"
         data-href="'.$route.'"
         data-success="An email with attached export will be sent."
         data-error="There was an error while exporting. Please inform the Administration"
-        data-hover="tooltip" title="'.t('Download Participants File').'"><i class="fas fa-users fa-2x"></i></a>';
+        data-hover="tooltip" title="'.t('Download Participants File').'"><i class="fas fa-users fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return download icon lrg.
-     *
-     * @return string
-     */
     public function eventDownloadDigitizationsIconLrg()
     {
         $route = route('admin.events_transcriptions.index', [
@@ -283,10 +239,11 @@ class EventPresenter extends Presenter
         ]);
 
         return '<a href="#" class="prevent-default event-export"
+        aria-label="'.t('Download Digitizations File').'"
         data-href="'.$route.'"
         data-success="An email with attached export will be sent."
         data-error="There was an error while exporting. Please inform the Administration"
         data-hover="tooltip" title="'.t('Download Digitizations File').'">
-        <i class="fas fa-file-download fa-2x"></i></a>';
+        <i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';
     }
 }

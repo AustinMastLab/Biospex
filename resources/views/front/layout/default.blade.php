@@ -42,8 +42,13 @@ sub footer -->
                 <!-- Instagram -->
                 <a class="figure-img"></a>
                 <!-- Twitter -->
-                <a href="https://twitter.com/BIOSPEX" target="_blank" class="figure-img"><i
-                            class="fab fa-twitter fa-4x"></i></a>
+                <a href="https://twitter.com/BIOSPEX"
+                       target="_blank"
+                       rel="noopener noreferrer"
+                       class="figure-img"
+                       aria-label="{{ t('Twitter') }}">
+                        <i class="fab fa-twitter fa-4x" aria-hidden="true"></i>
+                    </a>
                 <!--Facebook -->
                 <a class="figure-img"></a>
                 <!--LinkedIn-->

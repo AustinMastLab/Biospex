@@ -75,30 +75,22 @@ class ExpeditionPresenter extends Presenter
      */
     public function expeditionShowIcon()
     {
-        return '<a href="'.route('admin.expeditions.show', [$this->model]).'" \
-            data-hover="tooltip" 
-            title="'.t('View Expedition').'">
-            <i class="fas fa-eye"></i></a>';
+        return '<a href="'.route('admin.expeditions.show', [$this->model]).'"
+            data-hover="tooltip"
+            title="'.t('View Expedition').'"
+            aria-label="'.t('View Expedition').'">
+            <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return show icon lrg.
-     *
-     * @return string
-     */
     public function expeditionShowIconLrg()
     {
         return '<a href="'.route('admin.expeditions.show', [$this->model]).'" 
-        data-hover="tooltip" 
-        title="'.t('View Expedition').'">
-        <i class="fas fa-eye fa-2x"></i></a>';
+            data-hover="tooltip" 
+            title="'.t('View Expedition').'"
+            aria-label="'.t('View Expedition').'">
+            <i class="fas fa-eye fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return tools icon.
-     *
-     * @return string
-     */
     public function expeditionToolsIconLrg()
     {
         return '<a href="" class="prevent-default"
@@ -108,14 +100,10 @@ class ExpeditionPresenter extends Presenter
                        data-size="modal-lg"
                        data-url="'.route('admin.expeditions.tools', [$this->model]).'"
                        data-hover="tooltip"
-                       data-title="'.t('Expedition Tools').'"><i class="fas fa-tools fa-2x"></i></a>';
+                       data-title="'.t('Expedition Tools').'"
+                       aria-label="'.t('Expedition Tools').'"><i class="fas fa-tools fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return download icon lrg.
-     *
-     * @return string
-     */
     public function expeditionDownloadIconLrg()
     {
         $route = route('admin.downloads.index', [$this->model]);
@@ -126,90 +114,68 @@ class ExpeditionPresenter extends Presenter
                 data-url="'.$route.'"
                 data-dismiss="modal" data-toggle="modal" data-target="#global-modal" data-size="modal-xl" 
                 data-hover="tooltip" 
-                title="'.t('Download Expedition Files').'"><i class="fas fa-file-download fa-2x"></i></a>';
+                title="'.t('Download Expedition Files').'"
+                aria-label="'.t('Download Expedition Files').'"><i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function expeditionEditIcon()
     {
-        return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" data-hover="tooltip" title="'.t('Edit Expedition').'">
-        <i class="fas fa-edit"></i></a>';
+        return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" data-hover="tooltip" title="'.t('Edit Expedition').'" aria-label="'.t('Edit Expedition').'">
+        <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon lrg.
-     *
-     * @return string
-     */
     public function expeditionEditIconLrg()
     {
         return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" 
         data-hover="tooltip" 
-        title="'.t('Edit Expedition').'">
-        <i class="fas fa-edit fa-2x"></i></a>';
+        title="'.t('Edit Expedition').'"
+        aria-label="'.t('Edit Expedition').'">
+        <i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return clone icon.
-     */
     public function expeditionCloneIcon()
     {
         return '<a href="'.route('admin.expeditions.clone', [$this->model]).'" 
         data-hover="tooltip" 
-        title="'.t('Clone Expedition').'">
-        <i class="fas fa-clone"></i></a>';
+        title="'.t('Clone Expedition').'"
+        aria-label="'.t('Clone Expedition').'">
+        <i class="fas fa-clone" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return clone icon lrg.
-     *
-     * @return string
-     */
     public function expeditionCloneIconLrg()
     {
         return '<a href="'.route('admin.expeditions.clone', [$this->model]).'" 
         data-hover="tooltip" 
-        title="'.t('Clone Expedition').'">
-        <i class="fas fa-clone fa-2x"></i></a>';
+        title="'.t('Clone Expedition').'"
+        aria-label="'.t('Clone Expedition').'">
+        <i class="fas fa-clone fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function expeditionDeleteIcon()
     {
         return '<a href="'.route('admin.expeditions.delete', [$this->model]).'" 
             class="prevent-default"
-            title="'.t('Delete Expedition').'" 
+            title="'.t('Delete Expedition').'"
+            aria-label="'.t('Delete Expedition').'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Expedition').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt"></i></a>';
+            <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function expeditionDeleteIconLrg()
     {
         return '<a href="'.route('admin.expeditions.delete', [$this->model]).'" 
             class="prevent-default"
-            title="'.t('Delete Expedition').'" 
+            title="'.t('Delete Expedition').'"
+            aria-label="'.t('Delete Expedition').'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Expedition').'?" 
             data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt fa-2x"></i></a>';
+            <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**

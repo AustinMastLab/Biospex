@@ -44,134 +44,94 @@ class BingoPresenter extends Presenter
     {
         return '<a href="'.route('admin.bingos.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Bingo').'">
-                <i class="fas fa-eye"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('View Bingo').'" aria-label="'.t('View Bingo').'">
+                <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return show icon.
-     *
-     * @return string
-     */
     public function showIcon()
     {
         return '<a href="'.route('front.bingos.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Bingo').'">
-                <i class="fas fa-eye"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('View Bingo').'" aria-label="'.t('View Bingo').'">
+                <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function editIcon()
     {
         return '<a href="'.route('admin.bingos.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Bingo').'">
-                <i class="fas fa-edit"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('Edit Bingo').'" aria-label="'.t('Edit Bingo').'">
+                <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function editIconLrg()
     {
         return '<a href="'.route('admin.bingos.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Bingo').'">
-                <i class="fas fa-edit fa-2x"></i></a>';
+        ]).'" data-hover="tooltip" title="'.t('Edit Bingo').'" aria-label="'.t('Edit Bingo').'">
+                <i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function deleteIcon()
     {
         return '<a href="'.route('admin.bingos.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Bingo').'" 
-            data-hover="tooltip"        
+            title="'.t('Delete Bingo').'"
+            aria-label="'.t('Delete Bingo').'"
+            data-hover="tooltip"
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Bingo').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt"></i></a>';
+            <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function deleteIconLrg()
     {
         return '<a href="'.route('admin.bingos.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Bingo').'" 
-            data-hover="tooltip"        
+            title="'.t('Delete Bingo').'"
+            aria-label="'.t('Delete Bingo').'"
+            data-hover="tooltip"
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Bingo').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt fa-2x"></i></a>';
+            <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Create Twitter icon.
-     *
-     * <a href="https://twitter.com/intent/tweet?url=https%3A%2F%2Fbiospex.org%2Fevents%2F13&text=Event%20to%20show&hashtags=biospex%2Ceventname" target="_blank">
-     * <i class="fab fa-twitter"></i> <span class="d-none text d-sm-inline"></span>
-     * </a>
-     *
-     * @return string
-     */
     public function twitterIcon()
     {
         $id = $this->model->id;
         $title = $this->model->title;
         $url = config('app.url').'/bingos/'.$id.'&text='.$title;
 
-        return '<a href="https://twitter.com/intent/tweet?url='.$url.'" 
-            target="_blank" 
-            data-hover="tooltip" 
-            title="'.t('Share on Twitter').'">
-            <i class="fab fa-twitter"></i> <span class="d-none text d-sm-inline"></span></a>';
+        return '<a href="https://twitter.com/intent/tweet?url='.$url.'"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-hover="tooltip"
+            title="'.t('Share on Twitter').'"
+            aria-label="'.t('Share on Twitter').'">
+            <i class="fab fa-twitter" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return facebook with Icon awesome button
-     *
-     * http://www.facebook.com/share.php?u=$url&title=$title
-     *
-     * @return string
-     */
     public function facebookIcon()
     {
         $url = urlencode(config('app.url').'/bingos/'.$this->model->id);
         $title = urlencode($this->model->title);
 
-        return '<a href="http://www.facebook.com/share.php?u='.$url.'&title='.$title.'" 
-            target="_blank" 
-            data-hover="tooltip" 
-            title="'.t('Share on Facebook').'">
-            <i class="fab fa-facebook"></i> <span class="d-none text d-sm-inline"></span></a>';
+        return '<a href="http://www.facebook.com/share.php?u='.$url.'&title='.$title.'"
+            target="_blank"
+            rel="noopener noreferrer"
+            data-hover="tooltip"
+            title="'.t('Share on Facebook').'"
+            aria-label="'.t('Share on Facebook').'">
+            <i class="fab fa-facebook" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return contact small icon
-     *
-     * @return string
-     */
     public function contactIcon()
     {
-        return '<a href="mailto:'.$this->model->contact.'" data-hover="tooltip" title="'.t('Contact').'">
-                <i class="fas fa-envelope"></i></a>';
+        return '<a href="mailto:'.$this->model->contact.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.t('Contact').'">
+                <i class="fas fa-envelope" aria-hidden="true"></i></a>';
     }
 }

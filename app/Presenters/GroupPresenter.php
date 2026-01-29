@@ -32,8 +32,9 @@ class GroupPresenter extends Presenter
 
         return '<a href="'.$route.'" 
             data-hover="tooltip" 
-            title="'.t('View Group').'">
-            <i class="fas fa-users"></i></a>';
+            title="'.t('View Group').'"
+            aria-label="'.t('View Group').'">
+            <i class="fas fa-users" aria-hidden="true"></i></a>';
     }
 
     public function groupProjectIconLrg()
@@ -43,90 +44,66 @@ class GroupPresenter extends Presenter
 
         return '<a href="'.$route.'" 
             data-hover="tooltip" 
-            title="'.t('View Group').'">
-            <i class="fas fa-users fa-2x"></i></a>';
+            title="'.t('View Group').'"
+            aria-label="'.t('View Group').'">
+            <i class="fas fa-users fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return show icon.
-     *
-     * @return string
-     */
     public function groupShowIcon()
     {
         return '<a href="'.route('admin.groups.show', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('View Group').'">
-            <i class="fas fa-eye"></i></a>';
+            title="'.t('View Group').'"
+            aria-label="'.t('View Group').'">
+            <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function groupEditIcon()
     {
         return '<a href="'.route('admin.groups.edit', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Edit Group').'">
-            <i class="fas fa-edit"></i></a>';
+            title="'.t('Edit Group').'"
+            aria-label="'.t('Edit Group').'">
+            <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function groupEditIconLrg()
     {
         return '<a href="'.route('admin.groups.edit', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Edit Group').'">
-            <i class="fas fa-edit fa-2x"></i></a>';
+            title="'.t('Edit Group').'"
+            aria-label="'.t('Edit Group').'">
+            <i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function groupDeleteIcon()
     {
-        return '<a href="'.route('admin.users.destroy', [
+        return '<a href="'.route('admin.groups.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Group').'" 
+            title="'.t('Delete Group').'"
+            aria-label="'.t('Delete Group').'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Group').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt"></i></a>';
+            <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return delete icon.
-     *
-     * @return string
-     */
     public function groupDeleteIconLrg()
     {
-        return '<a href="'.route('admin.users.destroy', [
+        return '<a href="'.route('admin.groups.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Group').'" 
+            title="'.t('Delete Group').'"
+            aria-label="'.t('Delete Group').'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Group').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt fa-2x"></i></a>';
+            <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return invite icon.
-     *
-     * @return string
-     */
     public function groupInviteIcon()
     {
         $route = route('admin.invites.create', [$this->model]);
@@ -134,15 +111,11 @@ class GroupPresenter extends Presenter
         return '<a href="#" class="prevent-default" data-toggle="modal" data-url="'.$route.'" 
                     data-target="#global-modal" data-size="modal-lg" data-dismiss="modal" data-toggle="modal"
                     data-title="'.t('Invite users to %s group.', $this->model->title).'"
-                    data-hover="tooltip" title="'.t('Invite users to %s group.', $this->model->title).'">
-                    <i class="fas fa-user-plus"></i></a>';
+                    data-hover="tooltip" title="'.t('Invite users to %s group.', $this->model->title).'"
+                    aria-label="'.t('Invite users to %s group.', $this->model->title).'">
+                    <i class="fas fa-user-plus" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return return edit icon.
-     *
-     * @return string
-     */
     public function groupInviteIconLrg()
     {
         $route = route('admin.invites.create', [$this->model]);
@@ -150,7 +123,8 @@ class GroupPresenter extends Presenter
         return '<a href="#" class="prevent-default" data-toggle="modal" data-url="'.$route.'" 
                     data-target="#global-modal" data-size="modal-lg" data-dismiss="modal" data-toggle="modal"
                     data-title="'.t('Invite users to %s group.', $this->model->title).'"
-                    data-hover="tooltip" title="'.t('Invite users to %s group.', $this->model->title).'">
-                    <i class="fas fa-user-plus fa-2x"></i></a>';
+                    data-hover="tooltip" title="'.t('Invite users to %s group.', $this->model->title).'"
+                    aria-label="'.t('Invite users to %s group.', $this->model->title).'">
+                    <i class="fas fa-user-plus fa-2x" aria-hidden="true"></i></a>';
     }
 }

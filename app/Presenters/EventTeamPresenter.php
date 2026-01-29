@@ -37,7 +37,7 @@ class EventTeamPresenter extends Presenter
             title="'.t('Copy To Clipboard').'" 
             data-hover="tooltip"
             data-clipboard-text="'.route('front.events_team_user.create', [$this->model]).'">
-            <i class="fas fa-clipboard align-middle"></i>
+            <i class="fas fa-clipboard align-middle" aria-hidden="true"></i>
             <span class="align-middle">'.$this->model->title.'</span></a>';
     }
 }

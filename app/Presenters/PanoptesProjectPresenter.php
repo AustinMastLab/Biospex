@@ -35,43 +35,28 @@ class PanoptesProjectPresenter extends Presenter
         $url = $this->classifyReplace();
 
         return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" target="_blank">
-                <i class="fas fa-keyboard"></i></a>';
+            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-keyboard" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return icon.
-     *
-     * @return string
-     */
     public function projectIcon()
     {
         $url = $this->projectReplace();
 
         return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" target="_blank">
-                <i class="fas fa-keyboard"></i></a>';
+            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-keyboard" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return icon.
-     *
-     * @return string
-     */
     public function projectIconLrg()
     {
         $url = $this->projectReplace();
 
         return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" target="_blank">
-                <i class="fas fa-keyboard fa-2x"></i></a>';
+            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-keyboard fa-2x" aria-hidden="true"></i></a>';
     }
 
-    /**
-     * Return icon.
-     *
-     * @return string
-     */
     public function projectLink()
     {
         $url = $this->projectReplace();
@@ -80,18 +65,13 @@ class PanoptesProjectPresenter extends Presenter
             '<a href="'.$url.'" title="'.t('Participate').'" target="_blank">'.t('Click here to participate').'</a>';
     }
 
-    /**
-     * Return lrg icon
-     *
-     * @return string
-     */
     public function urlLrg()
     {
         $url = $this->classifyReplace();
 
         return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" target="_blank">
-                <i class="fas fa-keyboard fa-2x"></i></a>';
+            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
+                <i class="fas fa-keyboard fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**

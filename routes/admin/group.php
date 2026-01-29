@@ -30,7 +30,7 @@ Route::resource('groups', GroupController::class)->names([
     'show' => 'admin.groups.show',
     'edit' => 'admin.groups.edit',
     'update' => 'admin.groups.update',
-    'destroy' => 'admin.users.destroy',
+    'destroy' => 'admin.groups.destroy',
 ]);
 
 // Handle users in groups.
@@ -38,7 +38,6 @@ Route::delete('groups/{group}/delete-user/{user}', GroupUserController::class)->
 
 Route::get('groups/{group}/invites', [GroupInviteController::class, 'create'])->name('admin.invites.create');
 Route::post('groups/{group}/invites', [GroupInviteController::class, 'store'])->name('admin.invites.store');
-Route::delete('groups/{group}/invites/{invite}', [GroupInviteController::class, 'destroy'])->name('admin.invites.delete');
 
 // Handle geolocate forms in groups.
 Route::delete('groups/{group}/delete-form/{form}', GroupGeoLocateFormController::class)->name('admin.groups-geolocate-form.destroy');

@@ -46,8 +46,9 @@ class UserPresenter extends Presenter
     {
         return $this->model->email === null ? '' :
             '<a href="mailto:'.$this->model->email.'" 
-            data-hover="tooltip" 
-            title="'.t('Contact').'">
-            <i class="far fa-envelope"></i> <span class="d-none text d-sm-inline"></span></a>';
+            data-hover="tooltip"
+            title="'.t('Contact').'"
+            aria-label="'.t('Contact').'">
+            <i class="far fa-envelope" aria-hidden="true"></i></a>';
     }
 }

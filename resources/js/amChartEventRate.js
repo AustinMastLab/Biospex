@@ -46,17 +46,32 @@ am4core.ready(function () {
         chart.padding(0, 0, 0, 0);
         chart.zoomOutButton.disabled = true;
 
-        chart.events.on("datavalidated", function () {
-            dateAxis.zoom({start: 1 / 15, end: 1.2}, false, true);
-        });
-
-        chart.scrollbarX = new am4core.Scrollbar();
-
+        // Create axis BEFORE using it in datavalidated
         let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
         dateAxis.baseInterval = {
             "timeUnit": "minute",
             "count": 5
         };
+
+        chart.events.on("datavalidated", function () {
+            dateAxis.zoom({start: 1 / 15, end: 1.2}, false, true);
+        });
+
+        // Remove the amCharts scrollbar to resolve Axe nested-interactive.
+        chart.scrollbarX = null;
+
+        // Enable scroll-like navigation on time without a scrollbar:
+        // - drag to pan horizontally
+        // - mouse wheel / trackpad to zoom on X (time)
+        let cursor = new am4charts.XYCursor();
+        cursor.behavior = "panX";
+        cursor.lineY.disabled = true;
+        cursor.lineX.disabled = true; // optional: hide the crosshair line for a cleaner look
+        chart.cursor = cursor;
+
+        // Trackpad/mouse wheel zoom on time axis
+        chart.mouseWheelBehavior = "zoomX";
+        chart.chartContainer.wheelable = true;
 
         dateAxis.renderer.minGridDistance = 20;
         dateAxis.title.text = timezone;

@@ -106,7 +106,8 @@
     ],
     "post-update-cmd": [
       "Illuminate\\Foundation\\ComposerScripts::postUpdate",
-      "@php artisan boost:update --ansi"
+      "@php artisan boost:update --ansi",
+      "@php artisan vendor:publish --tag=livewire:assets --ansi --force"
     ],
     "dev-post-update-cmd": [
       "@php artisan ide-helper:generate",

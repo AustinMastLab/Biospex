@@ -288,7 +288,8 @@ class ProjectPresenter extends Presenter
     {
         return '<a href="'.route('admin.projects.show', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('View Project').'"><i class="fas fa-eye"></i></a>';
+            title="'.t('View Project').'"
+            aria-label="'.t('View Project').'"><i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -300,7 +301,8 @@ class ProjectPresenter extends Presenter
     {
         return '<a href="'.route('admin.projects.show', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('View Project').'"><i class="fas fa-eye fa-2x"></i></a>';
+            title="'.t('View Project').'"
+            aria-label="'.t('View Project').'"><i class="fas fa-eye fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -339,7 +341,8 @@ class ProjectPresenter extends Presenter
     {
         return '<a href="'.route('admin.projects.edit', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Edit Project').'"><i class="fas fa-edit"></i></a>';
+            title="'.t('Edit Project').'"
+            aria-label="'.t('Edit Project').'"><i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -351,7 +354,8 @@ class ProjectPresenter extends Presenter
     {
         return '<a href="'.route('admin.projects.edit', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Edit Project').'"><i class="fas fa-edit fa-2x"></i></a>';
+            title="'.t('Edit Project').'"
+            aria-label="'.t('Edit Project').'"><i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -363,7 +367,8 @@ class ProjectPresenter extends Presenter
     {
         return '<a href="'.route('admin.projects.clone', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Clone Project').'"><i class="fas fa-clone"></i></a>';
+            title="'.t('Clone Project').'"
+            aria-label="'.t('Clone Project').'"><i class="fas fa-clone" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -375,7 +380,8 @@ class ProjectPresenter extends Presenter
     {
         return '<a href="'.route('admin.projects.clone', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Clone Project').'"><i class="fas fa-clone fa-2x"></i></a>';
+            title="'.t('Clone Project').'"
+            aria-label="'.t('Clone Project').'"><i class="fas fa-clone fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -386,12 +392,13 @@ class ProjectPresenter extends Presenter
     public function projectDeleteIcon()
     {
         return '<a href="'.route('admin.projects.destroy', [$this->model]).'" class="prevent-default"
-            title="'.t('Delete Project').'" 
+            title="'.t('Delete Project').'"
+            aria-label="'.t('Delete Project').'" 
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Project').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt"></i></a>';
+            <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -402,12 +409,13 @@ class ProjectPresenter extends Presenter
     public function projectDeleteIconLrg()
     {
         return '<a href="'.route('admin.projects.destroy', [$this->model]).'" class="prevent-default"
-            title="'.t('Delete Project').'" 
+            title="'.t('Delete Project').'"
+            aria-label="'.t('Delete Project').'" 
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
             data-title="'.t('Delete Project').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
-            <i class="fas fa-trash-alt fa-2x"></i></a>';
+            <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**

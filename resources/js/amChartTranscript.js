@@ -20,26 +20,39 @@ $(function () {
     am4core.options.autoDispose = true;
 
     let buildChart = function (data) {
-            let transcripts = am4core.createFromConfig(data, "transcripts", am4charts.XYChart);
-            let cellSize = 1.5;
-            transcripts.events.on("datavalidated", function (ev) {
-                // Get objects of interest
-                let chart = ev.target;
-                let categoryAxis = chart.yAxes.getIndex(0);
+                let transcripts = am4core.createFromConfig(data, "transcripts", am4charts.XYChart);
 
-                // Calculate how we need to adjust chart height
-                let adjustHeight = chart.data.length * cellSize - categoryAxis.pixelHeight;
+                // Match EventRate behavior: no zoom-out button; enable wheel zoom + pan cursor
+                transcripts.zoomOutButton.disabled = true;
+                transcripts.mouseWheelBehavior = "zoomX";
+                transcripts.chartContainer.wheelable = true;
 
-                // get current chart height
-                let targetHeight = chart.pixelHeight + adjustHeight;
+                if (!transcripts.cursor) {
+                    transcripts.cursor = new am4charts.XYCursor();
+                }
+                transcripts.cursor.behavior = "panX";
+                transcripts.cursor.lineY.disabled = true;
 
-                // Set it on chart's container
-                chart.svgContainer.htmlElement.style.height = targetHeight + "px";
-            });
-            transcripts.events.on('ready', function () {
-                $("#script-modal").modal("hide");
-            });
-        },
+                let cellSize = 1.5;
+                transcripts.events.on("datavalidated", function (ev) {
+                    // Get objects of interest
+                    let chart = ev.target;
+                    let categoryAxis = chart.yAxes.getIndex(0);
+
+                    // Calculate how we need to adjust chart height
+                    let adjustHeight = chart.data.length * cellSize - categoryAxis.pixelHeight;
+
+                    // get current chart height
+                    let targetHeight = chart.pixelHeight + adjustHeight;
+
+                    // Set it on chart's container
+                    chart.svgContainer.htmlElement.style.height = targetHeight + "px";
+                });
+
+                transcripts.events.on('ready', function () {
+                    $("#script-modal").modal("hide");
+                });
+            },
         loadChart = function (url) {
             let ds = new am4core.DataSource();
             ds.url = url;

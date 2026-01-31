@@ -38,10 +38,6 @@
       "disabled": true
     }
   },
-  "scrollbarX": {
-    "type": "Scrollbar",
-    "exportable": false
-  },
   "legend": {
     "labels": {
       "maxWidth": 400,

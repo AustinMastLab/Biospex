@@ -4,7 +4,8 @@
             <fieldset class="row border p-2">
                 <legend class="w-auto">{{ t('Resources') }} {{ $index + 1 }}</legend>
                 <div class="col-3">
-                    <label class="col-form-label">{{ t('Type') }}</label>
+                    <label class="col-form-label"
+                           for="assets[{{ $index }}][type]">{{ t('Type') }}</label>
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <span class="input-group-text btn btn-primary px-3 py-0"
@@ -36,7 +37,8 @@
                     </div>
                 </div>
                 <div class="col-4">
-                    <label class="col-form-label">{{ t('URL or Name') }}</label>
+                    <label class="col-form-label"
+                           for="assets[{{ $index }}][name]">{{ t('URL or Name') }}</label>
                     <input type="text"
                            class="form-control {{ ($errors && isset($errors["assets.$index.name"])) ? 'is-invalid' : '' }}"
                            id="assets[{{ $index }}][name]"
@@ -46,7 +48,8 @@
                     <span class="invalid-feedback">{{ $errors && isset($errors["assets.$index.name"]) ? $errors["assets.$index.name"][0] : '' }}</span>
                 </div>
                 <div class="col-5">
-                    <label class="col-form-label">{{ t('Description') }}</label>
+                    <label class="col-form-label"
+                           for="assets[{{ $index }}][description]">{{ t('Description') }}</label>
                     <input type="text"
                            class="form-control {{ ($errors && isset($errors["assets.$index.description"])) ? 'is-invalid' : '' }}"
                            id="assets[{{ $index }}][description]"
@@ -58,9 +61,9 @@
                 <div class="col-6 mt-2 mx-auto">
                     @livewire('file-upload', [
                         'modelType' => 'ProjectAsset',
-                        'fieldName' => 'download_' . $index, 
-                        'maxSize' => 10240, 
-                        'allowedTypes' => ['txt', 'doc', 'docx', 'csv', 'pdf'], 
+                        'fieldName' => 'download_' . $index,
+                        'maxSize' => 10240,
+                        'allowedTypes' => ['txt', 'doc', 'docx', 'csv', 'pdf'],
                         'projectUuid' => $projectUuid ?? null
                     ], key('file-upload-' . $index))
                 </div>

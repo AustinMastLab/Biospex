@@ -276,13 +276,12 @@ class ProjectPresenter extends Presenter
     {
         return '<a href="'.route('admin.project-subjects.index', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Explore Project Subjects').'"><i class="fas fa-table fa-2x"></i></a>';
+            title="'.t('Explore Project Subjects').'"
+            aria-label="'.t('Explore Project Subjects').'"><i class="fas fa-table fa-2x"></i></a>';
     }
 
     /**
      * Return view project icon.
-     *
-     * @return string
      */
     public function projectShowIcon()
     {
@@ -294,8 +293,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return view project icon.
-     *
-     * @return string
      */
     public function projectShowIconLrg()
     {
@@ -307,35 +304,33 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return return advertise project icon.
-     *
-     * @return string
      */
     public function projectAdvertiseIconLrg()
     {
         return '';
         /* Disabled until Austin wants to bring it back.
         return '<a href="'.route('admin.advertises.index', [$this->model]).'"
-                    data-hover="tooltip"
-                    title="'.t('Download Advertisement Manifest').'"><i class="fas fa-ad fa-2x"></i></a>';
+            data-hover="tooltip"
+            title="'.t('Download Advertisement Manifest').'"
+            aria-label="'.t('Download Advertisement Manifest').'">
+            <i class="fas fa-ad fa-2x" aria-hidden="true"></i>
+        </a>';
         */
     }
 
     /**
      * Return return statistics project icon.
-     *
-     * @return string
      */
     public function projectStatisticsIconLrg()
     {
         return '<a href="'.route('admin.project-stats.index', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Project Statistics').'"><i class="fas fa-chart-bar fa-2x"></i></a>';
+            title="'.t('Project Statistics').'"
+            aria-label="'.t('Project Statistics').'"><i class="fas fa-chart-bar fa-2x"></i></a>';
     }
 
     /**
      * Return return edit project icon.
-     *
-     * @return string
      */
     public function projectEditIcon()
     {
@@ -347,8 +342,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return return edit project icon.
-     *
-     * @return string
      */
     public function projectEditIconLrg()
     {
@@ -360,8 +353,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return return clone project icon.
-     *
-     * @return string
      */
     public function projectCloneIcon()
     {
@@ -373,8 +364,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return return clone project icon.
-     *
-     * @return string
      */
     public function projectCloneIconLrg()
     {
@@ -386,8 +375,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return return delete project icon.
-     *
-     * @return string
      */
     public function projectDeleteIcon()
     {
@@ -403,8 +390,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return return delete project icon.
-     *
-     * @return string
      */
     public function projectDeleteIconLrg()
     {
@@ -420,8 +405,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return return clone project icon.
-     *
-     * @return string
      */
     public function projectImportIconLrg()
     {
@@ -429,14 +412,13 @@ class ProjectPresenter extends Presenter
                     data-url="'.route('admin.imports.index', [$this->model]).'" 
                     data-dismiss="modal" data-toggle="modal" data-target="#global-modal" data-size="modal-lg"
                     data-title="'.t('Import Project Subjects').'"
-                    data-hover="tooltip" title="'.t('Import Project Subjects').'">
+                    data-hover="tooltip" title="'.t('Import Project Subjects').'"
+                    aria-label="'.t('Import Project Subjects').'">
                     <i class="fas fa-file-import fa-2x"></i></a>';
     }
 
     /**
      * Return return ocr lrg icon.
-     *
-     * @return string
      */
     public function projectOcrIconLrg()
     {
@@ -444,6 +426,7 @@ class ProjectPresenter extends Presenter
             $this->model,
         ]).'" class="prevent-default"
             title="'.t('Reprocess Subject OCR').'" 
+            aria-label="'.t('Reprocess Subject OCR').'"
             data-hover="tooltip"        
             data-method="post"
             data-confirm="confirmation"
@@ -453,8 +436,6 @@ class ProjectPresenter extends Presenter
 
     /**
      * Return project link.
-     *
-     * @return string
      */
     public function titleLink()
     {

@@ -62,7 +62,7 @@
                                    title="{{ t("Workflow can only be set once. If a mistake is made, please contact administration via email.") }}">
 
                                 </i></label>
-                            <select name="workflow_id" id="workflow-idd"
+                            <select name="workflow_id" id="workflow-id"
                                     class="form-control custom-select col-sm-5 {{ ($errors->has('workflow_id')) ? 'is-invalid' : '' }}"
                                     {{ $expedition->locked === 1 ? 'disabled' : '' }}
                                     required>

@@ -1026,6 +1026,22 @@ table.dataTable tbody a:focus {
   font-size: 1rem;
 }
 
+/* jqGrid: make table links use brand color (otherwise they inherit Bootstrap's blue) */
+.ui-jqgrid .ui-jqgrid-btable a,
+.ui-jqgrid .ui-jqgrid-pager a {
+  color: $brand-red;
+}
+
+.ui-jqgrid .ui-jqgrid-btable a:hover,
+.ui-jqgrid .ui-jqgrid-btable a:focus,
+.ui-jqgrid .ui-jqgrid-pager a:hover,
+.ui-jqgrid .ui-jqgrid-pager a:focus {
+  color: darken($brand-red, 8%);
+  text-decoration: underline;
+}
+
+// ... existing code ...
+
 .talk-name {
   font-size: .8em;
 }

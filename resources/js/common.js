@@ -24,6 +24,33 @@ $(function () {
         }
     });
 
+    // Prevent Chrome "Blocked aria-hidden..." warnings for Bootbox/Bootstrap:
+    // ensure focus is not inside the modal when it is being hidden.
+    let lastFocusBeforeBootbox = null;
+
+    $(document).on('show.bs.modal', '.bootbox.modal', function () {
+        lastFocusBeforeBootbox = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+    });
+
+    $(document).on('hide.bs.modal', '.bootbox.modal', function () {
+        const modal = this;
+
+        if (modal.contains(document.activeElement)) {
+            // Move focus somewhere safe outside the modal BEFORE Bootstrap applies aria-hidden
+            if (document.activeElement instanceof HTMLElement) {
+                document.activeElement.blur();
+            }
+
+            // Prefer restoring focus to whatever was focused before opening the confirm
+            if (lastFocusBeforeBootbox && document.contains(lastFocusBeforeBootbox)) {
+                lastFocusBeforeBootbox.focus();
+            } else {
+                // Fallback: focus body to ensure nothing inside modal remains focused
+                document.body.focus();
+            }
+        }
+    });
+
     // Fix for Bootstrap modal aria-hidden accessibility issue
     // Enhanced fix to handle all dismissal methods and dynamic content
     let modalObserver;

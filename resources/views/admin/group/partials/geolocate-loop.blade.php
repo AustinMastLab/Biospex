@@ -10,6 +10,7 @@
            data-title="{{ t('Delete GeoLocateExport Form') }}?"
            data-content="{{ t('This will permanently delete the form') }}">
             <i class="fas fa-trash-alt" aria-hidden="true"></i>
+            <span class="sr-only">{{ t('Delete GeoLocateExport Form') }}</span>
         </a>
     </td>
     <td>{{ $form->name }}</td>

@@ -142,24 +142,50 @@
 @push('scripts')
     <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    @if($group->users->isNotEmpty())
-        <script>
-            $('#members-tbl').DataTable();
-        </script>
-    @endif
-    @if($group->projects->isNotEmpty())
-        <script>
-            $('#projects-tbl').DataTable();
-        </script>
-    @endif
-    @if($group->expeditions->isNotEmpty())
-        <script>
-            $('#expeditions-tbl').DataTable();
-        </script>
-    @endif
-    @if($group->geoLocateForms->isNotEmpty())
-        <script>
-            $('#geolocate-tbl').DataTable();
-        </script>
-    @endif
+
+    <script>
+        // used to fix issues with ADA compliance
+        function initGroupDataTable(tableId, searchLabel) {
+            const $table = $('#' + tableId);
+
+            if ($table.length === 0) {
+                return;
+            }
+
+            $table.DataTable({
+                initComplete: function () {
+                    const filterSelector = '#' + tableId + '_filter';
+                    const inputId = tableId + '-search';
+
+                    const $filterInput = $(filterSelector + ' input[type="search"]');
+                    const $filterLabel = $(filterSelector + ' label');
+
+                    $filterInput.attr({
+                        id: inputId,
+                        name: inputId,
+                        autocomplete: 'off',
+                        'aria-label': searchLabel
+                    });
+
+                    $filterLabel.attr('for', inputId);
+                }
+            });
+        }
+
+        @if($group->users->isNotEmpty())
+            initGroupDataTable('members-tbl', '{{ t('Search members') }}');
+        @endif
+
+        @if($group->projects->isNotEmpty())
+            initGroupDataTable('projects-tbl', '{{ t('Search projects') }}');
+        @endif
+
+        @if($group->expeditions->isNotEmpty())
+            initGroupDataTable('expeditions-tbl', '{{ t('Search expeditions') }}');
+        @endif
+
+        @if($group->geoLocateForms->isNotEmpty())
+            initGroupDataTable('geolocate-tbl', '{{ t('Search GeoLocateExport forms') }}');
+        @endif
+    </script>
 @endpush

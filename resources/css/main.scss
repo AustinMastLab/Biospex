@@ -930,19 +930,31 @@ li.nav-btn.show {
 
 /* Global: improve Bootstrap/DataTables pagination contrast (Axe color-contrast) */
 .page-link {
-  color: #0056b3; /* darker than Bootstrap 4 default #007bff */
+  color: $brand-red; /* was #0056b3 */
 }
 
 .page-link:hover,
 .page-link:focus {
-  color: #003d80;
+  color: darken($brand-red, 8%); /* was #003d80 */
 }
 
 .page-item.active .page-link {
-  background-color: #0056b3;
-  border-color: #0056b3;
+  background-color: $brand-red; /* was #0056b3 */
+  border-color: $brand-red;     /* was #0056b3 */
   color: #ffffff;
 }
+
+/* Optional: make DataTables table links use brand color too (this is what Axe is flagging on Group show) */
+table.dataTable tbody a {
+  color: $brand-red;
+}
+
+table.dataTable tbody a:hover,
+table.dataTable tbody a:focus {
+  color: darken($brand-red, 8%);
+  text-decoration: underline;
+}
+
 
 .col-form-label.required:after {
   font-family: 'Work Sans', sans-serif;
@@ -1098,7 +1110,7 @@ div.sort {
 
 .bg-brand-red { background-color: $brand-red; }
 
-/* Admin: lighten striped rows to improve contrast with $brand-red links */
-#projects-tbl.table-striped tbody tr:nth-of-type(odd) {
-  background-color: #fafafa; /* was effectively ~#f2f2f2 */
+/* Apply the same stripe color consistently to all striped tables */
+.table-striped tbody tr:nth-of-type(odd) {
+  background-color: #fafafa;
 }

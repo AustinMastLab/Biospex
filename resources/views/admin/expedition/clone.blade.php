@@ -78,7 +78,7 @@
             <span id="max">{{ t('(%s max. per Expedition)', Config::get('config.expedition_size')) }}</span>:
             <span id="subject-count-html">0</span></h3>
         <div class="col-md-12">
-            <table class="table table-bordered" id="jqGridTable"></table>
+            <table class="table table-bordered" id="jqGridTable" data-a11y-label="{{ t('Select Subjects for Expedition') }}"></table>
         </div>
     </div>
 @endsection

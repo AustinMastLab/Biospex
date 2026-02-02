@@ -12,33 +12,33 @@
         <div id="dwc-upload" class="collapse show" aria-labelledby="dwc-file-import"
              data-parent="#import-accordion">
             <div class="card-body">
-                <form action="{{ route('admin.imports.dwcfile') }}"
-                      method="post" role="form" class="form-horizontal" id="form-dwc-file"
-                      enctype="multipart/form-data">
-                    @csrf
-                    <input type="hidden" name="project_id" value="{{ $project->id }}">
-                    <div class="mt-2 mb-4">
-                        <a href="#" class="btn btn-outline-primary collapsed prevent-default"
-                           data-toggle="collapse" data-target="#dwc-file-instruction"
-                           aria-expanded="true"
-                           aria-controls="dwc-file-instruction">{{ t('Instructions') }}</a>
-                        <span id="dwc-file-instruction" class="collapse">
-                                            {{ t('Only zipped Darwin Core files are accepted.') }}
-                                            <a href="{{ '/darwin-core-example.zip' }}"
-                                               class="link">{{ t('Download Example DWC File.') }}</a>
-                                        </span>
-                    </div>
-                    <div class="custom-file">
-                        <label class="custom-file-label"
-                               for="customFile">{{ t('Choose file...') }}</label>
-                        <input type="file" name="dwc-file" class="custom-file-input" id="dwc-file" accept=".zip"
-                               required>
-                    </div>
-                    <div class="text-center mt-4">
-                        <button type="submit"
-                                class="btn btn-primary pl-4 pr-4 text-uppercase">{{ t('Import') }}</button>
-                    </div>
-                </form>
+                    <form action="{{ route('admin.imports.dwcfile') }}"
+                          method="post" role="form" class="form-horizontal" id="form-dwc-file"
+                          enctype="multipart/form-data">
+                        @csrf
+                        <input type="hidden" name="project_id" value="{{ $project->id }}">
+                        <div class="mt-2 mb-4">
+                            <a href="#" class="btn btn-outline-primary collapsed prevent-default"
+                               data-toggle="collapse" data-target="#dwc-file-instruction"
+                               aria-expanded="true"
+                               aria-controls="dwc-file-instruction">{{ t('Instructions') }}</a>
+                            <span id="dwc-file-instruction" class="collapse">
+                                                {{ t('Only zipped Darwin Core files are accepted.') }}
+                                                <a href="{{ '/darwin-core-example.zip' }}"
+                                                   class="link">{{ t('Download Example DWC File.') }}</a>
+                                            </span>
+                        </div>
+                        <div class="custom-file">
+                            <label class="custom-file-label"
+                                   for="dwc-file">{{ t('Choose file...') }}</label>
+                            <input type="file" name="dwc-file" class="custom-file-input" id="dwc-file" accept=".zip"
+                                   required>
+                        </div>
+                        <div class="text-center mt-4">
+                            <button type="submit"
+                                    class="btn btn-primary pl-4 pr-4 text-uppercase">{{ t('Import') }}</button>
+                        </div>
+                    </form>
             </div>
         </div>
     </div>

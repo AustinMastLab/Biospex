@@ -207,6 +207,31 @@ $(function () {
                     }
                 });
             },
+            applyJqGridA11yFixes = function () {
+                // Fix axe: aria-required-children, aria-required-parent, select-name
+                const label = ($grid.data('a11y-label') || document.title || 'Data table').toString().trim();
+
+                const $gview = $('#gview_jqGridTable');
+                if ($gview.length) {
+                    // jqGrid uses role="grid" but its internal structure doesn't satisfy required children roles
+                    $gview.attr('role', 'region');
+                    $gview.attr('aria-label', label);
+                    $gview.removeAttr('aria-multiselectable');
+                }
+
+                // jqGrid header divs have role="columnheader" but aren't inside required role="row"
+                $('[id^="jqgh_jqGridTable_"]').removeAttr('role');
+
+                // filterToolbar selects need an accessible name
+                $('select[id^="gs_jqGridTable_"]').each(function () {
+                    const $el = $(this);
+                    if (($el.attr('aria-label') || '').trim()) return;
+
+                    const raw = ($el.attr('name') || $el.attr('id') || 'filter').toString();
+                    const pretty = raw.replace(/^gs_jqGridTable_/, '').replace(/_/g, ' ').trim();
+                    $el.attr('aria-label', `Filter ${pretty}`);
+                });
+            },
             firstLoad = true;
 
         myColumnsState = restoreColumnState(cm);
@@ -262,15 +287,10 @@ $(function () {
             },
             beforeSelectRow: function (rowid, e) {
                 // Prevent row selection if clicking on the OCR cell
-                // Check if the target or its parent has the class 'ocr-clickable'
-                // OR check the column index if you know it via 'iCol' from onCellSelect (but beforeSelectRow runs first usually)
-
-                // A robust way: check if the clicked element is inside a cell we want to ignore
                 const $td = $(e.target).closest('td');
-                // Assuming your OCR column has a specific class like 'ocr-clickable'
-                // or you can check the column name from aria-describedby attribute
-                return !($td.hasClass('ocr-clickable') || $td.attr('aria-describedby').endsWith('_ocr_text'));
+                const desc = $td.attr('aria-describedby') || '';
 
+                return !($td.hasClass('ocr-clickable') || desc.endsWith('_ocr_text'));
             },
             loadComplete: function () {
                 if (firstLoad) {
@@ -282,6 +302,8 @@ $(function () {
                 saveColumnState.call($(this), this.p.remapColumns);
                 setSelected();
                 setSelectedCount();
+
+                applyJqGridA11yFixes();
             },
             onCellSelect: function (rowid, iCol, cellcontent, e) {
                 const $td = $(e.target).closest('td');
@@ -325,6 +347,8 @@ $(function () {
         })
         .jqGrid("filterToolbar")
         .jqGrid("gridResize");
+
+        applyJqGridA11yFixes();
 
         $('#gridForm').submit(function () {
             if (selected.length > maxCount) {

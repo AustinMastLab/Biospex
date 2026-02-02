@@ -31,9 +31,11 @@ a {
   transition: color .25s ease-out, background-color .25s ease-out, border-color .25s ease-out;
 }
 
-.color-action, a {
-  color: $brand-red;
+/* Ensure "call-to-action" elements stay brand red (including FontAwesome <i> icons) */
+.color-action {
+  color: $brand-red !important;
 }
+
 
 a:hover {
   text-decoration: none;
@@ -641,7 +643,7 @@ h2.home-header-cta {
 
 .import.btn {
   font-weight: bold;
-  color: #e83f29;
+  color: $brand-red;
   background-color: transparent;
   text-decoration: none;
   white-space: normal !important;
@@ -926,6 +928,21 @@ li.nav-btn.show {
   font-size: .8rem;
 }
 
+/* Global: improve Bootstrap/DataTables pagination contrast (Axe color-contrast) */
+.page-link {
+  color: #0056b3; /* darker than Bootstrap 4 default #007bff */
+}
+
+.page-link:hover,
+.page-link:focus {
+  color: #003d80;
+}
+
+.page-item.active .page-link {
+  background-color: #0056b3;
+  border-color: #0056b3;
+  color: #ffffff;
+}
 
 .col-form-label.required:after {
   font-family: 'Work Sans', sans-serif;

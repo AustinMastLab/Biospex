@@ -16,6 +16,37 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+function renderA11yTableFromTranscriptions(containerId, data) {
+    const host = document.getElementById(containerId);
+    if (!host) return;
+
+    if (!Array.isArray(data) || data.length === 0) {
+        host.innerHTML = "";
+        return;
+    }
+
+    const rowsHtml = data.map((row) => {
+        const digitizations = row?.transcriptions ?? "";
+        const participants = row?.transcribers ?? "";
+        return `<tr><td>${String(digitizations)}</td><td>${String(participants)}</td></tr>`;
+    }).join("");
+
+    host.innerHTML = `
+        <table>
+            <caption>Digitizations and number of participants</caption>
+            <thead>
+                <tr>
+                    <th scope="col">Digitizations</th>
+                    <th scope="col">Number of participants</th>
+                </tr>
+            </thead>
+            <tbody>
+                ${rowsHtml}
+            </tbody>
+        </table>
+    `;
+}
+
 let stats = am4core.createFromConfig(
     {
         "xAxes": [{
@@ -46,8 +77,19 @@ let stats = am4core.createFromConfig(
             },
             "calculateTotals": true
         }],
+
+        // Enable mouse wheel / trackpad zoom on X (horizontal axis)
+        "mouseWheelBehavior": "zoomX",
+
+        // Ensure wheel events are captured by the chart container
+        "chartContainer": {
+            "wheelable": true
+        },
+
+        // Drag to pan horizontally (instead of needing a scrollbar)
         "cursor": {
             "type": "XYCursor",
+            "behavior": "panX",
             "lineX": {
                 "stroke": "#8F3985",
                 "strokeWidth": 4,
@@ -58,9 +100,10 @@ let stats = am4core.createFromConfig(
                 "disabled": true
             }
         },
-        "scrollbarX": {
-            "type": "Scrollbar"
-        },
+
+        // Keep scrollbar removed to avoid Axe nested-interactive
+        "scrollbarX": null,
+
         "series": [{
             "type": "ColumnSeries",
             "dataFields": {
@@ -81,4 +124,34 @@ let stats = am4core.createFromConfig(
             "stacked": true
         }],
         "data": JSON.parse(Laravel.transcriptions),
-    }, "statDiv", am4charts.XYChart);
+    }, "statDiv", am4charts.XYChart
+);
+
+// Use the same data the chart uses
+const statData = JSON.parse(Laravel.transcriptions);
+renderA11yTableFromTranscriptions("statDiv-a11y-table", statData);
+
+function hardenChartSvg(containerId) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+
+    const svg = container.querySelector("svg");
+    if (!svg) return;
+
+    // Keep screen readers out of amCharts' SVG internals (use HTML content for accessibility instead)
+    svg.setAttribute("aria-hidden", "true");
+    svg.setAttribute("focusable", "false");
+
+    // Remove invalid role patterns that trigger aria-required-parent
+    svg.querySelectorAll('[role="listitem"]').forEach((el) => el.removeAttribute("role"));
+}
+
+// Run after render + after updates/resizes (amCharts v4 re-renders frequently)
+if (stats && stats.events) {
+    const run = () => hardenChartSvg("statDiv");
+
+    stats.events.on("ready", run);
+    stats.events.on("validated", run);
+    stats.events.on("datavalidated", run);
+    stats.events.on("sizechanged", run);
+}

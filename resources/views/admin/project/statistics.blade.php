@@ -46,6 +46,13 @@
                 @if(isset($transcriptions))
                     <div class="row card-body">
                         <div id="statDiv" style="width: 100%; height: 600px; color: #000000; font-size: 0.8em"></div>
+
+                        <p id="statDiv-desc" class="sr-only">
+                            Bar chart showing digitizations and the number of participants per digitization count.
+                            A table with the same values follows.
+                        </p>
+
+                        <div id="statDiv-a11y-table" class="sr-only" aria-describedby="statDiv-desc"></div>
                     </div>
                 @else
                     <p class="text-center">{{ t('No digitizations exist.') }}</p>
@@ -59,10 +66,20 @@
         <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
         <script>
-            $('#transcribers-tbl').DataTable();
-        </script>
-    @endif
-    @if(isset($transcriptions))
-        <script src="{{ asset('js/amChartStat.min.js')}}"></script>
-    @endif
-@endpush
+            const table = $('#transcribers-tbl').DataTable({
+                    initComplete: function () {
+                        const $filterInput = $('#transcribers-tbl_filter input[type="search"]');
+
+                        $filterInput.attr({
+                            id: 'transcribers-tbl-search',
+                            name: 'transcribers-tbl-search',
+                            autocomplete: 'off'
+                        });
+                    }
+                });
+            </script>
+        @endif
+        @if(isset($transcriptions))
+            <script src="{{ asset('js/amChartStat.min.js')}}"></script>
+        @endif
+    @endpush

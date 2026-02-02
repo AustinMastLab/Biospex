@@ -14,8 +14,7 @@
         </h3>
 
         <div class="col-md-12">
-            <table class="table table-bordered" id="jqGridTable"></table>
+            <table class="table table-bordered" id="jqGridTable" data-a11y-label="{{ t('Expedition Subjects') }}"></table>
         </div>
     </div>
 @endsection
-

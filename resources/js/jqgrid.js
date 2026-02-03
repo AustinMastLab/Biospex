@@ -231,6 +231,31 @@ $(function () {
                     const pretty = raw.replace(/^gs_jqGridTable_/, '').replace(/_/g, ' ').trim();
                     $el.attr('aria-label', `Filter ${pretty}`);
                 });
+
+                // Give multiselect checkboxes an accessible name (Axe: label)
+                const $selectAll = $('#cb_jqGridTable');
+                if ($selectAll.length) {
+                    const hasName =
+                        (($selectAll.attr('aria-label') || '').trim()) ||
+                        (($selectAll.attr('aria-labelledby') || '').trim()) ||
+                        (($selectAll.attr('title') || '').trim());
+                    if (!hasName) {
+                        $selectAll.attr('aria-label', `Select all rows in ${label}`);
+                    }
+                }
+
+                $('input[type="checkbox"][id^="jqg_jqGridTable_"]').each(function () {
+                    const $cb = $(this);
+
+                    const hasName =
+                        (($cb.attr('aria-label') || '').trim()) ||
+                        (($cb.attr('aria-labelledby') || '').trim()) ||
+                        (($cb.attr('title') || '').trim());
+                    if (hasName) return;
+
+                    const rowId = $cb.closest('tr.jqgrow').attr('id') || $cb.attr('id') || 'row';
+                    $cb.attr('aria-label', `Select row ${rowId} in ${label}`);
+                });
             },
             firstLoad = true;
 
@@ -315,38 +340,38 @@ $(function () {
                 }
             }
         })
-        .jqGrid("navGrid", {add: false, edit: false, del: false, search: true}, {}, {}, {}, {
-            afterShowSearch: function ($form) {
-                $form.closest(".ui-jqdialog").position({
-                    of: window, // or any other element
-                    my: "center center",
-                    at: "center center"
-                });
-            },
-            width: 700,
-            multipleSearch: true,
-            recreateFilter: true
-        })
-        .jqGrid("navButtonAdd", {
-            caption: '',
-            buttonicon: "fas fa-columns",
-            title: "Choose columns",
-            onClickButton: columnChooser
-        })
-        .jqGrid("navButtonAdd", {
-            caption: '',
-            buttonicon: "fas fa-eraser",
-            title: "Clear saved grid's settings",
-            onClickButton: eraseSettings
-        })
-        .jqGrid("navButtonAdd", {
-            caption: '',
-            buttonicon: "fas fa-file-export",
-            title: "Export to CSV",
-            onClickButton: exportSettings
-        })
-        .jqGrid("filterToolbar")
-        .jqGrid("gridResize");
+            .jqGrid("navGrid", {add: false, edit: false, del: false, search: true}, {}, {}, {}, {
+                afterShowSearch: function ($form) {
+                    $form.closest(".ui-jqdialog").position({
+                        of: window, // or any other element
+                        my: "center center",
+                        at: "center center"
+                    });
+                },
+                width: 700,
+                multipleSearch: true,
+                recreateFilter: true
+            })
+            .jqGrid("navButtonAdd", {
+                caption: '',
+                buttonicon: "fas fa-columns",
+                title: "Choose columns",
+                onClickButton: columnChooser
+            })
+            .jqGrid("navButtonAdd", {
+                caption: '',
+                buttonicon: "fas fa-eraser",
+                title: "Clear saved grid's settings",
+                onClickButton: eraseSettings
+            })
+            .jqGrid("navButtonAdd", {
+                caption: '',
+                buttonicon: "fas fa-file-export",
+                title: "Export to CSV",
+                onClickButton: exportSettings
+            })
+            .jqGrid("filterToolbar")
+            .jqGrid("gridResize");
 
         applyJqGridA11yFixes();
 

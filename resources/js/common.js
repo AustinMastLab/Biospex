@@ -25,7 +25,7 @@ $(function () {
     });
 
     // Prevent Chrome "Blocked aria-hidden..." warnings for Bootbox/Bootstrap:
-    // ensure focus is not inside the modal when it is being hidden.
+    // Ensure focus is not inside the modal when it is being hidden, then restore focus.
     let lastFocusBeforeBootbox = null;
 
     $(document).on('show.bs.modal', '.bootbox.modal', function () {
@@ -35,140 +35,22 @@ $(function () {
     $(document).on('hide.bs.modal', '.bootbox.modal', function () {
         const modal = this;
 
-        if (modal.contains(document.activeElement)) {
-            // Move focus somewhere safe outside the modal BEFORE Bootstrap applies aria-hidden
-            if (document.activeElement instanceof HTMLElement) {
-                document.activeElement.blur();
-            }
-
-            // Prefer restoring focus to whatever was focused before opening the confirm
-            if (lastFocusBeforeBootbox && document.contains(lastFocusBeforeBootbox)) {
-                lastFocusBeforeBootbox.focus();
-            } else {
-                // Fallback: focus body to ensure nothing inside modal remains focused
-                document.body.focus();
-            }
+        // If focus is currently inside the modal, move it out before aria-hidden is applied.
+        if (modal.contains(document.activeElement) && document.activeElement instanceof HTMLElement) {
+            document.activeElement.blur();
         }
     });
 
-    // Fix for Bootstrap modal aria-hidden accessibility issue
-    // Enhanced fix to handle all dismissal methods and dynamic content
-    let modalObserver;
-
-    // Aggressive prevention: Override setAttribute to prevent aria-hidden on modals with focus
-    const originalSetAttribute = Element.prototype.setAttribute;
-    Element.prototype.setAttribute = function (name, value) {
-        if (name === 'aria-hidden' && value === 'true' && this.classList.contains('modal')) {
-            const focusedElement = this.querySelector(':focus');
-            const modalHasFocus = this.contains(document.activeElement);
-
-            if (focusedElement || modalHasFocus) {
-                return; // Block the setAttribute call completely
-            }
+    $(document).on('hidden.bs.modal', '.bootbox.modal', function () {
+        // After the modal is fully hidden, restore focus to what opened it (best a11y).
+        if (lastFocusBeforeBootbox && document.contains(lastFocusBeforeBootbox)) {
+            lastFocusBeforeBootbox.focus();
         }
-        return originalSetAttribute.call(this, name, value);
-    };
-
-    // Initialize MutationObserver for comprehensive modal monitoring
-    if (window.MutationObserver) {
-        modalObserver = new MutationObserver(function (mutations) {
-            mutations.forEach(function (mutation) {
-                if (mutation.type === 'attributes' && mutation.attributeName === 'aria-hidden') {
-                    const modal = mutation.target;
-                    if (modal.classList.contains('modal') && modal.getAttribute('aria-hidden') === 'true') {
-                        const focusedElement = modal.querySelector(':focus');
-                        const modalHasFocus = modal.contains(document.activeElement);
-
-                        if (focusedElement || modalHasFocus) {
-                            // Remove aria-hidden immediately if modal contains focused elements
-                            modal.removeAttribute('aria-hidden');
-                        }
-                    }
-                }
-            });
-        });
-
-        // Function to start observing a modal
-        function observeModal(modal) {
-            modalObserver.observe(modal, {
-                attributes: true,
-                attributeFilter: ['aria-hidden']
-            });
-        }
-
-        // Observe existing modals
-        document.addEventListener('DOMContentLoaded', function () {
-            document.querySelectorAll('.modal').forEach(observeModal);
-        });
-
-        // Also observe modals that might be created dynamically
-        $(document).ready(function () {
-            $('.modal').each(function () {
-                observeModal(this);
-            });
-        });
-    }
-
-    // Multi-layer approach: handle different dismissal timing scenarios
-    $(document).on('hide.bs.modal', '.modal', function () {
-        const modal = this;
-
-        // Check immediately for focused elements
-        const checkAndRemoveAriaHidden = () => {
-            const focusedElement = modal.querySelector(':focus');
-            const ariaHidden = modal.getAttribute('aria-hidden');
-
-            if (focusedElement && ariaHidden === 'true') {
-                modal.removeAttribute('aria-hidden');
-            }
-        };
-
-        // Multiple timing checks to handle different dismissal scenarios
-        checkAndRemoveAriaHidden(); // Immediate check
-        setTimeout(checkAndRemoveAriaHidden, 0); // Next tick
-        setTimeout(checkAndRemoveAriaHidden, 1); // Slight delay for backdrop clicks
-        setTimeout(checkAndRemoveAriaHidden, 10); // Additional safety net
-        setTimeout(checkAndRemoveAriaHidden, 50); // Extended delay for backdrop clicks
-        setTimeout(checkAndRemoveAriaHidden, 100); // Additional safety for slower systems
-        setTimeout(checkAndRemoveAriaHidden, 200); // Even longer delay for backdrop clicks
-        setTimeout(checkAndRemoveAriaHidden, 500); // Maximum delay for slow systems
+        lastFocusBeforeBootbox = null;
     });
 
-    // Additional event handler specifically for backdrop clicks
-    // Bootstrap triggers these events in different order for backdrop vs button clicks
-    $(document).on('hidden.bs.modal', '.modal', function () {
-        const modal = this;
-
-        // Final check after modal is fully hidden
-        const finalCheck = () => {
-            const ariaHidden = modal.getAttribute('aria-hidden');
-            const focusedElement = modal.querySelector(':focus');
-
-            if (ariaHidden === 'true') {
-                if (focusedElement) {
-                    modal.removeAttribute('aria-hidden');
-                } else {
-                    // Check if modal itself or any descendant might still have focus or be focusable
-                    const modalHasFocus = modal.contains(document.activeElement);
-                    const focusableElements = modal.querySelectorAll('input, textarea, select, button, a[href], [tabindex]:not([tabindex="-1"])');
-
-                    if (modalHasFocus || focusableElements.length > 0) {
-                        modal.removeAttribute('aria-hidden');
-                    }
-                }
-            }
-        };
-
-        // Check immediately and with extended delays to catch backdrop dismissals
-        finalCheck();
-        setTimeout(finalCheck, 0);
-        setTimeout(finalCheck, 1);
-        setTimeout(finalCheck, 10);
-        setTimeout(finalCheck, 50);
-        setTimeout(finalCheck, 100);
-        setTimeout(finalCheck, 200);
-        setTimeout(finalCheck, 500);
-    });
+    // Remove the global aria-hidden interception / mutation-observer approach.
+    // It can introduce hard-to-debug side effects and doesn't solve the root issue (focus).
 
     // Set prevent default for links
     $(document).on('click', '.prevent-default', function (e) {
@@ -185,25 +67,25 @@ $(function () {
         $(this).toggleClass("is-active");
     });
 
-        const flashCookie = document.cookie.split('; ').find(row => row.startsWith('app_flash='));
-        if (flashCookie) {
-            try {
-                const rawValue = decodeURIComponent(flashCookie.split('=')[1]);
-                const data = JSON.parse(rawValue);
-            
-                if (data && data.message) {
-                    notify(data.icon, data.message, data.type);
-                }
-            
-                // Force delete by matching the path and ensuring no domain conflict
-                document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-                // Extra safety: Try to delete the dotted domain version too if it exists
-                document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname + ";";
-                document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname + ";";
-            } catch (e) {
-                console.error("Flash cookie error", e);
+    const flashCookie = document.cookie.split('; ').find(row => row.startsWith('app_flash='));
+    if (flashCookie) {
+        try {
+            const rawValue = decodeURIComponent(flashCookie.split('=')[1]);
+            const data = JSON.parse(rawValue);
+
+            if (data && data.message) {
+                notify(data.icon, data.message, data.type);
             }
+
+            // Force delete by matching the path and ensuring no domain conflict
+            document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+            // Extra safety: Try to delete the dotted domain version too if it exists
+            document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname + ";";
+            document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname + ";";
+        } catch (e) {
+            console.error("Flash cookie error", e);
         }
+    }
 
     if (Laravel.flashMessage && Laravel.flashMessage.length) {
         notify(Laravel.flashIcon, Laravel.flashMessage, Laravel.flashType);

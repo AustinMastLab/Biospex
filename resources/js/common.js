@@ -16,6 +16,9 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Ensure the global Laravel object exists on every page that loads this bundle.
+window.Laravel = window.Laravel || {};
+
 $(function () {
     // Add token to any ajax requests.
     $.ajaxSetup({

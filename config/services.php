@@ -74,7 +74,6 @@ return [
             'export_zip_trigger' => "{$queuePrefix}-export-zip-trigger",
             'reconcile_trigger' => "{$queuePrefix}-reconcile-trigger",
             'reconcile_update' => "{$queuePrefix}-reconcile-update",
-            'ocr_trigger' => "{$queuePrefix}-ocr-trigger",
             'ocr_update' => "{$queuePrefix}-ocr-update",
         ],
 

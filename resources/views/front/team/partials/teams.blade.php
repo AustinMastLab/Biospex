@@ -8,9 +8,12 @@
 
         <div class="card-footer">
             <div class="d-flex align-items-start justify-content-between mt-4 mb-3">
-                <a href="mailto:{!! $team->email !!}" aria-label="{{ t('Email') }}">
+                <a
+                    href="mailto:{{ $team->email }}"
+                    aria-label="{{ t('Email') }} {{ $team->present()->full_name }}"
+                >
                     <i class="fas fa-envelope fa-2x" aria-hidden="true"></i>
-                    <span class="d-none text d-sm-inline"></span>
+                    <span class="sr-only">{{ t('Email') }} {{ $team->present()->full_name }}</span>
                 </a>
             </div>
         </div>

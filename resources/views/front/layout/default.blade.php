@@ -19,15 +19,18 @@
 @endproduction
 </head>
 <body>
+<a href="#main-content" class="skip-link">
+    {{ t('Skip to main content') }}
+</a>
 @yield('header')
-<div class="container mb-4">
+<main id="main-content" class="container mb-4" tabindex="-1">
     @yield('content')
     @include('common.wedigbio-progress-modal')
     @include('common.wedigbio-rate-modal')
     @if(Auth::check())
         @include('common.process-modal')
     @endif
-</div>
+</main>
 <!--
 sub footer -->
 <aside style="background-color: #ededed;">

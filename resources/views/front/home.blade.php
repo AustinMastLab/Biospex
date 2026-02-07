@@ -2,7 +2,7 @@
 
 {{-- Web site Title --}}
 @section('title')
-{{ t('Home') }}
+    {{ t('Home') }}
 @stop
 
 @push('styles')
@@ -19,11 +19,10 @@
         </nav>
         <div class="container text-center">
             <div class="row py-5">
-                <div class="col-12" data-aos="fade-right" data-aos-easing="ease-in" data-aos-duration="2000">
+                <div class="col-12">
                     <h1 class="text-white align-middle home-banner-tag">{{ t('Provision, advertise, and lead expeditions.') }}
                         <br>
-                        <a href="#learn-more" data-scroll class="btn btn-primary mt-4" data-aos="fade-right"
-                           data-aos-easing="ease-out" data-aos-duration="3000"
+                        <a href="#learn-more" data-scroll class="btn btn-primary mt-4"
                            aria-label="{{ t('Learn more about BIOSPEX') }}">{{ t('Learn More') }}</a>
                     </h1>
 
@@ -57,12 +56,36 @@
                     <h2>The Process<br>
                         <span class="smallertext">{{ t('Specimen digitization is easy as 123') }}</span></h2>
                     <ul id="external-carousel-btns" class="list-inline">
-                        <li data-target="#processCarousel" data-slide-to="0"
-                            class="carousel-li-0 active list-inline-item">1
+                        <li
+                                data-target="#processCarousel"
+                                data-slide-to="0"
+                                class="carousel-li-0 active list-inline-item"
+                                role="button"
+                                tabindex="0"
+                                aria-controls="processCarousel"
+                                aria-current="true"
+                                aria-label="{{ t('Go to process step 1') }}"
+                        >1
                         </li>
-                        <li data-target="#processCarousel" data-slide-to="1" class="carousel-li-1 list-inline-item">2
+                        <li
+                                data-target="#processCarousel"
+                                data-slide-to="1"
+                                class="carousel-li-1 list-inline-item"
+                                role="button"
+                                tabindex="0"
+                                aria-controls="processCarousel"
+                                aria-label="{{ t('Go to process step 2') }}"
+                        >2
                         </li>
-                        <li data-target="#processCarousel" data-slide-to="2" class="carousel-li-2 list-inline-item">3
+                        <li
+                                data-target="#processCarousel"
+                                data-slide-to="2"
+                                class="carousel-li-2 list-inline-item"
+                                role="button"
+                                tabindex="0"
+                                aria-controls="processCarousel"
+                                aria-label="{{ t('Go to process step 3') }}"
+                        >3
                         </li>
                     </ul>
                 </div>
@@ -73,10 +96,10 @@
                             <div class="circle-slider p-5">
                                 <h3 class="text-center text-uppercase">{{ t('Project') }}</h3>
                                 <p>{{ t('Establish a project to create data about biodiversity research specimens that have been
-                                digitally imaged and for which you have a compelling use.  As you circumscribe the project,
-                                look for ways to align its goals with the interests of existing organizations (e.g.,
-                                enthusiast groups or educators).  A public page is minted for each project, at which
-                                visualizations and useful resources for participants (e.g., lesson plans) can be shared.') }}</p>
+                                    digitally imaged and for which you have a compelling use.  As you circumscribe the project,
+                                    look for ways to align its goals with the interests of existing organizations (e.g.,
+                                    enthusiast groups or educators).  A public page is minted for each project, at which
+                                    visualizations and useful resources for participants (e.g., lesson plans) can be shared.') }}</p>
                             </div>
                         </div>
                         <div class="carousel-item" style="background-image: url(/images/slider/slider2.png);">
@@ -115,47 +138,45 @@
                     <h2 class="home-header-cta">{{ t('A Project') }}</h2>
 
                     @if($expedition)
-                    <div class="card mb-5 px-4 box-shadow" data-aos="fade-down" data-aos-easing="ease-in"
-                         data-aos-duration="2000" data-aos-once="true">
-                        <h2 class="text-center pt-4">{{ $expedition->project->title }}</h2>
-                        <hr>
-                        <div class="row card-body pb-2">
-                            <div class="col-12">
-                                <div class="col-4 float-right">
-                                    <img class="img-fluid"
-                                         src="{{ $expedition->project->present()->show_logo }}"
-                                         alt="{{ $expedition->project->present()->logo_alt }}">
+                        <div class="card mb-5 px-4 box-shadow">
+                            <h2 class="text-center pt-4">{{ $expedition->project->title }}</h2>
+                            <hr>
+                            <div class="row card-body pb-2">
+                                <div class="col-12">
+                                    <div class="col-4 float-right">
+                                        <img class="img-fluid"
+                                             src="{{ $expedition->project->present()->show_logo }}"
+                                             alt="{{ $expedition->project->present()->logo_alt }}">
+                                    </div>
+                                    <p>{{ $expedition->project->description_short }}</p>
                                 </div>
-                                <p>{{ $expedition->project->description_short }}</p>
+
+                                <div class="col-12">
+                                    <ul class="text">
+                                        <li class="mt-3">{{ $expedition->project->expeditions_count }} {{ t('Expeditions') }}</li>
+                                        <li>{{ $expedition->project->expedition_stats_sum_transcriptions_completed }} {{ t('Digitizations') }}</li>
+                                        <li>{{ get_project_transcriber_count($expedition->project->id) }} {{ t('Participants') }}</li>
+                                    </ul>
+                                </div>
                             </div>
 
-                            <div class="col-12">
-                                <ul class="text">
-                                    <li class="mt-3">{{ $expedition->project->expeditions_count }} {{ t('Expeditions') }}</li>
-                                    <li>{{ $expedition->project->expedition_stats_sum_transcriptions_completed }} {{ t('Digitizations') }}</li>
-                                    <li>{{ get_project_transcriber_count($expedition->project->id) }} {{ t('Participants') }}</li>
-                                </ul>
+                            <div class="card-footer pb-4">
+                                <div class="d-flex align-items-start justify-content-between mt-4">
+                                    {!! $expedition->project->present()->project_page_icon_lrg !!}
+                                    {!! $expedition->project->present()->project_events_icon_lrg !!}
+                                    {!! $expedition->project->present()->organization_icon_lrg !!}
+                                    {!! $expedition->project->present()->twitter_icon_lrg !!}
+                                    {!! $expedition->project->present()->facebook_icon_lrg !!}
+                                    {!! $expedition->project->present()->blog_icon_lrg !!}
+                                    {!! $expedition->project->present()->contact_email_icon_lrg !!}
+                                </div>
                             </div>
                         </div>
-
-                        <div class="card-footer pb-4">
-                            <div class="d-flex align-items-start justify-content-between mt-4">
-                                {!! $expedition->project->present()->project_page_icon_lrg !!}
-                                {!! $expedition->project->present()->project_events_icon_lrg !!}
-                                {!! $expedition->project->present()->organization_icon_lrg !!}
-                                {!! $expedition->project->present()->twitter_icon_lrg !!}
-                                {!! $expedition->project->present()->facebook_icon_lrg !!}
-                                {!! $expedition->project->present()->blog_icon_lrg !!}
-                                {!! $expedition->project->present()->contact_email_icon_lrg !!}
-                            </div>
-                        </div>
-                    </div>
                     @endif
 
                     <h2>{{ t('The Progress') }}</h2>
 
-                    <div class="card mb-4 px-4 box-shadow" data-aos="fade-right" data-aos-easing="ease-in"
-                         data-aos-duration="2000" data-aos-once="true">
+                    <div class="card mb-4 px-4 box-shadow">
                         <h2 class="text-center pt-4">{{ t('BIOSPEX Stats') }}</h2>
                         <hr>
                         <div class="row card-body pb-5">
@@ -172,42 +193,41 @@
                 <div class="col-sm-6 p-1 p-md-5 tutorial-right-section">
                     <h2 class="home-header-cta flex-nowrap">An Expedition</h2>
                     @if($expedition)
-                    <div class="card black mb-4 box-shadow" data-aos="fade-up" data-aos-duration="1500"
-                         data-aos-anchor-placement="bottom-bottom" data-aos-once="true">
-                        <div class="card-top m-0 p-0">
-                            <img class="card-img-top" style="max-height: 100%"
-                                 src="{{ $expedition->present()->show_medium_logo }}"
-                                 alt="{{ $expedition->present()->logo_alt }}">
-                            <div class="card-img-overlay">
-                                <h2 class="card-title text-center pt-4">{{ $expedition->title }}</h2>
-                                <i class="card-info fas fa-info-circle fa-2x float-right"
-                                   style="top: 20rem; left: 31.25rem;"></i>
-                                <p>{{ $expedition->description }}</p>
+                        <div class="card black mb-4 box-shadow">
+                            <div class="card-top m-0 p-0">
+                                <img class="card-img-top" style="max-height: 100%"
+                                     src="{{ $expedition->present()->show_medium_logo }}"
+                                     alt="{{ $expedition->present()->logo_alt }}">
+                                <div class="card-img-overlay">
+                                    <h2 class="card-title text-center pt-4">{{ $expedition->title }}</h2>
+                                    <i class="card-info fas fa-info-circle fa-2x float-right"
+                                       style="top: 20rem; left: 31.25rem;"></i>
+                                    <p>{{ $expedition->description }}</p>
+                                </div>
                             </div>
-                        </div>
 
-                        <div class="card-body white"
-                             style="border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-                            <div class="d-flex justify-content-between">
-                                <div class="p-2">
-                                    <p>{{ $expedition->stat->local_transcriptions_completed }} {{ t('Digitizations') }}</p>
+                            <div class="card-body white"
+                                 style="border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
+                                <div class="d-flex justify-content-between">
+                                    <div class="p-2">
+                                        <p>{{ $expedition->stat->local_transcriptions_completed }} {{ t('Digitizations') }}</p>
+                                    </div>
+                                    <div class="p-2">
+                                        <p>{{ $expedition->stat->transcriber_count }} {{ t('Participants') }}</p>
+                                    </div>
+                                    <div class="p-2"><p>{{ $expedition->stat->percent_completed }}
+                                            % {{ t('Completed') }}</p>
+                                    </div>
                                 </div>
-                                <div class="p-2">
-                                    <p>{{ $expedition->stat->transcriber_count }} {{ t('Participants') }}</p>
+                                <hr>
+                                <div class="d-flex align-items-start justify-content-between mt-4 mx-auto">
+                                    {!! $expedition->project->present()->project_page_icon_lrg !!}
+                                    @isset($expedition->panoptesProject)
+                                        {!! $expedition->panoptesProject->present()->url_lrg !!}
+                                    @endisset
                                 </div>
-                                <div class="p-2"><p>{{ $expedition->stat->percent_completed }}
-                                        % {{ t('Completed') }}</p>
-                                </div>
-                            </div>
-                            <hr>
-                            <div class="d-flex align-items-start justify-content-between mt-4 mx-auto">
-                                {!! $expedition->project->present()->project_page_icon_lrg !!}
-                                @isset($expedition->panoptesProject)
-                                    {!! $expedition->panoptesProject->present()->url_lrg !!}
-                                @endisset
                             </div>
                         </div>
-                    </div>
                     @endif
                 </div>
             </div>
@@ -223,5 +243,34 @@
     </script>
     <script src="https://cdn.jsdelivr.net/gh/cferdinandi/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
     <script>var scroll = new SmoothScroll('a[href*="#"]');</script>
+    <script>
+        (function () {
+            const container = document.getElementById('external-carousel-btns');
+            if (!container) return;
+
+            container.addEventListener('keydown', function (e) {
+                const key = e.key;
+                const isActivate = (key === 'Enter' || key === ' ' || key === 'Spacebar');
+                if (!isActivate) return;
+
+                const li = e.target && e.target.closest ? e.target.closest('li[data-target][data-slide-to]') : null;
+                if (!li) return;
+
+                e.preventDefault(); // prevents page scroll on Space
+                li.click(); // lets Bootstrap's data-api handle the slide
+            });
+
+            // Optional: keep aria-current in sync when the active circle changes
+            container.addEventListener('click', function (e) {
+                const li = e.target && e.target.closest ? e.target.closest('li[data-target][data-slide-to]') : null;
+                if (!li) return;
+
+                container.querySelectorAll('li[aria-current="true"]').forEach(function (n) {
+                    n.removeAttribute('aria-current');
+                });
+                li.setAttribute('aria-current', 'true');
+            });
+        })();
+    </script>
 
 @endpush

@@ -852,6 +852,17 @@ h1.project-wide {
   color: #ffffff;
 }
 
+#external-carousel-btns > li:focus {
+  outline: none;
+}
+
+#external-carousel-btns > li:focus-visible {
+  box-shadow:
+          0 0 0 3px rgba(255, 255, 255, 0.95),
+          0 0 0 6px rgba($brand-red, 0.65),
+          0 0 10px rgba(0, 0, 0, .25);
+}
+
 .circle-slider h3 {
   color: $brand-red;
   font-size: 1.4375rem;
@@ -1055,78 +1066,42 @@ table.dataTable tbody a:focus {
   cursor: help;
 }
 
+/* FIX: restore valid rule (matches original.css) */
 .fa-flag-grey {
   color: #7e8ea1;
   cursor: help;
 }
 
-#downloadsTbl .table td, .table th {
-  border: none;
+/* FIX: make skip link use brand red (not Bootstrap blue) and meet contrast on focus */
+a.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+
+  transform: translateY(-200%);
+  transition: transform 0.15s ease-in-out;
+
+  background-color: #ffffff;
+  color: $brand-red;
+
+  padding: 0.75rem 1rem;
+  z-index: 10000;
+
+  border: 2px solid $brand-red;
+  border-radius: 0.25rem;
+
+  text-decoration: underline;
 }
 
-.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary {
+a.skip-link:focus,
+a.skip-link:focus-visible {
+  transform: translateY(0);
+  position: fixed;
+
+  background-color: $brand-red;
   color: #ffffff;
-}
+  border-color: #ffffff;
 
-.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:hover {
-  color: $brand-red;
-}
-
-div.sort {
-  cursor: grab;
-  line-height: 1.5em;
-}
-
-.sort-highlight {
-  border: 1px solid $brand-red;
-  font-weight: bold;
-  font-size: 45px;
-  width: 200px;
-  background-color: #333333;
-}
-
-.sort-page {
-  color: $brand-red;
-  cursor: pointer;
-}
-
-.sort-page:hover,
-.sort-page:focus {
-  color: #383333;
-}
-
-/* \f142 is ellipsis-v */
-/* \202F is thin unbreakable space */
-.fa.fa-grip:before {
-  content: "\f142";
-}
-
-.fa.fa-grip-large:before {
-  content: "\f142 \202F \f142 \202F \f142 \202F \f142 \202F \f142 \202F \f142 \202F \f142";
-}
-
-.reviewed {
-  color: green;
-}
-
-.need-review {
-  color: $brand-red;
-}
-
-[x-cloak] { display: none !important; }
-
-.ocr-clickable {
-  cursor: pointer !important;
-  transition: background-color 0.2s;
-
-  &:hover {
-    background-color: rgba(0, 0, 0, 0.05) !important;
-  }
-}
-
-.bg-brand-red { background-color: $brand-red; }
-
-/* Apply the same stripe color consistently to all striped tables */
-.table-striped tbody tr:nth-of-type(odd) {
-  background-color: #fafafa;
+  outline: 3px solid #111111;
+  outline-offset: 2px;
 }

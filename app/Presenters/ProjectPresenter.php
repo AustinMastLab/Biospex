@@ -28,6 +28,14 @@ use Storage;
 class ProjectPresenter extends Presenter
 {
     /**
+     * Accessible alt text for project logo images.
+     */
+    public function logoAlt(): string
+    {
+        return t('Logo for project: %s', $this->model->title);
+    }
+
+    /**
      * Check if logo file exists or return default.
      *
      * @return \Illuminate\Config\Repository|mixed
@@ -72,11 +80,12 @@ class ProjectPresenter extends Presenter
     public function projectPageIcon()
     {
         $route = route('front.projects.show', [$this->model->slug]);
+        $ariaLabel = t('Project Public Page for %s', e($this->model->title));
 
         return $this->model->slug == null ? '' : '<a href="'.$route.'"
                 data-hover="tooltip"
                 title="'.t('Project Public Page').'"
-                aria-label="'.t('Project Public Page').'"><i class="fas fa-project-diagram" aria-hidden="true"></i></a>';
+                aria-label="'.$ariaLabel.'"><i class="fas fa-project-diagram" aria-hidden="true"></i></a>';
     }
 
     /**
@@ -87,17 +96,18 @@ class ProjectPresenter extends Presenter
     public function projectPageIconLrg()
     {
         $route = route('front.projects.show', [$this->model->slug]);
+        $ariaLabel = t('Project Public Page for %s', e($this->model->title));
 
         return $this->model->slug == null ? '' : '<a href="'.$route.'"
                 target="_blank"
                 rel="noopener noreferrer"
                 data-hover="tooltip"
                 title="'.t('Project Public Page').'"
-                aria-label="'.t('Project Public Page').'"><i class="fas fa-project-diagram fa-2x" aria-hidden="true"></i></a>';
+                aria-label="'.$ariaLabel.'"><i class="fas fa-project-diagram fa-2x" aria-hidden="true"></i></a>';
     }
 
     /**
-     * Return project home button
+     * Return project admin icon
      *
      * @return string
      */
@@ -119,8 +129,9 @@ class ProjectPresenter extends Presenter
     public function projectEventsIcon()
     {
         $route = route('front.projects.show', [$this->model->slug]);
+        $ariaLabel = t('Events for %s', e($this->model->title));
 
-        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'" aria-label="'.t('Events').'">
+        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'" aria-label="'.$ariaLabel.'">
                     <i class="far fa-calendar-alt" aria-hidden="true"></i></a>';
     }
 
@@ -132,8 +143,9 @@ class ProjectPresenter extends Presenter
     public function projectEventsIconLrg()
     {
         $route = route('front.projects.show', [$this->model->slug]);
+        $ariaLabel = t('Events for %s', e($this->model->title));
 
-        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'" aria-label="'.t('Events').'">
+        return $this->model->events_count == null ? '' : '<a href="'.$route.'#events" data-hover="tooltip" title="'.t('Events').'" aria-label="'.$ariaLabel.'">
                     <i class="far fa-calendar-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -144,7 +156,9 @@ class ProjectPresenter extends Presenter
      */
     public function organizationIcon()
     {
-        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Organization').'" aria-label="'.t('Organization').'">
+        $ariaLabel = t('Organization website for %s', e($this->model->title));
+
+        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Organization').'" aria-label="'.$ariaLabel.'">
                     <i class="fas fa-building" aria-hidden="true"></i></a>';
     }
 
@@ -155,7 +169,9 @@ class ProjectPresenter extends Presenter
      */
     public function organizationIconLrg()
     {
-        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Organization').'" aria-label="'.t('Organization').'">
+        $ariaLabel = t('Organization website for %s', e($this->model->title));
+
+        return $this->model->organization_website == null ? '' : '<a href="'.$this->model->organization_website.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Organization').'" aria-label="'.$ariaLabel.'">
                     <i class="fas fa-building fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -166,7 +182,9 @@ class ProjectPresenter extends Presenter
      */
     public function twitterIcon()
     {
-        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Twitter').'" aria-label="'.t('Twitter').'">
+        $ariaLabel = t('Twitter for %s', e($this->model->title));
+
+        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Twitter').'" aria-label="'.$ariaLabel.'">
                     <i class="fab fa-twitter" aria-hidden="true"></i></a>';
     }
 
@@ -177,7 +195,9 @@ class ProjectPresenter extends Presenter
      */
     public function twitterIconLrg()
     {
-        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Twitter').'" aria-label="'.t('Twitter').'">
+        $ariaLabel = t('Twitter for %s', e($this->model->title));
+
+        return $this->model->twitter == null ? '' : '<a href="'.$this->model->twitter.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Twitter').'" aria-label="'.$ariaLabel.'">
                     <i class="fab fa-twitter fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -188,7 +208,9 @@ class ProjectPresenter extends Presenter
      */
     public function facebookIcon()
     {
-        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Facebook').'" aria-label="'.t('Facebook').'">
+        $ariaLabel = t('Facebook for %s', e($this->model->title));
+
+        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Facebook').'" aria-label="'.$ariaLabel.'">
                     <i class="fab fa-facebook" aria-hidden="true"></i></a>';
     }
 
@@ -199,7 +221,9 @@ class ProjectPresenter extends Presenter
      */
     public function facebookIconLrg()
     {
-        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Facebook').'" aria-label="'.t('Facebook').'">
+        $ariaLabel = t('Facebook for %s', e($this->model->title));
+
+        return $this->model->facebook == null ? '' : '<a href="'.$this->model->facebook.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Facebook').'" aria-label="'.$ariaLabel.'">
                     <i class="fab fa-facebook fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -210,7 +234,9 @@ class ProjectPresenter extends Presenter
      */
     public function blogIcon()
     {
-        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Blog').'" aria-label="'.t('Blog').'">
+        $ariaLabel = t('Blog for %s', e($this->model->title));
+
+        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Blog').'" aria-label="'.$ariaLabel.'">
                     <i class="fab fa-blogger-b" aria-hidden="true"></i></a>';
     }
 
@@ -221,7 +247,9 @@ class ProjectPresenter extends Presenter
      */
     public function blogIconLrg()
     {
-        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Blog').'" aria-label="'.t('Blog').'">
+        $ariaLabel = t('Blog for %s', e($this->model->title));
+
+        return $this->model->blog_url == null ? '' : '<a href="'.$this->model->blog_url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.t('Blog').'" aria-label="'.$ariaLabel.'">
                     <i class="fab fa-blogger-b fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -232,7 +260,9 @@ class ProjectPresenter extends Presenter
      */
     public function contactEmailIcon()
     {
-        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.t('Contact').'">
+        $ariaLabel = t('Contact %s', e($this->model->title));
+
+        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.$ariaLabel.'">
                     <i class="fas fa-envelope" aria-hidden="true"></i></a>';
     }
 
@@ -243,7 +273,9 @@ class ProjectPresenter extends Presenter
      */
     public function contactEmailIconLrg()
     {
-        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.t('Contact').'">
+        $ariaLabel = t('Contact %s', e($this->model->title));
+
+        return $this->model->contact_email == null ? '' : '<a href="mailto:'.$this->model->contact_email.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.$ariaLabel.'">
                     <i class="fas fa-envelope fa-2x" aria-hidden="true"></i></a>';
     }
 

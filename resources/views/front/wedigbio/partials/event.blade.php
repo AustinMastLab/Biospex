@@ -30,7 +30,7 @@
                         data-target="#wedigbio-rate-modal"
                         data-projects="{{ route('front.get.wedigbio-projects', [$event]) }}"
                         data-uuid="{{ $event->uuid }}"
-                        data-href="{{ route('front.get.wedigbio-rate', [$event]) }}">{{ t('Rates') }}</button>
+                        data-href="{{ route('front.get.wedigbio-rate', [$event]) }}">{{ t('Rates') }}
                 </button>
             </div>
         @endif

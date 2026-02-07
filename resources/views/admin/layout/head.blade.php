@@ -6,9 +6,7 @@
     <meta name="csrf-param" content="_token">
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="google-site-verification" content="DRVQlYZQo5OkUlUhNG8Re-CgYEB7ELA0I_3qJJlzb0U"/>
-    <title>
-        {{ t('BIOSPEX') }} | @yield('title')
-    </title>
+    <title>@yield('title') | {{ t('BIOSPEX') }}</title>
     @include('common.favicon')
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:700|Work+Sans">
     <script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous"></script>

@@ -136,7 +136,7 @@ class ExpeditionService
      */
     public function getPublicIndex(array $request = []): Collection
     {
-        $query = $this->expedition->with('project:id,slug')->has('panoptesProject')->whereHas('actors', function ($q) {
+        $query = $this->expedition->with('project:id,title,slug')->has('panoptesProject')->whereHas('actors', function ($q) {
             $q->zooniverse();
         })->with('panoptesProject', 'stat', 'zooActorExpedition');
 

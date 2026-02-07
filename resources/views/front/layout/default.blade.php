@@ -1,24 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <meta name="description" content="">
-    <meta name="author" content="{{ t('FSU Department of Biological Science') }}">
-    <meta name="csrf-param" content="_token">
-    <meta name="csrf-token" content="{{ csrf_token() }}">
-    <meta name="google-site-verification" content="DRVQlYZQo5OkUlUhNG8Re-CgYEB7ELA0I_3qJJlzb0U"/>
-    <title>
-        {{ t('BIOSPEX') }} | @yield('title')
-    </title>
-    @include('common.favicon')
-    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700" rel="stylesheet">
-    <script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous" SameSite="none Secure"></script>
-    <link href="{{ mix('/css/front.css') }}" rel="stylesheet" type="text/css"/>
-    @stack('styles')
-    @production
-        @include('common.google-analytics')
-    @endproduction
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+<meta name="description" content="">
+<meta name="author" content="{{ t('FSU Department of Biological Science') }}">
+<meta name="csrf-param" content="_token">
+<meta name="csrf-token" content="{{ csrf_token() }}">
+<meta name="google-site-verification" content="DRVQlYZQo5OkUlUhNG8Re-CgYEB7ELA0I_3qJJlzb0U"/>
+<title>@yield('title') | {{ t('BIOSPEX') }} — {{ t('Lead Public Digitization Expeditions') }}</title>
+@include('common.favicon')
+<link href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700" rel="stylesheet">
+<script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous" SameSite="none Secure"></script>
+<link href="{{ mix('/css/front.css') }}" rel="stylesheet" type="text/css"/>
+@stack('styles')
+@production
+@include('common.google-analytics')
+@endproduction
 </head>
 <body>
 @yield('header')
@@ -39,9 +37,6 @@ sub footer -->
             <!-- Grid column -->
             <div class="col-md-10 col-md-offset-1 text-center d-inline d-sm-flex align-items-start justify-content-between">
                 <h3>{{ t('Get Connected') }}</h3>
-                <!-- Instagram -->
-                <a class="figure-img"></a>
-                <!-- Twitter -->
                 <a href="https://twitter.com/BIOSPEX"
                        target="_blank"
                        rel="noopener noreferrer"
@@ -49,10 +44,6 @@ sub footer -->
                        aria-label="{{ t('Twitter') }}">
                         <i class="fab fa-twitter fa-4x" aria-hidden="true"></i>
                     </a>
-                <!--Facebook -->
-                <a class="figure-img"></a>
-                <!--LinkedIn-->
-                <a class="figure-img"></a>
             </div>
         </div>
         <!-- Grid row-->

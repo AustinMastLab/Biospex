@@ -2,7 +2,7 @@
 
 {{-- Web site Title --}}
 @section('title')
-    {{ t('Lead Public Digitization Expeditions') }}
+{{ t('Home') }}
 @stop
 
 @push('styles')
@@ -23,7 +23,8 @@
                     <h1 class="text-white align-middle home-banner-tag">{{ t('Provision, advertise, and lead expeditions.') }}
                         <br>
                         <a href="#learn-more" data-scroll class="btn btn-primary mt-4" data-aos="fade-right"
-                           data-aos-easing="ease-out" data-aos-duration="3000">{{ t('Learn More') }}</a>
+                           data-aos-easing="ease-out" data-aos-duration="3000"
+                           aria-label="{{ t('Learn more about BIOSPEX') }}">{{ t('Learn More') }}</a>
                     </h1>
 
                 </div>
@@ -121,8 +122,9 @@
                         <div class="row card-body pb-2">
                             <div class="col-12">
                                 <div class="col-4 float-right">
-                                    <img class="img-fluid" src="{{ $expedition->project->present()->show_logo }}"
-                                         alt="Project Logo">
+                                    <img class="img-fluid"
+                                         src="{{ $expedition->project->present()->show_logo }}"
+                                         alt="{{ $expedition->project->present()->logo_alt }}">
                                 </div>
                                 <p>{{ $expedition->project->description_short }}</p>
                             </div>
@@ -174,7 +176,8 @@
                          data-aos-anchor-placement="bottom-bottom" data-aos-once="true">
                         <div class="card-top m-0 p-0">
                             <img class="card-img-top" style="max-height: 100%"
-                                 src="{{ $expedition->present()->show_medium_logo }}" alt="Card image cap">
+                                 src="{{ $expedition->present()->show_medium_logo }}"
+                                 alt="{{ $expedition->present()->logo_alt }}">
                             <div class="card-img-overlay">
                                 <h2 class="card-title text-center pt-4">{{ $expedition->title }}</h2>
                                 <i class="card-info fas fa-info-circle fa-2x float-right"

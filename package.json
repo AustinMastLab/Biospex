@@ -10,7 +10,9 @@
     "production": "mix --production",
     "postinstall": "yarn cache clean",
     "pa11y": "pa11y-ci",
-    "pa11y:json": "pa11y-ci --json > pa11y-report.json"
+    "pa11y:json": "pa11y-ci --config .pa11yci.front.json --json > .pa11y-report.json",
+    "pa11y:admin:json": "pa11y-ci --config .pa11yci.admin.json --json > .pa11y-admin-report.json",
+    "pa11y:mobile": "pa11y-ci --config .pa11yci.front.mobile.json"
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.2",
@@ -29,9 +31,9 @@
     "jquery-datetimepicker": "^2.5.21",
     "jquery-ui": "^1.13.2",
     "laravel-mix": "^6.0.49",
-    "pa11y-ci": "^4.0.1",
     "popper.js": "^1.16.1",
     "postcss": "^8.4.31",
+    "puppeteer": "^24.37.1",
     "resolve-url-loader": "^5.0.0",
     "sass": "^1.72.0",
     "sass-loader": "16.0.4",
@@ -42,6 +44,8 @@
   "dependencies": {
     "axios": "^1.9.0",
     "laravel-echo": "^1.19.0",
+    "pa11y": "^9.0.1",
+    "pa11y-ci": "^4.0.1",
     "pusher-js": "^8.4.0"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"

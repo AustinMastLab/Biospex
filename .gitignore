@@ -58,10 +58,13 @@ laradumps.yaml
 /.github/
 /.vscode/
 /clean-logs.sh
-/pa11y-report.json
-/.pa11yci.json
 /.claude/
 /.github/copilot-instructions.md
 /CLAUDE.md
 /AGENTS.md
 /.mcp.json
+/.pa11y-report.json
+/.pa11yci.front.json
+/.pa11y-admin-report.json
+/.pa11yci.admin.json
+/.pa11yci.front.mobile.json

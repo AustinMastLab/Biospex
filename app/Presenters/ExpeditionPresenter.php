@@ -68,31 +68,32 @@ class ExpeditionPresenter extends Presenter
         return config('config.missing_expedition_logo');
     }
 
-    /**
-     * Return show icon.
-     *
-     * @return string
-     */
     public function expeditionShowIcon()
     {
+        $ariaLabel = t('View Expedition: %s', e($this->model->title));
+
         return '<a href="'.route('admin.expeditions.show', [$this->model]).'"
             data-hover="tooltip"
             title="'.t('View Expedition').'"
-            aria-label="'.t('View Expedition').'">
+            aria-label="'.$ariaLabel.'">
             <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     public function expeditionShowIconLrg()
     {
+        $ariaLabel = t('View Expedition: %s', e($this->model->title));
+
         return '<a href="'.route('admin.expeditions.show', [$this->model]).'" 
             data-hover="tooltip" 
             title="'.t('View Expedition').'"
-            aria-label="'.t('View Expedition').'">
+            aria-label="'.$ariaLabel.'">
             <i class="fas fa-eye fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionToolsIconLrg()
     {
+        $ariaLabel = t('Expedition Tools for %s', e($this->model->title));
+
         return '<a href="" class="prevent-default"
                        data-dismiss="modal"
                        data-toggle="modal"
@@ -101,12 +102,13 @@ class ExpeditionPresenter extends Presenter
                        data-url="'.route('admin.expeditions.tools', [$this->model]).'"
                        data-hover="tooltip"
                        data-title="'.t('Expedition Tools').'"
-                       aria-label="'.t('Expedition Tools').'"><i class="fas fa-tools fa-2x" aria-hidden="true"></i></a>';
+                       aria-label="'.$ariaLabel.'"><i class="fas fa-tools fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionDownloadIconLrg()
     {
         $route = route('admin.downloads.index', [$this->model]);
+        $ariaLabel = t('Download Expedition Files for %s', e($this->model->title));
 
         return '<a href="#" class="prevent-default" 
                 data-toggle="modal" 
@@ -115,48 +117,58 @@ class ExpeditionPresenter extends Presenter
                 data-dismiss="modal" data-toggle="modal" data-target="#global-modal" data-size="modal-xl" 
                 data-hover="tooltip" 
                 title="'.t('Download Expedition Files').'"
-                aria-label="'.t('Download Expedition Files').'"><i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';
+                aria-label="'.$ariaLabel.'"><i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionEditIcon()
     {
-        return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" data-hover="tooltip" title="'.t('Edit Expedition').'" aria-label="'.t('Edit Expedition').'">
+        $ariaLabel = t('Edit Expedition: %s', e($this->model->title));
+
+        return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" data-hover="tooltip" title="'.t('Edit Expedition').'" aria-label="'.$ariaLabel.'">
         <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
     public function expeditionEditIconLrg()
     {
+        $ariaLabel = t('Edit Expedition: %s', e($this->model->title));
+
         return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" 
         data-hover="tooltip" 
         title="'.t('Edit Expedition').'"
-        aria-label="'.t('Edit Expedition').'">
+        aria-label="'.$ariaLabel.'">
         <i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionCloneIcon()
     {
+        $ariaLabel = t('Clone Expedition: %s', e($this->model->title));
+
         return '<a href="'.route('admin.expeditions.clone', [$this->model]).'" 
         data-hover="tooltip" 
         title="'.t('Clone Expedition').'"
-        aria-label="'.t('Clone Expedition').'">
+        aria-label="'.$ariaLabel.'">
         <i class="fas fa-clone" aria-hidden="true"></i></a>';
     }
 
     public function expeditionCloneIconLrg()
     {
+        $ariaLabel = t('Clone Expedition: %s', e($this->model->title));
+
         return '<a href="'.route('admin.expeditions.clone', [$this->model]).'" 
         data-hover="tooltip" 
         title="'.t('Clone Expedition').'"
-        aria-label="'.t('Clone Expedition').'">
+        aria-label="'.$ariaLabel.'">
         <i class="fas fa-clone fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionDeleteIcon()
     {
+        $ariaLabel = t('Delete Expedition: %s', e($this->model->title));
+
         return '<a href="'.route('admin.expeditions.delete', [$this->model]).'" 
             class="prevent-default"
             title="'.t('Delete Expedition').'"
-            aria-label="'.t('Delete Expedition').'"
+            aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
@@ -166,10 +178,12 @@ class ExpeditionPresenter extends Presenter
 
     public function expeditionDeleteIconLrg()
     {
+        $ariaLabel = t('Delete Expedition: %s', e($this->model->title));
+
         return '<a href="'.route('admin.expeditions.delete', [$this->model]).'" 
             class="prevent-default"
             title="'.t('Delete Expedition').'"
-            aria-label="'.t('Delete Expedition').'"
+            aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
@@ -202,6 +216,14 @@ class ExpeditionPresenter extends Presenter
     public function titleLink()
     {
         return '<a href="'.route('admin.expeditions.show', [$this->model]).'">'.$this->model->title.'</a>';
+    }
+
+    /**
+     * Accessible alt text for expedition logo images.
+     */
+    public function logoAlt(): string
+    {
+        return t('Logo for expedition: %s', $this->model->title);
     }
 
     public function completed()

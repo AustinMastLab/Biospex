@@ -206,7 +206,13 @@ sortPage = function (element) {
 
 setOrder = function (order, element) {
     const $icon = element.find('i');
-    element.siblings('span').data('order', 'asc').find('i').removeClass().addClass('fas fa-sort');
+
+    element
+        .siblings('.sort-page')
+        .data('order', 'asc')
+        .find('i')
+        .removeClass()
+        .addClass('fas fa-sort');
 
     switch (order) {
         case 'asc':

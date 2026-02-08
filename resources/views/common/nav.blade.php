@@ -70,15 +70,15 @@
                    aria-expanded="false">{{ t('Admin') }}</a>
                 <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown02">
                     <a href="{{ route('admin.groups.index') }}" class="dropdown-item text-uppercase"
-                       type="button">{{ t('Groups') }}</a>
+                       type="button">{{ t('Manage Groups') }}</a>
                     <a href="{{ route('admin.projects.index') }}" class="dropdown-item text-uppercase"
-                       type="button">{{ t('Projects') }}</a>
+                       type="button">{{ t('Manage Projects') }}</a>
                     <a href="{{ route('admin.expeditions.index') }}" class="dropdown-item text-uppercase"
-                       type="button">{{ t('Expeditions') }}</a>
+                       type="button">{{ t('Manage Expeditions') }}</a>
                     <a href="{{ route('admin.events.index') }}" class="dropdown-item text-uppercase"
-                       type="button">{{ t('Events') }}</a>
+                       type="button">{{ t('Manage Events') }}</a>
                     <a href="{{ route('admin.bingos.index') }}" class="dropdown-item text-uppercase"
-                       type="button">{{ t('Games') }}</a>
+                       type="button">{{ t('Manage Games') }}</a>
 
                     <a href="#" class="prevent-default dropdown-item text-uppercase"
                        type="button"

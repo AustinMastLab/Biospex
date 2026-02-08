@@ -16,7 +16,7 @@
 @endsection
 
 @section('content')
-    <h2 class="text-center pt-4 text-uppercase">{{ t('Biospex Resources') }}</h2>
+    <h1 class="page-title text-center pt-4 text-uppercase">{{ t('Biospex Resources') }}</h1>
     <hr class="header mx-auto" style="width:300px;">
     <div class="row col-sm-12 mx-auto mt-4 justify-content-center">
         @include('front.site-asset.partials.asset')

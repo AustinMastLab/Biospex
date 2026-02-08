@@ -29,13 +29,8 @@ html, body {
 
 a {
   transition: color .25s ease-out, background-color .25s ease-out, border-color .25s ease-out;
+  color: $brand-red;
 }
-
-/* Ensure "call-to-action" elements stay brand red (including FontAwesome <i> icons) */
-.color-action {
-  color: $brand-red !important;
-}
-
 
 a:hover {
   text-decoration: none;
@@ -47,6 +42,22 @@ a > i {
 }
 
 a:hover i {
+  color: $brand-red !important;
+}
+
+/* Ensure Bootstrap link-style buttons follow the same brand color */
+.btn-link {
+  color: $brand-red;
+}
+
+.btn-link:hover,
+.btn-link:focus {
+  color: darken($brand-red, 8%);
+  text-decoration: underline;
+}
+
+/* Ensure "call-to-action" elements stay brand red (including FontAwesome <i> icons) */
+.color-action {
   color: $brand-red !important;
 }
 
@@ -128,6 +139,12 @@ h2.modal-number > small {
   line-height: 1.125rem;
   text-transform: uppercase;
   font-size: 1rem;
+}
+
+/* Use this when you need an H1 for semantics, but want H2-like styling */
+.page-title {
+  font-size: 1.5rem;     /* match h2 */
+  font-weight: 700;      /* match heading weight */
 }
 
 .btn.btn-primary {
@@ -1104,4 +1121,60 @@ a.skip-link:focus-visible {
 
   outline: 3px solid #111111;
   outline-offset: 2px;
+}
+
+// ... existing code ...
+
+a.skip-link:focus,
+a.skip-link:focus-visible {
+  transform: translateY(0);
+  position: fixed;
+
+  background-color: $brand-red;
+  color: #ffffff;
+  border-color: #ffffff;
+
+  outline: 3px solid #111111;
+  outline-offset: 2px;
+}
+
+/* Project sort: restore brand color + keyboard accessibility */
+.sort-page {
+  appearance: none;
+  -webkit-appearance: none;
+
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+
+  display: inline-flex;
+  align-items: center;
+
+  color: $brand-red;
+  cursor: pointer;
+  font: inherit;
+  line-height: inherit;
+  text-transform: inherit;
+}
+
+.sort-page i {
+  color: $brand-red;
+}
+
+.sort-page:hover,
+.sort-page:focus {
+  color: darken($brand-red, 8%);
+  text-decoration: underline;
+}
+
+.sort-page:hover i,
+.sort-page:focus i {
+  color: darken($brand-red, 8%);
+}
+
+.sort-page:focus-visible {
+  outline: 3px solid rgba($brand-red, 0.65);
+  outline-offset: 3px;
+  border-radius: 3px;
 }

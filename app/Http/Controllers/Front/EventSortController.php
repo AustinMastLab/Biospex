@@ -42,10 +42,9 @@ class EventSortController extends Controller
             return Response::json(['message' => t('Request must be ajax.')], 400);
         }
 
-        [$active, $completed] = $this->eventService->getPublicIndex(Request::all());
+        $result = $this->eventService->getPublicSortedEventsWithMeta(Request::all());
 
-        $events = Request::get('type') === 'active' ? $active : $completed;
-
-        return View::make('front.event.partials.event', compact('events'));
+        return Response::make(View::make('front.event.partials.event', ['events' => $result['events']]))
+            ->header('X-Biospex-Cache', $result['cache_status']);
     }
 }

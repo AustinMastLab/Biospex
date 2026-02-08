@@ -23,6 +23,8 @@ use App\Http\Controllers\Admin\EventSortController;
 use App\Http\Controllers\Admin\EventTranscriptionExportController;
 use App\Http\Controllers\Admin\EventUserExportController;
 
+Route::post('events/sort', [EventSortController::class, 'index'])->name('admin.events_sort.index');
+
 Route::resource('events', EventController::class)->names([
     'index' => 'admin.events.index',
     'create' => 'admin.events.create',
@@ -33,7 +35,6 @@ Route::resource('events', EventController::class)->names([
     'destroy' => 'admin.events.destroy',
 ]);
 
-Route::post('events/sort/', [EventSortController::class, 'index'])->name('admin.events_sort.index');
 Route::get('events/{event}/transcriptions', [EventTranscriptionExportController::class, 'index'])
     ->name('admin.events_transcriptions.index');
 Route::get('events/{event}/users', [EventUserExportController::class, 'index'])

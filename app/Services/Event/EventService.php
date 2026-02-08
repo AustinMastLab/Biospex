@@ -26,6 +26,7 @@ use App\Models\User;
 use App\Services\Helpers\DateService;
 use App\Services\Trait\EventPartitionTrait;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
 
 class EventService
 {
@@ -54,18 +55,98 @@ class EventService
     }
 
     /**
+     * For the public sort endpoint: return the exact list to render (active/completed)
+     * plus cache metadata for debugging.
+     *
+     * @return array{events: \Illuminate\Support\Collection, cache_status: string}
+     */
+    public function getPublicSortedEventsWithMeta(array $request = []): array
+    {
+        $type = (string) ($request['type'] ?? 'active');
+
+        $cacheKey = $this->publicIndexCacheKey($request);
+        $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
+
+        [$active, $completed] = $this->getPublicIndexCached($request);
+
+        $events = $type === 'completed' ? $completed : $active;
+
+        return [
+            'events' => $events,
+            'cache_status' => $cacheStatus,
+        ];
+    }
+
+    /**
+     * Get events for public index (cached).
+     *
+     * Cache is safe because the public pages show the same data to everyone.
+     *
+     * Expected request keys (from your sort widgets):
+     * - type: active|completed (used later by controller to choose partition)
+     * - sort: title|project|date
+     * - order: asc|desc
+     * - id: optional project id (project public page)
+     */
+    public function getPublicIndexCached(array $request = []): Collection
+    {
+        $version = (int) Cache::get('public_sort:events:version', 1);
+
+        $sort = (string) ($request['sort'] ?? 'date');
+        $order = (string) ($request['order'] ?? 'asc');
+        $projectId = $request['id'] ?? null;
+
+        $cacheKey = sprintf(
+            'public_sort:events:v%d:locale=%s:sort=%s:order=%s:project=%s',
+            $version,
+            app()->getLocale(),
+            $sort,
+            $order,
+            empty($projectId) ? 'all' : (string) $projectId,
+        );
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request, $projectId) {
+            if (! empty($projectId)) {
+                $request['projectId'] = $projectId;
+            }
+
+            return $this->getPublicIndex($request);
+        });
+    }
+
+    /**
      * Get events for public index.
      */
     public function getPublicIndex(array $request = []): Collection
     {
-        $records = isset($request['$projectId']) ?
-            $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])
-                ->where('project_id', $request['$projectId'])->get() :
-            $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])->get();
+        $sort = (string) ($request['sort'] ?? 'date');
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+        $projectId = $request['projectId'] ?? null;
 
-        $sortedRecords = $this->sortRecords($records, $request);
+        $query = $this->event
+            ->newQuery()
+            ->with(['project.lastPanoptesProject', 'teams:id,title,event_id']);
 
-        return $this->partitionEvents($sortedRecords);
+        if (! empty($projectId)) {
+            $query->where('project_id', $projectId);
+        }
+
+        // Sort in SQL
+        if ($sort === 'project') {
+            $query
+                ->join('projects', 'projects.id', '=', 'events.project_id')
+                ->select('events.*')
+                ->orderBy('projects.title', $order);
+        } elseif ($sort === 'title') {
+            $query->orderBy('events.title', $order);
+        } else {
+            // date (default)
+            $query->orderBy('events.start_date', $order);
+        }
+
+        $records = $query->get();
+
+        return $this->partitionEvents($records);
     }
 
     /**
@@ -235,5 +316,26 @@ class EventService
             ->where('project_id', $projectId)
             ->where('start_date', '<', $date)
             ->where('end_date', '>', $date)->get();
+    }
+
+    /**
+     * Build the cache key for the public index partitions.
+     */
+    protected function publicIndexCacheKey(array $request = []): string
+    {
+        $version = (int) Cache::get('public_sort:events:version', 1);
+
+        $sort = (string) ($request['sort'] ?? 'date');
+        $order = (string) ($request['order'] ?? 'asc');
+        $projectId = $request['id'] ?? null;
+
+        return sprintf(
+            'public_sort:events:v%d:locale=%s:sort=%s:order=%s:project=%s',
+            $version,
+            app()->getLocale(),
+            $sort,
+            $order,
+            empty($projectId) ? 'all' : (string) $projectId,
+        );
     }
 }

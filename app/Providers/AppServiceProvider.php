@@ -20,6 +20,8 @@
 
 namespace App\Providers;
 
+use App\Models\Event;
+use App\Observers\EventPublicCacheObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Redis;
@@ -50,6 +52,9 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventLazyLoading(! $this->app->isProduction());
         Model::preventAccessingMissingAttributes(! $this->app->isProduction());
+
+        // Register model observers
+        Event::observe(EventPublicCacheObserver::class);
     }
 
     /**

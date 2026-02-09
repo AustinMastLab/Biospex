@@ -37,10 +37,10 @@ class ExpeditionSortController extends Controller
             return Response::json(['message' => t('Request must be ajax.')], 400);
         }
 
-        [$active, $completed] = $expeditionService->getPublicIndex(Request::all());
+        $result = $expeditionService->getPublicSortedExpeditionsWithMeta(Request::all());
 
-        $expeditions = Request::get('type') === 'active' ? $active : $completed;
-
-        return View::make('front.expedition.partials.expedition', compact('expeditions'));
+        return Response::make(
+            View::make('front.expedition.partials.expedition', ['expeditions' => $result['expeditions']])
+        )->header('X-Biospex-Cache', $result['cache_status']);
     }
 }

@@ -28,6 +28,8 @@ use App\Services\Helpers\DateService;
 use App\Services\Trait\EventPartitionTrait;
 use App\Services\Trait\ExpeditionPartitionTrait;
 use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\View;
 
 class ProjectService
 {
@@ -42,14 +44,6 @@ class ProjectService
         protected CountService $countService,
         protected DateService $dateService,
     ) {}
-
-    /**
-     * Get all with relations.
-     */
-    public function findWithRelations(int $id, array $relations = []): mixed
-    {
-        return $this->project->with($relations)->find($id);
-    }
 
     /**
      * Get select for project.
@@ -211,15 +205,75 @@ class ProjectService
     }
 
     /**
-     * Get public project index page.
+     * For the public sort endpoint: return rendered HTML + cache metadata.
+     *
+     * @return array{html: string, cache_status: string}
+     */
+    public function getPublicSortedProjectsHtmlWithMeta(array $request = []): array
+    {
+        $cacheKey = $this->publicIndexHtmlCacheKey($request);
+        $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
+
+        $html = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request) {
+            $projects = $this->getPublicIndex($request);
+
+            return View::make('front.project.partials.project', ['projects' => $projects])->render();
+        });
+
+        return [
+            'html' => $html,
+            'cache_status' => $cacheStatus,
+        ];
+    }
+
+    /**
+     * Cache key for the rendered public projects fragment.
+     */
+    protected function publicIndexHtmlCacheKey(array $request = []): string
+    {
+        $version = (int) Cache::get('public_sort:projects:version', 1);
+
+        $sort = (string) ($request['sort'] ?? 'date');
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+
+        return sprintf(
+            'public_sort:projects_html:v%d:locale=%s:sort=%s:order=%s',
+            $version,
+            app()->getLocale(),
+            $sort,
+            $order,
+        );
+    }
+
+    /**
+     * Get a public project index page (SQL-sorted).
      */
     public function getPublicIndex(array $request = []): Collection
     {
-        $records = $this->project->withCount('expeditions')
-            ->withSum('expeditionStats', 'transcriptions_completed')
-            ->withCount('events')->with('group')->has('panoptesProjects')->get();
+        $sort = (string) ($request['sort'] ?? 'date');
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
 
-        return $this->sortResults($records, $request);
+        $query = $this->project
+            ->newQuery()
+            ->with('group')
+            ->withCount('expeditions')
+            ->withSum('expeditionStats', 'transcriptions_completed')
+            ->withCount('events')
+            ->has('panoptesProjects');
+
+        if ($sort === 'group') {
+            $query
+                ->leftJoin('groups', 'groups.id', '=', 'projects.group_id')
+                ->select('projects.*')
+                ->orderBy('groups.title', $order);
+        } elseif ($sort === 'title') {
+            $query->orderBy('projects.title', $order);
+        } else {
+            // date (default)
+            $query->orderBy('projects.created_at', $order);
+        }
+
+        return $query->get();
     }
 
     /**

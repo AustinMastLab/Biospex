@@ -24,7 +24,6 @@ use App\Http\Controllers\Controller;
 use App\Services\Project\ProjectService;
 use Request;
 use Response;
-use View;
 
 class ProjectSortController extends Controller
 {
@@ -36,14 +35,16 @@ class ProjectSortController extends Controller
     /**
      * Admin Projects page sort and order.
      */
-    public function __invoke(): \Illuminate\View\View|\Illuminate\Http\JsonResponse
+    public function __invoke(): mixed
     {
         if (! Request::ajax()) {
             return Response::json(['message' => t('Request must be ajax.')], 400);
         }
 
-        $projects = $this->projectService->getPublicIndex(Request::all());
+        $result = $this->projectService->getPublicSortedProjectsHtmlWithMeta(Request::all());
 
-        return View::make('front.project.partials.project', compact('projects'));
+        return Response::make($result['html'])
+            ->header('Content-Type', 'text/html; charset=utf-8')
+            ->header('X-Biospex-Cache', $result['cache_status']);
     }
 }

@@ -22,8 +22,10 @@ namespace App\Providers;
 
 use App\Models\Event;
 use App\Models\Expedition;
+use App\Models\Project;
 use App\Observers\EventPublicCacheObserver;
 use App\Observers\ExpeditionPublicCacheObserver;
+use App\Observers\ProjectPublicCacheObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Redis;
@@ -58,6 +60,7 @@ class AppServiceProvider extends ServiceProvider
         // Register model observers
         Event::observe(EventPublicCacheObserver::class);
         Expedition::observe(ExpeditionPublicCacheObserver::class);
+        Project::observe(ProjectPublicCacheObserver::class);
     }
 
     /**

@@ -31,6 +31,7 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
+use Illuminate\Support\Facades\View;
 
 class ExpeditionService
 {
@@ -133,65 +134,52 @@ class ExpeditionService
     }
 
     /**
-     * For the public sort endpoint: return the exact list to render (active/completed)
-     * plus cache metadata for debugging.
+     * For the public sort endpoint: return rendered HTML + cache metadata.
      *
-     * @return array{expeditions: \Illuminate\Support\Collection, cache_status: string}
+     * @return array{html: string, cache_status: string}
      */
-    public function getPublicSortedExpeditionsWithMeta(array $request = []): array
+    public function getPublicSortedExpeditionsHtmlWithMeta(array $request = []): array
     {
-        $type = (string) ($request['type'] ?? 'active');
-
-        $cacheKey = $this->publicIndexCacheKey($request);
+        $cacheKey = $this->publicIndexHtmlCacheKey($request);
         $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
 
-        [$active, $completed] = $this->getPublicIndexCached($request);
+        $html = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request) {
+            $type = (string) ($request['type'] ?? 'active');
 
-        $expeditions = $type === 'completed' ? $completed : $active;
+            // Normalize project scope
+            if (! empty($request['id'])) {
+                $request['projectId'] = $request['id'];
+            }
+
+            [$active, $completed] = $this->getPublicIndex($request);
+            $expeditions = $type === 'completed' ? $completed : $active;
+
+            return View::make('front.expedition.partials.expedition', ['expeditions' => $expeditions])->render();
+        });
 
         return [
-            'expeditions' => $expeditions,
+            'html' => $html,
             'cache_status' => $cacheStatus,
         ];
     }
 
     /**
-     * Get expeditions for public index (cached).
-     *
-     * Expected request keys:
-     * - sort: title|date
-     * - order: asc|desc
-     * - id: optional project id (project public page)
+     * Cache key for the rendered public expeditions fragment.
      */
-    public function getPublicIndexCached(array $request = []): Collection
-    {
-        $cacheKey = $this->publicIndexCacheKey($request);
-
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request) {
-            // Normalize data-id => project scope
-            if (! empty($request['id'])) {
-                $request['projectId'] = $request['id'];
-            }
-
-            return $this->getPublicIndex($request);
-        });
-    }
-
-    /**
-     * Build the cache key for the public index partitions.
-     */
-    protected function publicIndexCacheKey(array $request = []): string
+    protected function publicIndexHtmlCacheKey(array $request = []): string
     {
         $version = (int) Cache::get('public_sort:expeditions:version', 1);
 
+        $type = (string) ($request['type'] ?? 'active');
         $sort = (string) ($request['sort'] ?? 'date');
-        $order = (string) ($request['order'] ?? 'asc');
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
         $projectId = $request['id'] ?? null;
 
         return sprintf(
-            'public_sort:expeditions:v%d:locale=%s:sort=%s:order=%s:project=%s',
+            'public_sort:expeditions_html:v%d:locale=%s:type=%s:sort=%s:order=%s:project=%s',
             $version,
             app()->getLocale(),
+            $type,
             $sort,
             $order,
             empty($projectId) ? 'all' : (string) $projectId,

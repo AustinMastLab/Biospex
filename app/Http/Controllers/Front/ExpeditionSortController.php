@@ -24,7 +24,6 @@ use App\Http\Controllers\Controller;
 use App\Services\Expedition\ExpeditionService;
 use Request;
 use Response;
-use View;
 
 class ExpeditionSortController extends Controller
 {
@@ -37,10 +36,10 @@ class ExpeditionSortController extends Controller
             return Response::json(['message' => t('Request must be ajax.')], 400);
         }
 
-        $result = $expeditionService->getPublicSortedExpeditionsWithMeta(Request::all());
+        $result = $expeditionService->getPublicSortedExpeditionsHtmlWithMeta(Request::all());
 
-        return Response::make(
-            View::make('front.expedition.partials.expedition', ['expeditions' => $result['expeditions']])
-        )->header('X-Biospex-Cache', $result['cache_status']);
+        return Response::make($result['html'])
+            ->header('Content-Type', 'text/html; charset=utf-8')
+            ->header('X-Biospex-Cache', $result['cache_status']);
     }
 }

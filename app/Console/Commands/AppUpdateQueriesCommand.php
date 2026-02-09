@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (create-directories, move-files, update-paths)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (add-project-indexes, add-expedition-indexes)}';
 
     /**
      * The console command description.
@@ -58,9 +58,43 @@ class AppUpdateQueriesCommand extends Command
             return $this->addProjectIndexes();
         }
 
-        $this->error('Unknown operation. Try: add-project-indexes');
+        if ($operation === 'add-expedition-indexes') {
+            return $this->addExpeditionIndexes();
+        }
+
+        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes');
 
         return self::FAILURE;
+    }
+
+    private function addExpeditionIndexes(): int
+    {
+        $this->info('Adding missing indexes for expeditions sorting...');
+
+        try {
+            // Must-have (sorting)
+            $this->ensureIndexExists('expeditions', 'expeditions_title_index', 'CREATE INDEX expeditions_title_index ON expeditions (title)');
+            $this->ensureIndexExists('expeditions', 'expeditions_created_at_index', 'CREATE INDEX expeditions_created_at_index ON expeditions (created_at)');
+
+            // Nice-to-have for project-scoped lists
+            $this->ensureIndexExists('expeditions', 'expeditions_project_id_created_at_index', 'CREATE INDEX expeditions_project_id_created_at_index ON expeditions (project_id, created_at)');
+            $this->ensureIndexExists('expeditions', 'expeditions_project_id_title_index', 'CREATE INDEX expeditions_project_id_title_index ON expeditions (project_id, title)');
+
+            // Pivot: enforce uniqueness + speed up "has Zooniverse actor" checks
+            $this->ensureIndexExists(
+                'actor_expedition',
+                'actor_expedition_expedition_id_actor_id_unique',
+                'CREATE UNIQUE INDEX actor_expedition_expedition_id_actor_id_unique ON actor_expedition (expedition_id, actor_id)'
+            );
+
+            $this->info('Done.');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('Failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
     }
 
     private function addProjectIndexes(): int

@@ -68,3 +68,5 @@ laradumps.yaml
 /.pa11y-admin-report.json
 /.pa11yci.admin.json
 /.pa11yci.front.mobile.json
+/tasks.md
+/pa11y-orig.json

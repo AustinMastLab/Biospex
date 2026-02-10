@@ -24,27 +24,21 @@ use App\Http\Controllers\Controller;
 use App\Services\Event\EventService;
 use Request;
 use Response;
-use View;
 
 class EventSortController extends Controller
 {
-    /**
-     * EventSortController constructor.
-     */
     public function __construct(protected EventService $eventService) {}
 
-    /**
-     * Sort events for public index.
-     */
     public function __invoke(): mixed
     {
         if (! Request::ajax()) {
             return Response::json(['message' => t('Request must be ajax.')], 400);
         }
 
-        $result = $this->eventService->getPublicSortedEventsWithMeta(Request::all());
+        $result = $this->eventService->getPublicSortedEventsHtmlWithMeta(Request::all());
 
-        return Response::make(View::make('front.event.partials.event', ['events' => $result['events']]))
+        return Response::make($result['html'])
+            ->header('Content-Type', 'text/html; charset=utf-8')
             ->header('X-Biospex-Cache', $result['cache_status']);
     }
 }

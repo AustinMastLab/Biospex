@@ -1,5 +1,5 @@
 @if($weDigBioEvent === null)
-    <div class="text-center bg-brand-red"">
+    <div class="text-center bg-brand-red">
         <span class="scoreboard-title">{{ t('No current WeDigBio Event') }}</span>
     </div>
 @else

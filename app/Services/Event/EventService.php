@@ -27,6 +27,7 @@ use App\Services\Helpers\DateService;
 use App\Services\Trait\EventPartitionTrait;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\View;
 
 class EventService
 {
@@ -55,63 +56,26 @@ class EventService
     }
 
     /**
-     * For the public sort endpoint: return the exact list to render (active/completed)
-     * plus cache metadata for debugging.
-     *
-     * @return array{events: \Illuminate\Support\Collection, cache_status: string}
+     * Cache key for the rendered public events fragment.
      */
-    public function getPublicSortedEventsWithMeta(array $request = []): array
-    {
-        $type = (string) ($request['type'] ?? 'active');
-
-        $cacheKey = $this->publicIndexCacheKey($request);
-        $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
-
-        [$active, $completed] = $this->getPublicIndexCached($request);
-
-        $events = $type === 'completed' ? $completed : $active;
-
-        return [
-            'events' => $events,
-            'cache_status' => $cacheStatus,
-        ];
-    }
-
-    /**
-     * Get events for public index (cached).
-     *
-     * Cache is safe because the public pages show the same data to everyone.
-     *
-     * Expected request keys (from your sort widgets):
-     * - type: active|completed (used later by controller to choose partition)
-     * - sort: title|project|date
-     * - order: asc|desc
-     * - id: optional project id (project public page)
-     */
-    public function getPublicIndexCached(array $request = []): Collection
+    protected function publicIndexHtmlCacheKey(array $request = []): string
     {
         $version = (int) Cache::get('public_sort:events:version', 1);
 
+        $type = (string) ($request['type'] ?? 'active');
         $sort = (string) ($request['sort'] ?? 'date');
-        $order = (string) ($request['order'] ?? 'asc');
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
         $projectId = $request['id'] ?? null;
 
-        $cacheKey = sprintf(
-            'public_sort:events:v%d:locale=%s:sort=%s:order=%s:project=%s',
+        return sprintf(
+            'public_sort:events_html:v%d:locale=%s:type=%s:sort=%s:order=%s:project=%s',
             $version,
             app()->getLocale(),
+            $type,
             $sort,
             $order,
             empty($projectId) ? 'all' : (string) $projectId,
         );
-
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request, $projectId) {
-            if (! empty($projectId)) {
-                $request['projectId'] = $projectId;
-            }
-
-            return $this->getPublicIndex($request);
-        });
     }
 
     /**
@@ -319,23 +283,32 @@ class EventService
     }
 
     /**
-     * Build the cache key for the public index partitions.
+     * For the public sort endpoint: return rendered HTML + cache metadata.
+     *
+     * @return array{html: string, cache_status: string}
      */
-    protected function publicIndexCacheKey(array $request = []): string
+    public function getPublicSortedEventsHtmlWithMeta(array $request = []): array
     {
-        $version = (int) Cache::get('public_sort:events:version', 1);
+        $cacheKey = $this->publicIndexHtmlCacheKey($request);
+        $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
 
-        $sort = (string) ($request['sort'] ?? 'date');
-        $order = (string) ($request['order'] ?? 'asc');
-        $projectId = $request['id'] ?? null;
+        $html = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request) {
+            $type = (string) ($request['type'] ?? 'active');
 
-        return sprintf(
-            'public_sort:events:v%d:locale=%s:sort=%s:order=%s:project=%s',
-            $version,
-            app()->getLocale(),
-            $sort,
-            $order,
-            empty($projectId) ? 'all' : (string) $projectId,
-        );
+            // Normalize project scope (UI uses "id")
+            if (! empty($request['id'])) {
+                $request['projectId'] = $request['id'];
+            }
+
+            [$active, $completed] = $this->getPublicIndex($request);
+            $events = $type === 'completed' ? $completed : $active;
+
+            return View::make('front.event.partials.event', ['events' => $events])->render();
+        });
+
+        return [
+            'html' => $html,
+            'cache_status' => $cacheStatus,
+        ];
     }
 }

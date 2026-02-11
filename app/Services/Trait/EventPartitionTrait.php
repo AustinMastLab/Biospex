@@ -26,11 +26,17 @@ trait EventPartitionTrait
 {
     /**
      * Partition events into incomplete and complete.
+     *
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
      */
-    public function partitionEvents(Collection $records): Collection
+    public function partitionEvents(Collection $records): array
     {
-        return $records->partition(function ($event) {
-            return $this->dateService->eventBefore($event) || $this->dateService->eventActive($event);
-        });
+        $partitions = $records
+            ->partition(function ($event) {
+                return $this->dateService->eventBefore($event) || $this->dateService->eventActive($event);
+            })
+            ->values(); // ensure numeric keys 0,1
+
+        return [$partitions->get(0, collect()), $partitions->get(1, collect())];
     }
 }

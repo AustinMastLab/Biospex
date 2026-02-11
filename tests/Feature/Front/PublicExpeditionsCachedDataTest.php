@@ -140,6 +140,7 @@ it('uses cache on second call with same params', function () {
     $service->getPublicIndexCachedData(['sort' => 'date', 'order' => 'asc']);
 
     // Spy on underlying getPublicIndex to ensure it is NOT called again
+    /** @var \App\Services\Expedition\ExpeditionService&\Mockery\MockInterface $mock */
     $mock = $this->partialMock(ExpeditionService::class);
     $mock->shouldReceive('getPublicIndex')->never();
 

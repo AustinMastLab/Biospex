@@ -42,12 +42,14 @@ class EventService
 
     /**
      * Get events for admin index.
+     *
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
      */
-    public function getAdminIndex(User $user, array $request = []): Collection
+    public function getAdminIndex(User $user, array $request = []): array
     {
-        $records = $user->isAdmin() ?
-            $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])->get() :
-            $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])->where('owner_id', $user->id)->get();
+        $records = $user->isAdmin()
+            ? $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])->get()
+            : $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])->where('owner_id', $user->id)->get();
 
         $sortedRecords = $this->sortRecords($records, $request);
 
@@ -78,8 +80,10 @@ class EventService
     /**
      * Get cached DATA (Collection of partitions) for the public event index.
      * Must call the existing public query method and not duplicate it.
+     *
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
      */
-    public function getPublicIndexCachedData(array $params = []): Collection
+    public function getPublicIndexCachedData(array $params = []): array
     {
         // Normalize projectId
         if (isset($params['id']) && ! isset($params['projectId'])) {
@@ -95,8 +99,10 @@ class EventService
 
     /**
      * Get events for public index.
+     *
+     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
      */
-    public function getPublicIndex(array $request = []): Collection
+    public function getPublicIndex(array $request = []): array
     {
         $sort = (string) ($request['sort'] ?? 'date');
         $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';

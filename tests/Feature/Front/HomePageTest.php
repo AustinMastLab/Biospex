@@ -19,6 +19,7 @@
  */
 
 use App\Models\PanoptesTranscription;
+use Database\Seeders\HomePageTestSeeder;
 
 beforeEach(function () {
     Storage::fake('s3');
@@ -27,7 +28,7 @@ beforeEach(function () {
 describe('Home Page Basic Tests', function () {
     beforeEach(function () {
         PanoptesTranscription::truncate();
-        $this->seed(\HomePageTestSeeder::class);
+        $this->seed(HomePageTestSeeder::class);
     });
 
     afterEach(function () {

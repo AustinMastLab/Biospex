@@ -26,16 +26,10 @@
             </div>
         </div>
         <div id="active-expeditions-main" class="col-sm-12 show">
-            @include('common.expedition-sort', ['type' => 'active', 'route' => route('admin.expeditions.sort'), 'id' => $project->id])
-            <div id="active-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('admin.expedition.partials.expedition', ['expeditions' => $expeditions, 'group' => $project->group])
-            </div>
+            <livewire:admin.expeditions-index type="active" :project-id="$project->id" />
         </div>
         <div id="completed-expeditions-main" class="col-sm-12 collapse">
-            @include('common.expedition-sort', ['type' => 'completed', 'route' => route('admin.expeditions.sort'), 'id' => $project->id])
-            <div id="completed-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('admin.expedition.partials.expedition', ['expeditions' => $expeditionsCompleted, 'group' => $project->group])
-            </div>
+            <livewire:admin.expeditions-index type="completed" :project-id="$project->id" />
         </div>
     </div>
 @endsection

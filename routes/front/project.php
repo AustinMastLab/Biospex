@@ -19,12 +19,9 @@
  */
 
 use App\Http\Controllers\Front\ProjectController;
-use App\Http\Controllers\Front\ProjectSortController;
 
 Route::get('projects', [ProjectController::class, 'index'])->name('front.projects.index');
 Route::get('projects/{slug}', [ProjectController::class, 'show'])->name('front.projects.show');
-
-Route::post('projects/sort', ProjectSortController::class)->name('front.projects.sort');
 
 // Redirect old links to new
 Route::get('project/{slug}', function ($slug) {

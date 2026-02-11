@@ -79,7 +79,10 @@ describe('User Profile Update Tests', function () {
 
         $firstName = fake()->firstName;
         $lastName = fake()->lastName;
-        $email = fake()->email;
+
+        // Must satisfy max:32 validation rule in EditUserFormRequest.
+        $email = fake()->unique()->userName.'@t.test';
+
         $timezone = fake()->timezone;
 
         $response = $this->actingAs($user)->put(route('admin.users.update', [$user]), [
@@ -113,7 +116,10 @@ describe('User Profile Update Tests', function () {
 
         $firstName = fake()->firstName;
         $lastName = fake()->lastName;
-        $email = fake()->email;
+
+        // Must satisfy max:32 validation rule in EditUserFormRequest.
+        $email = fake()->unique()->userName.'@t.test';
+
         $timezone = fake()->timezone;
 
         $response = $this->actingAs($user)->put(route('admin.users.update', [$user]), [

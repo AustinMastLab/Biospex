@@ -27,7 +27,6 @@ use App\Services\Helpers\DateService;
 use App\Services\Trait\EventPartitionTrait;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\View;
 
 class EventService
 {
@@ -56,26 +55,42 @@ class EventService
     }
 
     /**
-     * Cache key for the rendered public events fragment.
+     * Cache key for the DATA collection of public events.
      */
-    protected function publicIndexHtmlCacheKey(array $request = []): string
+    protected function publicIndexDataCacheKey(array $request = []): string
     {
         $version = (int) Cache::get('public_sort:events:version', 1);
 
-        $type = (string) ($request['type'] ?? 'active');
         $sort = (string) ($request['sort'] ?? 'date');
         $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
-        $projectId = $request['id'] ?? null;
+        $projectId = $request['projectId'] ?? $request['id'] ?? null;
 
         return sprintf(
-            'public_sort:events_html:v%d:locale=%s:type=%s:sort=%s:order=%s:project=%s',
+            'public_sort:events_data:v%d:locale=%s:sort=%s:order=%s:project=%s',
             $version,
             app()->getLocale(),
-            $type,
             $sort,
             $order,
             empty($projectId) ? 'all' : (string) $projectId,
         );
+    }
+
+    /**
+     * Get cached DATA (Collection of partitions) for the public event index.
+     * Must call the existing public query method and not duplicate it.
+     */
+    public function getPublicIndexCachedData(array $params = []): Collection
+    {
+        // Normalize projectId
+        if (isset($params['id']) && ! isset($params['projectId'])) {
+            $params['projectId'] = $params['id'];
+        }
+
+        $cacheKey = $this->publicIndexDataCacheKey($params);
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($params) {
+            return $this->getPublicIndex($params);
+        });
     }
 
     /**
@@ -280,35 +295,5 @@ class EventService
             ->where('project_id', $projectId)
             ->where('start_date', '<', $date)
             ->where('end_date', '>', $date)->get();
-    }
-
-    /**
-     * For the public sort endpoint: return rendered HTML + cache metadata.
-     *
-     * @return array{html: string, cache_status: string}
-     */
-    public function getPublicSortedEventsHtmlWithMeta(array $request = []): array
-    {
-        $cacheKey = $this->publicIndexHtmlCacheKey($request);
-        $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
-
-        $html = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request) {
-            $type = (string) ($request['type'] ?? 'active');
-
-            // Normalize project scope (UI uses "id")
-            if (! empty($request['id'])) {
-                $request['projectId'] = $request['id'];
-            }
-
-            [$active, $completed] = $this->getPublicIndex($request);
-            $events = $type === 'completed' ? $completed : $active;
-
-            return View::make('front.event.partials.event', ['events' => $events])->render();
-        });
-
-        return [
-            'html' => $html,
-            'cache_status' => $cacheStatus,
-        ];
     }
 }

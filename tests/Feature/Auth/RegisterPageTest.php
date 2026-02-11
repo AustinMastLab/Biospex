@@ -57,7 +57,7 @@ describe('User Registration Tests', function () {
             'email' => $email,
             'password' => $password,
             'password_confirmation' => $password,
-        ])->assertRedirect(route('admin.projects.index', absolute: false));
+        ])->assertRedirect(route('verification.notice', absolute: false));
 
         $this->assertDatabaseHas('users', [
             'email' => $email,
@@ -106,7 +106,7 @@ describe('Group Invite Registration Tests', function () {
             'email' => $invite->email, // Must match invite email
             'password' => $password,
             'password_confirmation' => $password,
-        ])->assertRedirect(route('admin.projects.index', absolute: false));
+        ])->assertRedirect(route('verification.notice', absolute: false));
 
         $this->assertDatabaseHas('users', [
             'email' => $invite->email,

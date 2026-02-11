@@ -31,17 +31,11 @@
 
     <div class="row">
         <div id="active-events-main" class="col-sm-12 show">
-            @include('common.event-sort', ['type' => 'active', 'route' => route('front.events.sort')])
-            <div id="active-events" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.event.partials.event', ['events' => $events])
-            </div>
+            <livewire:front.events-index type="active" />
         </div>
         <div id="completed-events-main" class="col-sm-12 collapse">
-            @include('common.event-sort', ['type' => 'completed', 'route' => route('front.events.sort')])
             <canvas id="event-conffeti" style="z-index: -1; position:fixed; top:0;left:0"></canvas>
-            <div id="completed-events" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.event.partials.event', ['events' => $eventsCompleted])
-            </div>
+            <livewire:front.events-index type="completed" />
         </div>
     </div>
     @include('common.scoreboard')

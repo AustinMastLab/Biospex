@@ -30,17 +30,11 @@
     </div>
     <div class="row">
         <div id="active-expeditions-main" class="col-sm-12 show">
-            @include('common.expedition-sort', ['type' => 'active', 'route' => route('front.expeditions.sort')])
-            <div id="active-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.expedition.partials.expedition', ['expeditions' => $expeditions])
-            </div>
+            <livewire:front.expeditions-index type="active" />
         </div>
         <div id="completed-expeditions-main" class="col-sm-12 collapse">
-            @include('common.expedition-sort', ['type' => 'completed', 'route' => route('front.expeditions.sort')])
             <canvas id="expedition-conffeti" style="z-index: -1; position:fixed; top:0;left:0;"></canvas>
-            <div id="completed-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.expedition.partials.expedition', ['expeditions' => $expeditionsCompleted])
-            </div>
+            <livewire:front.expeditions-index type="completed" />
         </div>
     </div>
 @endsection

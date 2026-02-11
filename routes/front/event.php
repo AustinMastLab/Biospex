@@ -21,10 +21,6 @@
 use App\Http\Controllers\Front\EventController;
 use App\Http\Controllers\Front\EventRateChartController;
 use App\Http\Controllers\Front\EventScoreboardController;
-use App\Http\Controllers\Front\EventSortController;
-
-// Event sort route
-Route::post('events/sort', EventSortController::class)->name('front.events.sort');
 
 // Event routes: events.index, events.show
 Route::resource('events', EventController::class)->only(['index', 'show'])->names([

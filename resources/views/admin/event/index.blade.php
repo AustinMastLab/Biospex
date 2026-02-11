@@ -24,16 +24,10 @@
 
     <div class="row">
         <div id="active-events-main" class="col-sm-12 show">
-            @include('common.event-sort', ['type' => 'active', 'route' => route('admin.events_sort.index')])
-            <div id="active-events" class="row col-sm-12 mx-auto justify-content-center">
-                @include('admin.event.partials.event', ['events' => $events])
-            </div>
+            <livewire:admin.events-index type="active" />
         </div>
         <div id="completed-events-main" class="col-sm-12 collapse">
-            @include('common.event-sort', ['type' => 'completed', 'route' => route('admin.events_sort.index')])
-            <div id="completed-events" class="row col-sm-12 mx-auto justify-content-center">
-                @include('admin.event.partials.event', ['events' => $eventsCompleted])
-            </div>
+            <livewire:admin.events-index type="completed" />
         </div>
     </div>
     @include('common.scoreboard')

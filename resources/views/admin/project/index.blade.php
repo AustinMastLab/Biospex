@@ -14,10 +14,7 @@
            class="btn btn-primary text-uppercase"><i class="fas fa-plus-circle"></i> {{ t('New Project') }}</a>
     </div>
     <div class="row">
-        @include('common.project-sort', ['route' => route('admin.projects.sort')])
-    </div>
-    <div id="projects" class="row col-sm-12 mx-auto justify-content-center">
-        @include('admin.project.partials.project', ['projects' => $projects])
+        <livewire:admin.projects-index />
     </div>
 @endsection
 

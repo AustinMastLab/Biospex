@@ -31,7 +31,6 @@ use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
-use Illuminate\Support\Facades\View;
 
 class ExpeditionService
 {
@@ -134,56 +133,42 @@ class ExpeditionService
     }
 
     /**
-     * For the public sort endpoint: return rendered HTML + cache metadata.
-     *
-     * @return array{html: string, cache_status: string}
+     * Cache key for the DATA collection of public expeditions (both partitions).
      */
-    public function getPublicSortedExpeditionsHtmlWithMeta(array $request = []): array
-    {
-        $cacheKey = $this->publicIndexHtmlCacheKey($request);
-        $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
-
-        $html = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request) {
-            $type = (string) ($request['type'] ?? 'active');
-
-            // Normalize project scope
-            if (! empty($request['id'])) {
-                $request['projectId'] = $request['id'];
-            }
-
-            [$active, $completed] = $this->getPublicIndex($request);
-            $expeditions = $type === 'completed' ? $completed : $active;
-
-            return View::make('front.expedition.partials.expedition', ['expeditions' => $expeditions])->render();
-        });
-
-        return [
-            'html' => $html,
-            'cache_status' => $cacheStatus,
-        ];
-    }
-
-    /**
-     * Cache key for the rendered public expeditions fragment.
-     */
-    protected function publicIndexHtmlCacheKey(array $request = []): string
+    protected function publicIndexDataCacheKey(array $request = []): string
     {
         $version = (int) Cache::get('public_sort:expeditions:version', 1);
 
-        $type = (string) ($request['type'] ?? 'active');
         $sort = (string) ($request['sort'] ?? 'date');
         $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
-        $projectId = $request['id'] ?? null;
+        $projectId = $request['projectId'] ?? $request['id'] ?? null;
 
         return sprintf(
-            'public_sort:expeditions_html:v%d:locale=%s:type=%s:sort=%s:order=%s:project=%s',
+            'public_sort:expeditions_data:v%d:locale=%s:sort=%s:order=%s:project=%s',
             $version,
             app()->getLocale(),
-            $type,
             $sort,
             $order,
             empty($projectId) ? 'all' : (string) $projectId,
         );
+    }
+
+    /**
+     * Get cached DATA (Collection of partitions) for the public expedition index.
+     * Must call the existing public query method and not duplicate it.
+     */
+    public function getPublicIndexCachedData(array $params = []): Collection
+    {
+        // Normalize projectId for consistency (UI may send 'id')
+        if (isset($params['id']) && ! isset($params['projectId'])) {
+            $params['projectId'] = $params['id'];
+        }
+
+        $cacheKey = $this->publicIndexDataCacheKey($params);
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($params) {
+            return $this->getPublicIndex($params);
+        });
     }
 
     /**

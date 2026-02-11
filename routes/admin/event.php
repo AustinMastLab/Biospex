@@ -19,11 +19,8 @@
  */
 
 use App\Http\Controllers\Admin\EventController;
-use App\Http\Controllers\Admin\EventSortController;
 use App\Http\Controllers\Admin\EventTranscriptionExportController;
 use App\Http\Controllers\Admin\EventUserExportController;
-
-Route::post('events/sort', [EventSortController::class, 'index'])->name('admin.events_sort.index');
 
 Route::resource('events', EventController::class)->names([
     'index' => 'admin.events.index',

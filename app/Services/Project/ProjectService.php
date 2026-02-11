@@ -29,7 +29,6 @@ use App\Services\Trait\EventPartitionTrait;
 use App\Services\Trait\ExpeditionPartitionTrait;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\View;
 
 class ProjectService
 {
@@ -205,31 +204,9 @@ class ProjectService
     }
 
     /**
-     * For the public sort endpoint: return rendered HTML + cache metadata.
-     *
-     * @return array{html: string, cache_status: string}
+     * Cache key for the DATA collection of public projects.
      */
-    public function getPublicSortedProjectsHtmlWithMeta(array $request = []): array
-    {
-        $cacheKey = $this->publicIndexHtmlCacheKey($request);
-        $cacheStatus = Cache::has($cacheKey) ? 'HIT' : 'MISS';
-
-        $html = Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request) {
-            $projects = $this->getPublicIndex($request);
-
-            return View::make('front.project.partials.project', ['projects' => $projects])->render();
-        });
-
-        return [
-            'html' => $html,
-            'cache_status' => $cacheStatus,
-        ];
-    }
-
-    /**
-     * Cache key for the rendered public projects fragment.
-     */
-    protected function publicIndexHtmlCacheKey(array $request = []): string
+    protected function publicIndexDataCacheKey(array $request = []): string
     {
         $version = (int) Cache::get('public_sort:projects:version', 1);
 
@@ -237,12 +214,25 @@ class ProjectService
         $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
 
         return sprintf(
-            'public_sort:projects_html:v%d:locale=%s:sort=%s:order=%s',
+            'public_sort:projects_data:v%d:locale=%s:sort=%s:order=%s',
             $version,
             app()->getLocale(),
             $sort,
             $order,
         );
+    }
+
+    /**
+     * Get cached DATA (Collection) for the public project index.
+     * Must call the existing public query method and not duplicate it.
+     */
+    public function getPublicIndexCachedData(array $params = []): Collection
+    {
+        $cacheKey = $this->publicIndexDataCacheKey($params);
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($params) {
+            return $this->getPublicIndex($params);
+        });
     }
 
     /**
@@ -256,15 +246,14 @@ class ProjectService
         $query = $this->project
             ->newQuery()
             ->with('group')
-            ->withCount('expeditions')
+            ->withCount(['expeditions', 'events'])
             ->withSum('expeditionStats', 'transcriptions_completed')
-            ->withCount('events')
             ->has('panoptesProjects');
 
         if ($sort === 'group') {
             $query
                 ->leftJoin('groups', 'groups.id', '=', 'projects.group_id')
-                ->select('projects.*')
+                ->addSelect('projects.*')
                 ->orderBy('groups.title', $order);
         } elseif ($sort === 'title') {
             $query->orderBy('projects.title', $order);

@@ -20,7 +20,6 @@
 
 use App\Http\Controllers\Admin\ProjectCloneController;
 use App\Http\Controllers\Admin\ProjectController;
-use App\Http\Controllers\Admin\ProjectSortController;
 use App\Http\Controllers\Admin\ProjectStatsController;
 use App\Http\Controllers\Admin\ProjectSubjectController;
 
@@ -33,7 +32,6 @@ Route::put('projects/{project}', [ProjectController::class, 'update'])->name('ad
 Route::delete('projects/{project}', [ProjectController::class, 'delete'])->name('admin.projects.destroy');
 
 Route::get('projects/{project}/statistics', ProjectStatsController::class)->name('admin.project-stats.index');
-Route::post('projects/sort', ProjectSortController::class)->name('admin.projects.sort');
 Route::get('projects/{project}/clone', ProjectCloneController::class)->name('admin.projects.clone');
 Route::get('projects/{project}/subjects', [ProjectSubjectController::class, 'index'])->name('admin.project-subjects.index');
 Route::delete('projects/{project}/subject', [ProjectSubjectController::class, 'destroy'])->name('admin.project-subjects.destroy');

@@ -18,21 +18,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Models\User;
+use Illuminate\Auth\Notifications\VerifyEmail;
+use Illuminate\Support\Facades\Notification;
+
 use function Pest\Laravel\post;
 
-test('registration triggers two verification emails', function () {
-    // Clear log before starting
-    file_put_contents(storage_path('logs/laravel.log'), '');
+test('registration triggers one verification email', function () {
+    Notification::fake();
+
     $response = post(route('app.post.register'), [
         'name' => 'Test User',
         'email' => 'test@example.com',
         'password' => 'password',
         'password_confirmation' => 'password',
     ]);
-    $response->assertRedirect(route('verification.notice'));
-    $logContent = file_get_contents(storage_path('logs/laravel.log'));
-    $count = substr_count($logContent, 'Verification email notification is being sent');
-    expect($count)->toBe(2);
-    // Output the log content for analysis
-    echo $logContent;
+
+    $response->assertRedirect(route('verification.notice', absolute: false));
+
+    $user = User::where('email', 'test@example.com')->firstOrFail();
+
+    Notification::assertSentTo($user, VerifyEmail::class);
+    Notification::assertSentToTimes($user, VerifyEmail::class, 1);
 });

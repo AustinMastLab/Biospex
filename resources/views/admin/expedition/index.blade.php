@@ -20,16 +20,10 @@
     </div>
     <div class="row">
         <div id="active-expeditions-main" class="col-sm-12 show">
-            @include('common.expedition-sort', ['type' => 'active', 'route' => route('admin.expeditions.sort')])
-            <div id="active-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('admin.expedition.partials.expedition', ['expeditions' => $expeditions])
-            </div>
+            <livewire:admin.expeditions-index type="active" />
         </div>
         <div id="completed-expeditions-main" class="col-sm-12 collapse">
-            @include('common.expedition-sort', ['type' => 'completed', 'route' => route('admin.expeditions.sort')])
-            <div id="completed-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('admin.expedition.partials.expedition', ['expeditions' => $expeditionsCompleted])
-            </div>
+            <livewire:admin.expeditions-index type="completed" />
         </div>
     </div>
 @endsection

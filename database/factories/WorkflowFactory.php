@@ -43,7 +43,7 @@ final class WorkflowFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->words(2, true),
+            'title' => fake()->unique()->words(2, true),
             'enabled' => fake()->randomNumber(1),
         ];
     }

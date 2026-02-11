@@ -95,10 +95,6 @@ $(function () {
     }
 
 
-    $('.sort-page').on('click', function () {
-        sortPage($(this));
-    });
-
     $('.toggle-view-btn').on('click', function () {
         let html = $(this).html();
         let value = $(this).data('value');
@@ -185,50 +181,6 @@ $(function () {
         clearInterval(timeInterval);
     });
 });
-
-/**
- * data attributes: project-id, type (active, completed), sort, order, url, target
- * @param element
- */
-sortPage = function (element) {
-    const data = element.data();
-    const $target = $('#' + data.target); // target container
-
-    $target.html('<span class="loader"></span>');
-
-    $.post(data.url, data)
-        .done(function (response) {
-            $target.html(response);
-            setOrder(data.order, element);
-            clockDiv();
-        });
-}
-
-setOrder = function (order, element) {
-    const $icon = element.find('i');
-
-    element
-        .siblings('.sort-page')
-        .data('order', 'asc')
-        .find('i')
-        .removeClass()
-        .addClass('fas fa-sort');
-
-    switch (order) {
-        case 'asc':
-            element.data('order', 'desc');
-            $icon.removeClass().addClass('fas fa-sort-up');
-            break;
-        case 'desc':
-            element.data('order', '');
-            $icon.removeClass().addClass('fas fa-sort-down');
-            break;
-        default:
-            element.data('order', 'asc');
-            $icon.removeClass().addClass('fas fa-sort');
-            break;
-    }
-}
 
 let timeInterval;
 

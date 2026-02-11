@@ -15,5 +15,5 @@ test('new users can register', function () {
     ]);
 
     $this->assertAuthenticated();
-    $response->assertRedirect(route('admin.projects.index', absolute: false));
+    $response->assertRedirect(route('verification.notice', absolute: false));
 });

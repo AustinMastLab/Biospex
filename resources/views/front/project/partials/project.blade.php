@@ -1,1 +1,0 @@
-@each('front.project.partials.project-loop', $projects, 'project')

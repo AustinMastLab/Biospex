@@ -136,17 +136,11 @@
             <hr class="header mx-auto">
         </div>
         <div id="active-expeditions-main" class="col-sm-12 show">
-            @include('common.expedition-sort', ['type' => 'active', 'route' => route('front.expeditions.sort'), 'id' => $project->id])
-            <div id="active-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.expedition.partials.expedition',['expeditions'])
-            </div>
+            <livewire:front.expeditions-index type="active" :project-id="$project->id" />
         </div>
         <div id="completed-expeditions-main" class="col-sm-12 collapse">
-            @include('common.expedition-sort', ['type' => 'completed', 'route' => route('front.expeditions.sort'), 'id' => $project->id])
             <canvas id="expedition-conffeti" style="z-index: -1; position:fixed; top:0;left:0;"></canvas>
-            <div id="completed-expeditions" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.expedition.partials.expedition', ['expeditions' => $expeditionsCompleted])
-            </div>
+            <livewire:front.expeditions-index type="completed" :project-id="$project->id" />
         </div>
     </div>
 
@@ -163,17 +157,11 @@
             <hr class="header mx-auto">
         </div>
         <div id="active-events-main" class="col-sm-12 show">
-            @include('common.event-sort', ['type' => 'active', 'route' => route('front.events.sort'), 'id' => $project->id])
-            <div id="active-events" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.event.partials.event')
-            </div>
+            <livewire:front.events-index type="active" :project-id="$project->id" />
         </div>
         <div id="completed-events-main" class="col-sm-12 collapse">
-            @include('common.event-sort', ['type' => 'completed', 'route' => route('front.events.sort'), 'id' => $project->id])
             <canvas id="event-conffeti" style="z-index: -1; position:fixed; top:0;left:0"></canvas>
-            <div id="completed-events" class="row col-sm-12 mx-auto justify-content-center">
-                @include('front.event.partials.event', ['events' => $eventsCompleted])
-            </div>
+            <livewire:front.events-index type="completed" :project-id="$project->id" />
         </div>
         @include('common.scoreboard')
         @include('common.event-step-chart')
@@ -186,7 +174,7 @@
                 <hr class="header mx-auto">
             </div>
             <div id="bingos-main" class="col-sm-12 show">
-                <div id="active-events" class="row col-sm-12 mx-auto justify-content-center">
+                <div id="bingos" class="row col-sm-12 mx-auto justify-content-center">
                     @foreach($project->bingos as $bingo)
                         @include('front.bingo.partials.bingo-loop', ['project' => $project])
                     @endforeach

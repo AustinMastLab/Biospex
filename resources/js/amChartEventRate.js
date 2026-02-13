@@ -19,7 +19,6 @@
 let chart;
 am4core.ready(function () {
 
-
     $('#step-chart-modal').on('show.bs.modal', function (e) {
 
         let teams = $(e.relatedTarget).data('teams').split(',');
@@ -30,11 +29,50 @@ am4core.ready(function () {
         am4core.useTheme(am4themes_animated);
 
         chart = am4core.create("chartdiv", am4charts.XYChart);
+
+        // Keep this VERY lightweight: label only the root SVG once per render cycle.
+        function labelRootSvgOnly() {
+            try {
+                let container = document.getElementById('chartdiv');
+                if (!container) return;
+
+                let svg = container.querySelector('svg');
+                if (!svg) return;
+
+                let titleId = 'event-rate-chart-svg-title';
+                let descId = 'event-rate-chart-svg-desc';
+
+                let title = svg.querySelector('#' + titleId);
+                if (!title) {
+                    title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                    title.setAttribute('id', titleId);
+                    svg.insertBefore(title, svg.firstChild);
+                }
+                title.textContent = 'Rate chart';
+
+                let desc = svg.querySelector('#' + descId);
+                if (!desc) {
+                    desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
+                    desc.setAttribute('id', descId);
+                    svg.insertBefore(desc, title.nextSibling);
+                }
+                desc.textContent = 'Line chart showing estimated records per hour over time by team.';
+
+                svg.setAttribute('role', 'img');
+                svg.setAttribute('aria-labelledby', titleId + ' ' + descId);
+            } catch (e) {
+                // Never let accessibility patching break the chart
+                // (intentionally swallow)
+            }
+        }
+
+        chart.events.on("ready", labelRootSvgOnly);
+        chart.events.on("datavalidated", labelRootSvgOnly);
+
         chart.dataSource.url = url;
         chart.dataSource.reloadFrequency = refresh;
         chart.dataSource.incremental = true;
         chart.dataSource.adapter.add("url", function (url, target) {
-            // "target" contains reference to the dataSource itself
             if (target.lastLoad) {
                 chart.dataSource.reloadFrequency = 300000;
                 url += "/" + target.lastLoad.getTime();
@@ -46,30 +84,21 @@ am4core.ready(function () {
         chart.padding(0, 0, 0, 0);
         chart.zoomOutButton.disabled = true;
 
-        // Create axis BEFORE using it in datavalidated
         let dateAxis = chart.xAxes.push(new am4charts.DateAxis());
-        dateAxis.baseInterval = {
-            "timeUnit": "minute",
-            "count": 5
-        };
+        dateAxis.baseInterval = { "timeUnit": "minute", "count": 5 };
 
         chart.events.on("datavalidated", function () {
             dateAxis.zoom({start: 1 / 15, end: 1.2}, false, true);
         });
 
-        // Remove the amCharts scrollbar to resolve Axe nested-interactive.
         chart.scrollbarX = null;
 
-        // Enable scroll-like navigation on time without a scrollbar:
-        // - drag to pan horizontally
-        // - mouse wheel / trackpad to zoom on X (time)
         let cursor = new am4charts.XYCursor();
         cursor.behavior = "panX";
         cursor.lineY.disabled = true;
-        cursor.lineX.disabled = true; // optional: hide the crosshair line for a cleaner look
+        cursor.lineX.disabled = true;
         chart.cursor = cursor;
 
-        // Trackpad/mouse wheel zoom on time axis
         chart.mouseWheelBehavior = "zoomX";
         chart.chartContainer.wheelable = true;
 
@@ -84,7 +113,6 @@ am4core.ready(function () {
         dateAxis.interpolationDuration = 500;
         dateAxis.rangeChangeDuration = 500;
 
-        // this makes date axis labels which are at equal minutes to be rotated
         dateAxis.renderer.labels.template.adapter.add("rotation", function (rotation, target) {
             target.verticalCenter = "middle";
             target.horizontalCenter = "left";
@@ -92,7 +120,6 @@ am4core.ready(function () {
         });
 
         let valueAxis = chart.yAxes.push(new am4charts.ValueAxis());
-        //valueAxis.min = -0.1;
         valueAxis.title.text = "Estimated Records Per Hour";
         valueAxis.title.fontSize = 20;
         valueAxis.tooltip.disabled = true;
@@ -122,7 +149,6 @@ am4core.ready(function () {
 
             team.events.on("validated", function () {
                 if (team.dataItems.last == null) return;
-
                 bullet.moveTo(team.dataItems.last.point);
                 bullet.validatePosition();
             });
@@ -137,14 +163,16 @@ am4core.ready(function () {
         marker.strokeOpacity = 1;
         marker.stroke = am4core.color("#ccc");
 
-        // Set initial refresh rate so next 5 minutes loads correctly
         function initialRefresh() {
             let coeff = 1000 * 60 * 5;
             let date = new Date();
             let rounded = new Date(Math.ceil(date.getTime() / coeff) * coeff);
-
             return (rounded.getTime() - date.getTime());
         }
+
+        $('#step-chart-modal').one('hidden.bs.modal', function () {
+            stopSvgA11yObserver();
+        });
 
     }).on('hidden.bs.modal', function () {
         chart.dispose();

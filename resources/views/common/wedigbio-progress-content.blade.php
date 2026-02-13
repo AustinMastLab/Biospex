@@ -15,7 +15,7 @@
             <td colspan="3" class="color-action">Stats update every 5 minutes.</td>
         </tr>
         <tr>
-            <th>#</th>
+            <th scope="col">#</th>
             <th scope="col">{{ t('Project') }}</th>
             <th scope="col">{{ t('Transcriptions') }}</th>
         </tr>

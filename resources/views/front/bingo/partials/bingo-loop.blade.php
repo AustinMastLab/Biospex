@@ -7,10 +7,7 @@
                 {{ t('for') }}<br>
                 {{ $project->title }}
             </h5>
-            <a href="{{ route('front.bingos.join', [$bingo]) }}"
-               onclick="return !window.open(this.href, 'Biospex_Bingo_Card', 'width=700,height=800')"
-               target="_blank"
-               class="btn btn-primary my-4 ml-2 text-uppercase">{{ t('Generate Card') }}</a>
+            {!! $bingo->present()->generate_card_button !!}
         </div>
         <div class="card-footer">
             <div class="d-flex align-items-start justify-content-between mt-4 mb-3">

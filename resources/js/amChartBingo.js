@@ -2,24 +2,16 @@
  * Copyright (C) 2014 - 2025, Biospex
  * biospex@gmail.com
  *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
+ * // ... existing header ...
  */
 
 $(function () {
 
     // Create map instance
     let chart = am4core.create("bingodiv", am4maps.MapChart);
+
+    // Keep the map out of the tab order (amCharts may inject focusable elements)
+    makeMapNotTabbable(chart);
 
     // Set map definition
     chart.geodata = am4geodata_worldLow;
@@ -95,10 +87,20 @@ $(function () {
 
     // Toggle clicked and not clicked
     $bingoRows.on('click', '.square', function () {
-        $(this).toggleClass('clicked');
+        const $cell = $(this);
+
+        // Skip the logo square
+        if ($cell.hasClass('logo')) {
+            return;
+        }
+
+        $cell.toggleClass('clicked');
+
+        // Keep aria-pressed in sync for screen readers
+        $cell.attr('aria-pressed', $cell.hasClass('clicked') ? 'true' : 'false');
 
         // Push clicked object ID to 'selected' array
-        selected.push($(this).attr('id'));
+        selected.push($cell.attr('id'));
 
         // Compare winners array to selected array for matches
         for (let i = 0; i < possibleWinners; i++) {
@@ -117,42 +119,19 @@ $(function () {
                 selected = ['c3'];
             }
         }
-    }).data('clicked', 0)
-        .click(function () {
-            let counter = $(this).data('clicked');
-            $(this).data('clicked', counter++);
-        });
+    });
 
-    /*
-    Echo.join(Laravel.channel)
-        .here('here')
-        .joining('joining')
-        .leaving('leaving')
-        .listen('BingoEvent', (e) => {
-            let data = JSON.parse(e.data);
-            let winner = data.winner;
-            let marker = data.marker;
+    // Keyboard support: Enter / Space toggles the focused cell
+    $bingoRows.on('keydown', '.square', function (e) {
+        if (e.key !== 'Enter' && e.key !== ' ') {
+            return;
+        }
 
-            console.log('Marker: ' + marker['uuid']);
-            console.log('Winner: ' + winner);
+        e.preventDefault();
+        $(this).trigger('click');
+    });
 
-            if (marker['uuid'] === Laravel.bingoUserUuid) {
-                console.log('Marker is already on the map');
-                return;
-            }
-
-            // imageSeries.addData(item.value);
-            imageSeries.addData(data.marker);
-
-            if (winner === null) {
-                console.log('No winner');
-                return;
-            }
-
-            showWinnerModal('<h3>We Have A Winner In ' + winner.city + '!!</h3>');
-        });
-
-     */
+    // ... existing code ...
 });
 
 function showWinnerModal($bingoRows, msg, owner = false) {
@@ -177,8 +156,58 @@ function createRows($bingoRows) {
     $.post(Laravel.rowsUrl)
         .done(function (data) {
             $bingoRows.html(data);
+
+            // After rows are injected, set up focusability in DOM order
+            initBingoCellTabOrder($bingoRows);
         })
         .fail(function () {
             $bingoRows.html('<p>Failed to load bingo rows.</p>');
         });
+}
+
+function initBingoCellTabOrder($bingoRows) {
+    // Make ONLY the playable cells tabbable, in DOM creation order.
+    // (DOM order == the order they appear in the injected HTML.)
+    const $cells = $bingoRows.find('.square').not('.logo');
+
+    $cells.each(function () {
+        const $cell = $(this);
+
+        // Make div behave like a button for a11y
+        $cell.attr('tabindex', '0');
+        $cell.attr('role', 'button');
+
+        // Keep aria-pressed aligned with state
+        $cell.attr('aria-pressed', $cell.hasClass('clicked') ? 'true' : 'false');
+    });
+
+    // Ensure the logo is not tabbable
+    $bingoRows.find('.square.logo').removeAttr('tabindex').removeAttr('role').removeAttr('aria-pressed');
+}
+
+function makeMapNotTabbable(chart) {
+    const mapEl = document.getElementById('bingodiv');
+    if (!mapEl) {
+        return;
+    }
+
+    // Container itself should not be in tab order
+    mapEl.setAttribute('tabindex', '-1');
+
+    // amCharts chart container element can be focusable; remove it from tab order
+    if (chart && chart.chartContainer && chart.chartContainer.htmlElement) {
+        chart.chartContainer.htmlElement.setAttribute('tabindex', '-1');
+    }
+
+    // amCharts may insert SVG elements with tabindex="0"; neutralize them as they appear
+    const stripTabindex = () => {
+        mapEl.querySelectorAll('[tabindex]').forEach((node) => {
+            node.setAttribute('tabindex', '-1');
+        });
+    };
+
+    stripTabindex();
+
+    const observer = new MutationObserver(() => stripTabindex());
+    observer.observe(mapEl, { childList: true, subtree: true });
 }

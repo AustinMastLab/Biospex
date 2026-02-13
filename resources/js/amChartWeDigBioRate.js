@@ -53,6 +53,45 @@ am4core.ready(function () {
 function buildChart(url, projects) {
     weDigBioRateChart = am4core.create("weDigBioRateChartDiv", am4charts.XYChart);
     am4core.useTheme(am4themes_animated);
+
+    // A11y: label only the root SVG (safe; avoids DOM churn)
+    function labelRootSvgOnly() {
+        try {
+            let container = document.getElementById('weDigBioRateChartDiv');
+            if (!container) return;
+
+            let svg = container.querySelector('svg');
+            if (!svg) return;
+
+            let titleId = 'wedigbio-rate-chart-svg-title';
+            let descId = 'wedigbio-rate-chart-svg-desc';
+
+            let title = svg.querySelector('#' + titleId);
+            if (!title) {
+                title = document.createElementNS('http://www.w3.org/2000/svg', 'title');
+                title.setAttribute('id', titleId);
+                svg.insertBefore(title, svg.firstChild);
+            }
+            title.textContent = 'WeDigBio rate chart';
+
+            let desc = svg.querySelector('#' + descId);
+            if (!desc) {
+                desc = document.createElementNS('http://www.w3.org/2000/svg', 'desc');
+                desc.setAttribute('id', descId);
+                svg.insertBefore(desc, title.nextSibling);
+            }
+            desc.textContent = 'Line chart showing estimated records per hour over time by project.';
+
+            svg.setAttribute('role', 'img');
+            svg.setAttribute('aria-labelledby', titleId + ' ' + descId);
+        } catch (e) {
+            // Intentionally swallow to avoid breaking the chart
+        }
+    }
+
+    weDigBioRateChart.events.on("ready", labelRootSvgOnly);
+    weDigBioRateChart.events.on("datavalidated", labelRootSvgOnly);
+
     weDigBioRateChart.dataSource.url = url;
     weDigBioRateChart.dateFormatter.inputDateFormat = "yyyy-MM-dd HH:mm:ss";
     weDigBioRateChart.hiddenState.properties.opacity = 0;
@@ -62,21 +101,15 @@ function buildChart(url, projects) {
     let cellSize = .3;
     weDigBioRateChart.events.on("datavalidated", function (ev) {
         dateAxis.zoom({start: 1 / 15, end: 1.2}, false, true);
-        // Get objects of interest
         let chart = ev.target;
         let categoryAxis = chart.yAxes.getIndex(0);
 
-        // Calculate how we need to adjust chart height
         let adjustHeight = chart.data.length * cellSize - categoryAxis.pixelHeight;
-
-        // get current chart height
         let targetHeight = chart.pixelHeight + adjustHeight;
 
-        // Set it on chart's container
         chart.svgContainer.htmlElement.style.height = targetHeight + "px";
     });
 
-    // Remove the amCharts scrollbar to resolve Axe nested-interactive.
     weDigBioRateChart.scrollbarX = null;
 
     let dateAxis = weDigBioRateChart.xAxes.push(new am4charts.DateAxis());

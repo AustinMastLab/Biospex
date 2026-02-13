@@ -167,4 +167,30 @@ class BingoPresenter extends Presenter
             aria-label="'.$ariaLabel.'">
                 <i class="fas fa-envelope" aria-hidden="true"></i></a>';
     }
+
+    /**
+     * Button to open the "Generate Card" page in a popup/new window.
+     */
+    public function generateCardButton(): string
+    {
+        $url = route('front.bingos.join', [$this->model]);
+
+        // Unique accessible name to avoid "links with different destinations" warnings
+        $ariaLabel = e(t(
+            'Generate Card for bingo: %s (bingo %s)',
+            (string) $this->model->title,
+            (string) $this->model->uuid
+        ));
+
+        $text = e(t('Generate Card'));
+
+        return '<a href="'.$url.'"
+            target="_blank"
+            rel="noopener noreferrer"
+            class="btn btn-primary my-4 ml-2 text-uppercase js-popup-window"
+            data-popup-name="Biospex_Bingo_Card"
+            data-popup-width="700"
+            data-popup-height="800"
+            aria-label="'.$ariaLabel.'">'.$text.'</a>';
+    }
 }

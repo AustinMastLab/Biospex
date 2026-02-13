@@ -151,6 +151,37 @@ $(function () {
 
     clockDiv();
 
+    // Open links in a configured popup window (used across front/admin).
+    // Falls back to target="_blank" if window.open is blocked.
+    $(document).on('click', 'a.js-popup-window', function (e) {
+        const $link = $(this);
+        const href = this.href;
+
+        const name = $link.data('popup-name') || 'popup';
+        const width = Number($link.data('popup-width')) || 700;
+        const height = Number($link.data('popup-height')) || 800;
+
+        // Try to center the popup on screen
+        const left = Math.max(0, Math.floor((window.screen.width - width) / 2));
+        const top = Math.max(0, Math.floor((window.screen.height - height) / 2));
+
+        const features = [
+            'width=' + width,
+            'height=' + height,
+            'left=' + left,
+            'top=' + top
+        ].join(',');
+
+        const popup = window.open(href, name, features);
+
+        // If the popup was created, prevent the normal navigation.
+        // If it was blocked, allow the browser to follow the link (target="_blank").
+        if (popup) {
+            e.preventDefault();
+            popup.focus();
+        }
+    });
+
     $('#wedigbio-progress-modal').on('show.bs.modal', function (e) {
         let $modal = $(this).find('.modal-body');
         let $button = $(e.relatedTarget); // Button that triggered the modal

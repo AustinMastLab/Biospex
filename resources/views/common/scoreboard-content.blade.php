@@ -12,7 +12,7 @@
     <table class="table table-striped">
         <thead>
         <tr>
-            <th>#</th>
+            <th scope="col">#</th>
             <th scope="col">Team</th>
             <th scope="col">Transcriptions</th>
         </tr>

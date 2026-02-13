@@ -17,7 +17,7 @@
 
 {{-- Content --}}
 @section('content')
-    <h2 class="text-center text-uppercase pt-4">{{ t('Biospex Bingo') }}</h2>
+    <h1 class="page-title text-center text-uppercase pt-4">{{ t('Biospex Bingo') }}</h1>
     <hr class="header mx-auto" style="width:300px;">
     <div class="row">
         @if($bingos->isNotEmpty())

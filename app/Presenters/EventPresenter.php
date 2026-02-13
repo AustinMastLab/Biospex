@@ -126,12 +126,14 @@ class EventPresenter extends Presenter
         $hashtag = $this->model->hashtag;
         $url = config('app.url').'/events/'.$uuid.'&text='.$title.'&hashtags='.$hashtag;
 
+        $ariaLabel = e(t('Share event: %s on Twitter (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="https://twitter.com/intent/tweet?url='.$url.'" 
             target="_blank"
             rel="noopener noreferrer"
             data-hover="tooltip" 
-            title="'.t('Share on Twitter').'"
-            aria-label="'.t('Share on Twitter').'">
+            title="'.$ariaLabel.'"
+            aria-label="'.$ariaLabel.'">
             <i class="fab fa-twitter" aria-hidden="true"></i></a>';
     }
 
@@ -140,81 +142,100 @@ class EventPresenter extends Presenter
         $url = urlencode(config('app.url').'/events/'.$this->model->uuid);
         $title = urlencode($this->model->title);
 
+        $ariaLabel = e(t('Share event: %s on Facebook (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="http://www.facebook.com/share.php?u='.$url.'&title='.$title.'" 
             target="_blank"
             rel="noopener noreferrer"
             data-hover="tooltip" 
-            title="'.t('Share on Facebook').'"
-            aria-label="'.t('Share on Facebook').'">
+            title="'.$ariaLabel.'"
+            aria-label="'.$ariaLabel.'">
             <i class="fab fa-facebook" aria-hidden="true"></i></a>';
     }
 
     public function contactEmailIcon()
     {
-        return $this->model->contact_email === null ? '' :
-            '<a href="mailto:'.$this->model->contact_email.'" 
+        if ($this->model->contact_email === null) {
+            return '';
+        }
+
+        $ariaLabel = e(t('Contact event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
+        return '<a href="mailto:'.$this->model->contact_email.'" 
             data-hover="tooltip" 
-            title="'.t('Contact').'"
-            aria-label="'.t('Contact').'">
+            title="'.e(t('Contact event')).'"
+            aria-label="'.$ariaLabel.'">
             <i class="far fa-envelope" aria-hidden="true"></i></a>';
     }
 
     public function eventShowIcon()
     {
+        $ariaLabel = e(t('View event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="'.route('front.events.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Event').'" aria-label="'.t('View Event').'">
+        ]).'" data-hover="tooltip" title="'.e(t('View event')).'" aria-label="'.$ariaLabel.'">
                 <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     public function eventAdminShowIcon()
     {
+        $ariaLabel = e(t('View event (Admin): %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="'.route('admin.events.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Event').'" aria-label="'.t('View Event').'">
+        ]).'" data-hover="tooltip" title="'.e(t('View event (Admin)')).'" aria-label="'.$ariaLabel.'">
                 <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     public function eventEditIcon()
     {
+        $ariaLabel = e(t('Edit event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="'.route('admin.events.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Event').'" aria-label="'.t('Edit Event').'">
+        ]).'" data-hover="tooltip" title="'.e(t('Edit event')).'" aria-label="'.$ariaLabel.'">
                 <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
     public function eventEditIconLrg()
     {
+        $ariaLabel = e(t('Edit event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="'.route('admin.events.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Event').'" aria-label="'.t('Edit Event').'"><i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
+        ]).'" data-hover="tooltip" title="'.e(t('Edit event')).'" aria-label="'.$ariaLabel.'"><i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function eventDeleteIcon()
     {
+        $ariaLabel = e(t('Delete event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="'.route('admin.events.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Event').'"
-            aria-label="'.t('Delete Event').'"
+            title="'.e(t('Delete event')).'"
+            aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Event').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete event')).'?" data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
     public function eventDeleteIconLrg()
     {
+        $ariaLabel = e(t('Delete event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="'.route('admin.events.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Event').'"
-            aria-label="'.t('Delete Event').'"
+            title="'.e(t('Delete event')).'"
+            aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Event').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete event')).'?" data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -224,12 +245,14 @@ class EventPresenter extends Presenter
             $this->model,
         ]);
 
+        $ariaLabel = e(t('Download participants file for event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="#" class="prevent-default event-export"
-        aria-label="'.t('Download Participants File').'"
-        data-href="'.$route.'"
-        data-success="An email with attached export will be sent."
-        data-error="There was an error while exporting. Please inform the Administration"
-        data-hover="tooltip" title="'.t('Download Participants File').'"><i class="fas fa-users fa-2x" aria-hidden="true"></i></a>';
+            aria-label="'.$ariaLabel.'"
+            data-href="'.$route.'"
+            data-success="'.e(t('An email with attached export will be sent.')).'"
+            data-error="'.e(t('There was an error while exporting. Please inform the Administration')).'"
+            data-hover="tooltip" title="'.e(t('Download participants file')).'"><i class="fas fa-users fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function eventDownloadDigitizationsIconLrg()
@@ -238,12 +261,14 @@ class EventPresenter extends Presenter
             $this->model,
         ]);
 
+        $ariaLabel = e(t('Download digitizations file for event: %s (event %s)', (string) $this->model->title, (string) $this->model->uuid));
+
         return '<a href="#" class="prevent-default event-export"
-        aria-label="'.t('Download Digitizations File').'"
-        data-href="'.$route.'"
-        data-success="An email with attached export will be sent."
-        data-error="There was an error while exporting. Please inform the Administration"
-        data-hover="tooltip" title="'.t('Download Digitizations File').'">
-        <i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';
+            aria-label="'.$ariaLabel.'"
+            data-href="'.$route.'"
+            data-success="'.e(t('An email with attached export will be sent.')).'"
+            data-error="'.e(t('There was an error while exporting. Please inform the Administration')).'"
+            data-hover="tooltip" title="'.e(t('Download digitizations file')).'">
+            <i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';
     }
 }

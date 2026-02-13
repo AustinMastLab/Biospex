@@ -70,29 +70,29 @@ class ExpeditionPresenter extends Presenter
 
     public function expeditionShowIcon()
     {
-        $ariaLabel = t('View Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('View expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="'.route('admin.expeditions.show', [$this->model]).'"
             data-hover="tooltip"
-            title="'.t('View Expedition').'"
+            title="'.e(t('View expedition')).'"
             aria-label="'.$ariaLabel.'">
             <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     public function expeditionShowIconLrg()
     {
-        $ariaLabel = t('View Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('View expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="'.route('admin.expeditions.show', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('View Expedition').'"
+            title="'.e(t('View expedition')).'"
             aria-label="'.$ariaLabel.'">
             <i class="fas fa-eye fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionToolsIconLrg()
     {
-        $ariaLabel = t('Expedition Tools for %s', e($this->model->title));
+        $ariaLabel = e(t('Expedition tools for %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="" class="prevent-default"
                        data-dismiss="modal"
@@ -101,94 +101,94 @@ class ExpeditionPresenter extends Presenter
                        data-size="modal-lg"
                        data-url="'.route('admin.expeditions.tools', [$this->model]).'"
                        data-hover="tooltip"
-                       data-title="'.t('Expedition Tools').'"
+                       data-title="'.e(t('Expedition tools')).'"
                        aria-label="'.$ariaLabel.'"><i class="fas fa-tools fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionDownloadIconLrg()
     {
         $route = route('admin.downloads.index', [$this->model]);
-        $ariaLabel = t('Download Expedition Files for %s', e($this->model->title));
+        $ariaLabel = e(t('Download expedition files for %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="#" class="prevent-default" 
                 data-toggle="modal" 
-                data-title="'.t('Download Expedition Files').'" 
+                data-title="'.e(t('Download expedition files')).'" 
                 data-url="'.$route.'"
                 data-dismiss="modal" data-toggle="modal" data-target="#global-modal" data-size="modal-xl" 
                 data-hover="tooltip" 
-                title="'.t('Download Expedition Files').'"
+                title="'.e(t('Download expedition files')).'"
                 aria-label="'.$ariaLabel.'"><i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionEditIcon()
     {
-        $ariaLabel = t('Edit Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('Edit expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
-        return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" data-hover="tooltip" title="'.t('Edit Expedition').'" aria-label="'.$ariaLabel.'">
+        return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" data-hover="tooltip" title="'.e(t('Edit expedition')).'" aria-label="'.$ariaLabel.'">
         <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
     public function expeditionEditIconLrg()
     {
-        $ariaLabel = t('Edit Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('Edit expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="'.route('admin.expeditions.edit', [$this->model]).'" 
         data-hover="tooltip" 
-        title="'.t('Edit Expedition').'"
+        title="'.e(t('Edit expedition')).'"
         aria-label="'.$ariaLabel.'">
         <i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionCloneIcon()
     {
-        $ariaLabel = t('Clone Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('Clone expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="'.route('admin.expeditions.clone', [$this->model]).'" 
         data-hover="tooltip" 
-        title="'.t('Clone Expedition').'"
+        title="'.e(t('Clone expedition')).'"
         aria-label="'.$ariaLabel.'">
         <i class="fas fa-clone" aria-hidden="true"></i></a>';
     }
 
     public function expeditionCloneIconLrg()
     {
-        $ariaLabel = t('Clone Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('Clone expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="'.route('admin.expeditions.clone', [$this->model]).'" 
         data-hover="tooltip" 
-        title="'.t('Clone Expedition').'"
+        title="'.e(t('Clone expedition')).'"
         aria-label="'.$ariaLabel.'">
         <i class="fas fa-clone fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function expeditionDeleteIcon()
     {
-        $ariaLabel = t('Delete Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('Delete expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="'.route('admin.expeditions.delete', [$this->model]).'" 
             class="prevent-default"
-            title="'.t('Delete Expedition').'"
+            title="'.e(t('Delete expedition')).'"
             aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Expedition').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete expedition')).'?" data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
     public function expeditionDeleteIconLrg()
     {
-        $ariaLabel = t('Delete Expedition: %s', e($this->model->title));
+        $ariaLabel = e(t('Delete expedition: %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="'.route('admin.expeditions.delete', [$this->model]).'" 
             class="prevent-default"
-            title="'.t('Delete Expedition').'"
+            title="'.e(t('Delete expedition')).'"
             aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Expedition').'?" 
-            data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete expedition')).'?" 
+            data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 

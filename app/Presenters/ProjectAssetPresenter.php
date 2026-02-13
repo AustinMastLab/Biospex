@@ -42,12 +42,16 @@ class ProjectAssetPresenter extends Presenter
             if (! empty($this->model->download_path) && Storage::disk('s3')->exists($this->model->download_path)) {
                 $url = Storage::disk('s3')->url($this->model->download_path);
 
-                return '<a href="'.$url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.$description.'">
-                <i class="fas fa-file" aria-hidden="true"></i> '.$name.'</a>';
+                $ariaLabel = e(t('Download file: %s (asset %s; opens in a new tab)', (string) $name, (string) $this->model->id));
+
+                return '<a href="'.$url.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.e((string) $description).'" aria-label="'.$ariaLabel.'">
+                <i class="fas fa-file" aria-hidden="true"></i> '.e((string) $name).'</a>';
             }
         }
 
-        return '<a href="'.$name.'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.$description.'">
-            <i class="fas fa-link" aria-hidden="true"></i> '.$name.'</a>';
+        $ariaLabel = e(t('Open link: %s (asset %s; opens in a new tab)', (string) $name, (string) $this->model->id));
+
+        return '<a href="'.e((string) $name).'" target="_blank" rel="noopener noreferrer" data-hover="tooltip" title="'.e((string) $description).'" aria-label="'.$ariaLabel.'">
+            <i class="fas fa-link" aria-hidden="true"></i> '.e((string) $name).'</a>';
     }
 }

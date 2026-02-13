@@ -30,10 +30,12 @@ class GroupPresenter extends Presenter
         // <i class="fas fa-users"></i>
         $route = route('admin.groups.show', [$this->model]);
 
+        $ariaLabel = e(t('View group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="'.$route.'" 
             data-hover="tooltip" 
-            title="'.t('View Group').'"
-            aria-label="'.t('View Group').'">
+            title="'.e(t('View group')).'"
+            aria-label="'.$ariaLabel.'">
             <i class="fas fa-users" aria-hidden="true"></i></a>';
     }
 
@@ -42,65 +44,77 @@ class GroupPresenter extends Presenter
         // <i class="fas fa-users"></i>
         $route = route('admin.groups.show', [$this->model]);
 
+        $ariaLabel = e(t('View group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="'.$route.'" 
             data-hover="tooltip" 
-            title="'.t('View Group').'"
-            aria-label="'.t('View Group').'">
+            title="'.e(t('View group')).'"
+            aria-label="'.$ariaLabel.'">
             <i class="fas fa-users fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function groupShowIcon()
     {
+        $ariaLabel = e(t('View group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="'.route('admin.groups.show', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('View Group').'"
-            aria-label="'.t('View Group').'">
+            title="'.e(t('View group')).'"
+            aria-label="'.$ariaLabel.'">
             <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     public function groupEditIcon()
     {
+        $ariaLabel = e(t('Edit group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="'.route('admin.groups.edit', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Edit Group').'"
-            aria-label="'.t('Edit Group').'">
+            title="'.e(t('Edit group')).'"
+            aria-label="'.$ariaLabel.'">
             <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
     public function groupEditIconLrg()
     {
+        $ariaLabel = e(t('Edit group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="'.route('admin.groups.edit', [$this->model]).'" 
             data-hover="tooltip" 
-            title="'.t('Edit Group').'"
-            aria-label="'.t('Edit Group').'">
+            title="'.e(t('Edit group')).'"
+            aria-label="'.$ariaLabel.'">
             <i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function groupDeleteIcon()
     {
+        $ariaLabel = e(t('Delete group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="'.route('admin.groups.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Group').'"
-            aria-label="'.t('Delete Group').'"
+            title="'.e(t('Delete group')).'"
+            aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Group').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete group')).'?" data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
     public function groupDeleteIconLrg()
     {
+        $ariaLabel = e(t('Delete group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="'.route('admin.groups.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Group').'"
-            aria-label="'.t('Delete Group').'"
+            title="'.e(t('Delete group')).'"
+            aria-label="'.$ariaLabel.'"
             data-hover="tooltip"        
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Group').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete group')).'?" data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -108,11 +122,13 @@ class GroupPresenter extends Presenter
     {
         $route = route('admin.invites.create', [$this->model]);
 
+        $ariaLabel = e(t('Invite users to group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="#" class="prevent-default" data-toggle="modal" data-url="'.$route.'" 
                     data-target="#global-modal" data-size="modal-lg" data-dismiss="modal" data-toggle="modal"
-                    data-title="'.t('Invite users to %s group.', $this->model->title).'"
-                    data-hover="tooltip" title="'.t('Invite users to %s group.', $this->model->title).'"
-                    aria-label="'.t('Invite users to %s group.', $this->model->title).'">
+                    data-title="'.e(t('Invite users to group')).'"
+                    data-hover="tooltip" title="'.e(t('Invite users to group')).'"
+                    aria-label="'.$ariaLabel.'">
                     <i class="fas fa-user-plus" aria-hidden="true"></i></a>';
     }
 
@@ -120,11 +136,13 @@ class GroupPresenter extends Presenter
     {
         $route = route('admin.invites.create', [$this->model]);
 
+        $ariaLabel = e(t('Invite users to group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
+
         return '<a href="#" class="prevent-default" data-toggle="modal" data-url="'.$route.'" 
                     data-target="#global-modal" data-size="modal-lg" data-dismiss="modal" data-toggle="modal"
-                    data-title="'.t('Invite users to %s group.', $this->model->title).'"
-                    data-hover="tooltip" title="'.t('Invite users to %s group.', $this->model->title).'"
-                    aria-label="'.t('Invite users to %s group.', $this->model->title).'">
+                    data-title="'.e(t('Invite users to group')).'"
+                    data-hover="tooltip" title="'.e(t('Invite users to group')).'"
+                    aria-label="'.$ariaLabel.'">
                     <i class="fas fa-user-plus fa-2x" aria-hidden="true"></i></a>';
     }
 }

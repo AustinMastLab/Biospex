@@ -42,61 +42,73 @@ class BingoPresenter extends Presenter
      */
     public function adminShowIcon()
     {
+        $label = e(t('View Bingo (bingo %s)', (string) $this->model->uuid));
+
         return '<a href="'.route('admin.bingos.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Bingo').'" aria-label="'.t('View Bingo').'">
+        ]).'" data-hover="tooltip" title="'.e(t('View Bingo')).'" aria-label="'.$label.'">
                 <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     public function showIcon()
     {
+        $label = e(t('View Bingo (bingo %s)', (string) $this->model->uuid));
+
         return '<a href="'.route('front.bingos.show', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('View Bingo').'" aria-label="'.t('View Bingo').'">
+        ]).'" data-hover="tooltip" title="'.e(t('View Bingo')).'" aria-label="'.$label.'">
                 <i class="fas fa-eye" aria-hidden="true"></i></a>';
     }
 
     public function editIcon()
     {
+        $label = e(t('Edit Bingo (bingo %s)', (string) $this->model->uuid));
+
         return '<a href="'.route('admin.bingos.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Bingo').'" aria-label="'.t('Edit Bingo').'">
+        ]).'" data-hover="tooltip" title="'.e(t('Edit Bingo')).'" aria-label="'.$label.'">
                 <i class="fas fa-edit" aria-hidden="true"></i></a>';
     }
 
     public function editIconLrg()
     {
+        $label = e(t('Edit Bingo (bingo %s)', (string) $this->model->uuid));
+
         return '<a href="'.route('admin.bingos.edit', [
             $this->model,
-        ]).'" data-hover="tooltip" title="'.t('Edit Bingo').'" aria-label="'.t('Edit Bingo').'">
+        ]).'" data-hover="tooltip" title="'.e(t('Edit Bingo')).'" aria-label="'.$label.'">
                 <i class="fas fa-edit fa-2x" aria-hidden="true"></i></a>';
     }
 
     public function deleteIcon()
     {
+        $label = e(t('Delete Bingo (bingo %s)', (string) $this->model->uuid));
+
         return '<a href="'.route('admin.bingos.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Bingo').'"
-            aria-label="'.t('Delete Bingo').'"
+            title="'.e(t('Delete Bingo')).'"
+            aria-label="'.$label.'"
             data-hover="tooltip"
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Bingo').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete Bingo')).'?" data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt" aria-hidden="true"></i></a>';
     }
 
     public function deleteIconLrg()
     {
+        $label = e(t('Delete Bingo (bingo %s)', (string) $this->model->uuid));
+
         return '<a href="'.route('admin.bingos.destroy', [
             $this->model,
         ]).'" class="prevent-default"
-            title="'.t('Delete Bingo').'"
-            aria-label="'.t('Delete Bingo').'"
+            title="'.e(t('Delete Bingo')).'"
+            aria-label="'.$label.'"
             data-hover="tooltip"
             data-method="delete"
             data-confirm="confirmation"
-            data-title="'.t('Delete Bingo').'?" data-content="'.t('This will permanently delete the record and all associated records.').'">
+            data-title="'.e(t('Delete Bingo')).'?" data-content="'.e(t('This will permanently delete the record and all associated records.')).'">
             <i class="fas fa-trash-alt fa-2x" aria-hidden="true"></i></a>';
     }
 
@@ -106,12 +118,18 @@ class BingoPresenter extends Presenter
         $title = $this->model->title;
         $url = config('app.url').'/bingos/'.$id.'&text='.$title;
 
+        $ariaLabel = e(t(
+            'Share bingo: %s on Twitter (bingo %s)',
+            (string) $this->model->title,
+            (string) $this->model->uuid
+        ));
+
         return '<a href="https://twitter.com/intent/tweet?url='.$url.'"
             target="_blank"
             rel="noopener noreferrer"
             data-hover="tooltip"
-            title="'.t('Share on Twitter').'"
-            aria-label="'.t('Share on Twitter').'">
+            title="'.$ariaLabel.'"
+            aria-label="'.$ariaLabel.'">
             <i class="fab fa-twitter" aria-hidden="true"></i></a>';
     }
 
@@ -120,18 +138,33 @@ class BingoPresenter extends Presenter
         $url = urlencode(config('app.url').'/bingos/'.$this->model->id);
         $title = urlencode($this->model->title);
 
+        $ariaLabel = e(t(
+            'Share bingo: %s on Facebook (bingo %s)',
+            (string) $this->model->title,
+            (string) $this->model->uuid
+        ));
+
         return '<a href="http://www.facebook.com/share.php?u='.$url.'&title='.$title.'"
             target="_blank"
             rel="noopener noreferrer"
             data-hover="tooltip"
-            title="'.t('Share on Facebook').'"
-            aria-label="'.t('Share on Facebook').'">
+            title="'.$ariaLabel.'"
+            aria-label="'.$ariaLabel.'">
             <i class="fab fa-facebook" aria-hidden="true"></i></a>';
     }
 
     public function contactIcon()
     {
-        return '<a href="mailto:'.$this->model->contact.'" data-hover="tooltip" title="'.t('Contact').'" aria-label="'.t('Contact').'">
+        if (empty($this->model->contact)) {
+            return '';
+        }
+
+        $ariaLabel = e(t('Contact bingo (bingo %s)', (string) $this->model->uuid));
+
+        return '<a href="mailto:'.$this->model->contact.'"
+            data-hover="tooltip"
+            title="'.$ariaLabel.'"
+            aria-label="'.$ariaLabel.'">
                 <i class="fas fa-envelope" aria-hidden="true"></i></a>';
     }
 }

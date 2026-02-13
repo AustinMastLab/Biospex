@@ -45,10 +45,16 @@ class UserPresenter extends Presenter
     public function email()
     {
         return $this->model->email === null ? '' :
-            '<a href="mailto:'.$this->model->email.'" 
+            (function () {
+                $email = (string) $this->model->email;
+                $name = (string) ($this->model->getFilamentName() ?: $email);
+                $aria = e(t('Contact user: %s (%s)', $name, $email));
+
+                return '<a href="mailto:'.$email.'" 
             data-hover="tooltip"
-            title="'.t('Contact').'"
-            aria-label="'.t('Contact').'">
+            title="'.e(t('Contact user')).'"
+            aria-label="'.$aria.'">
             <i class="far fa-envelope" aria-hidden="true"></i></a>';
+            })();
     }
 }

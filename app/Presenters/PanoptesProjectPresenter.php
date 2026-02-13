@@ -32,46 +32,99 @@ class PanoptesProjectPresenter extends Presenter
      */
     public function url()
     {
-        $url = $this->classifyReplace();
+        if ($this->model->panoptes_workflow_id === null) {
+            return '';
+        }
 
-        return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-keyboard" aria-hidden="true"></i></a>';
+        $url = $this->classifyReplace();
+        $ariaLabel = $this->participateAriaLabel();
+        $title = $this->participateTitle();
+
+        return '<a href="'.$url.'"
+                data-hover="tooltip"
+                title="'.$title.'"
+                aria-label="'.$ariaLabel.'"
+                target="_blank"
+                rel="noopener noreferrer">
+                    <i class="fas fa-keyboard" aria-hidden="true"></i>
+                </a>';
     }
 
     public function projectIcon()
     {
-        $url = $this->projectReplace();
+        if ($this->model->panoptes_workflow_id === null) {
+            return '';
+        }
 
-        return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-keyboard" aria-hidden="true"></i></a>';
+        $url = $this->projectReplace();
+        $ariaLabel = $this->projectAriaLabel();
+        $title = $this->projectTitle();
+
+        return '<a href="'.$url.'"
+                data-hover="tooltip"
+                title="'.$title.'"
+                aria-label="'.$ariaLabel.'"
+                target="_blank"
+                rel="noopener noreferrer">
+                    <i class="fas fa-keyboard" aria-hidden="true"></i>
+                </a>';
     }
 
     public function projectIconLrg()
     {
-        $url = $this->projectReplace();
+        if ($this->model->panoptes_workflow_id === null) {
+            return '';
+        }
 
-        return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-keyboard fa-2x" aria-hidden="true"></i></a>';
+        $url = $this->projectReplace();
+        $ariaLabel = $this->projectAriaLabel();
+        $title = $this->projectTitle();
+
+        return '<a href="'.$url.'"
+                data-hover="tooltip"
+                title="'.$title.'"
+                aria-label="'.$ariaLabel.'"
+                target="_blank"
+                rel="noopener noreferrer">
+                    <i class="fas fa-keyboard fa-2x" aria-hidden="true"></i>
+                </a>';
     }
 
     public function projectLink()
     {
-        $url = $this->projectReplace();
+        if ($this->model->panoptes_workflow_id === null) {
+            return '';
+        }
 
-        return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" title="'.t('Participate').'" target="_blank">'.t('Click here to participate').'</a>';
+        $url = $this->projectReplace();
+        $ariaLabel = $this->projectAriaLabel();
+        $title = $this->projectTitle();
+
+        return '<a href="'.$url.'"
+                title="'.$title.'"
+                aria-label="'.$ariaLabel.'"
+                target="_blank"
+                rel="noopener noreferrer">'.t('View project on Zooniverse').'</a>';
     }
 
     public function urlLrg()
     {
-        $url = $this->classifyReplace();
+        if ($this->model->panoptes_workflow_id === null) {
+            return '';
+        }
 
-        return $this->model->panoptes_workflow_id === null ? '#' :
-            '<a href="'.$url.'" data-hover="tooltip" title="'.t('Participate').'" aria-label="'.t('Participate').'" target="_blank" rel="noopener noreferrer">
-                <i class="fas fa-keyboard fa-2x" aria-hidden="true"></i></a>';
+        $url = $this->classifyReplace();
+        $ariaLabel = $this->participateAriaLabel();
+        $title = $this->participateTitle();
+
+        return '<a href="'.$url.'"
+                data-hover="tooltip"
+                title="'.$title.'"
+                aria-label="'.$ariaLabel.'"
+                target="_blank"
+                rel="noopener noreferrer">
+                    <i class="fas fa-keyboard fa-2x" aria-hidden="true"></i>
+                </a>';
     }
 
     /**
@@ -94,5 +147,33 @@ class PanoptesProjectPresenter extends Presenter
     private function projectReplace()
     {
         return str_replace('PROJECT_SLUG', $this->model->slug, config('zooniverse.project_url'));
+    }
+
+    private function participateTitle(): string
+    {
+        return t('Participate (Workflow %s)', e((string) $this->model->panoptes_workflow_id));
+    }
+
+    private function projectTitle(): string
+    {
+        return t('Project on Zooniverse (%s)', e((string) $this->model->slug));
+    }
+
+    private function participateAriaLabel(): string
+    {
+        return t(
+            'Participate in %s on Zooniverse (workflow %s; opens in a new tab)',
+            e((string) $this->model->title),
+            e((string) $this->model->panoptes_workflow_id)
+        );
+    }
+
+    private function projectAriaLabel(): string
+    {
+        return t(
+            'View %s on Zooniverse (project %s; opens in a new tab)',
+            e((string) $this->model->title),
+            e((string) $this->model->slug)
+        );
     }
 }

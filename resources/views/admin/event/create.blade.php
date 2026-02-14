@@ -11,7 +11,7 @@
         <div class="col-sm-10 mx-auto">
             <div class="card white box-shadow pt-2 pb-5 my-5 p-sm-5">
                 <div class="col-12">
-                    <h2 class="text-center content-header text-uppercase mb-4">{{ t('Create Event') }}</h2>
+                    <h1 class="page-title text-center content-header text-uppercase mb-4">{{ t('Create Event') }}</h1>
                     <form method="post"
                           action="{{ route('admin.events.store') }}"
                           role="form" enctype="multipart/form-data">
@@ -62,6 +62,7 @@
                             <input type="email"
                                    class="form-control {{ ($errors->has('contact_email')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="contact_email" name="contact_email"
+                                   autocomplete="email"
                                    value="{{ old('contact_email') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('contact_email') }}</span>
                         </div>

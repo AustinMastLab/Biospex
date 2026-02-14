@@ -65,6 +65,7 @@
                             <input type="email"
                                    class="form-control {{ ($errors->has('contact_email')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="contact_email" name="contact_email"
+                                   autocomplete="email"
                                    value="{{ old('contact_email', $event->contact_email) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('contact_email') }}</span>
                         </div>

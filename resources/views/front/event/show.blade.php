@@ -17,7 +17,7 @@
 
 {{-- Content --}}
 @section('content')
-    <h2 class="text-center pt-4 text-uppercase">{{ $event->title }}</h2>
+    <h1 class="page-title text-center pt-4 text-uppercase">{{ $event->title }}</h1>
     <hr class="header mx-auto" style="width:300px;">
     <div class="d-flex align-items-center justify-content-center ">
         @include('front.event.partials.event-loop')

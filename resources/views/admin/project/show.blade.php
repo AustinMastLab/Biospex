@@ -10,7 +10,7 @@
     @include('admin.project.partials.project-panel')
     <div class="row">
         <div class="col-sm-8 offset-md-2">
-            <h1 class="text-center content-header text-uppercase" id="expeditions">{{ t('Expeditions') }}</h1>
+            <h2 class="text-center content-header text-uppercase" id="expeditions">{{ t('Expeditions') }}</h2>
             <hr class="header mx-auto" style="width:300px;">
             <div class="text-center mt-4">
                 <button class="toggle-view-btn btn btn-primary pl-4 pr-4 text-uppercase"

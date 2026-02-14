@@ -17,7 +17,7 @@
 @endsection
 
 @section('content')
-    <h2 class="text-center pt-4 text-uppercase">{{ t('Biospex Team') }}</h2>
+    <h1 class="page-title text-center pt-4 text-uppercase">{{ t('Biospex Team') }}</h1>
     <hr class="header mx-auto" style="width:300px;">
     @foreach($categories as $category)
         <div class="row col-sm-10 mx-auto mt-4 justify-content-center">

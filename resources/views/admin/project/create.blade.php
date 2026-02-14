@@ -12,7 +12,7 @@
         <div class="col-sm-10 mx-auto">
             <div class="card white box-shadow pt-2 pb-5 my-5 p-sm-5">
                 <div class="col-12">
-                    <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Create Project') }}</h2>
+                    <h1 class="page-title text-center content-header mb-4 text-uppercase">{{ t('Create Project') }}</h1>
                     <form method="post" id="projectFrm" action="{{ route('admin.projects.store') }}" role="form"
                           enctype="multipart/form-data">
                         @csrf
@@ -59,6 +59,7 @@
                             <input type="email"
                                    class="form-control {{ ($errors->has('contact_email')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="contact_email" name="contact_email"
+                                   autocomplete="email"
                                    value="{{ old('contact_email') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('contact_email') }}</span>
                         </div>

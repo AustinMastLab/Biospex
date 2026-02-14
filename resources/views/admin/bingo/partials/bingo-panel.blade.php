@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-sm-10 mx-auto">
         <div class="jumbotron box-shadow pt-2 pb-5 my-5 p-sm-5">
-            <h1 class="text-center content-header text-uppercase">{{ $bingo->title }}</h1>
+            <h1 class="page-title text-center content-header text-uppercase">{{ $bingo->title }}</h1>
             <p class="text-center">{{ $bingo->directions }}</p>
             <div class="col-md-12 d-flex">
                 <div class="col-md-6">

@@ -11,9 +11,10 @@
                     </span>
                 </div>
                 <input type="email"
-                       class="form-control {{ ($errors && isset($errors[ a11y-form-control"invites.$index.email"])) ? 'is-invalid' : '' }}"
-                       id="invites[{{ $index }}][email]" 
+                       class="form-control {{ ($errors && isset($errors["invites.$index.email"])) ? 'is-invalid' : '' }} a11y-form-control"
+                       id="invites[{{ $index }}][email]"
                        name="invites[{{ $index }}][email]"
+                       autocomplete="email"
                        wire:model.defer="invites.{{ $index }}.email"
                        value="{{ old("invites.$index.email", $invite['email'] ?? '') }}"
                        placeholder="{{ t('Email') }}" required>

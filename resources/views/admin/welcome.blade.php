@@ -7,7 +7,7 @@
 
 {{-- Content --}}
 @section('content')
-    <h2 class="text-center text-uppercase pt-4">{{ t('Biospex') }}</h2>
+    <h1 class="page-title text-center text-uppercase pt-4">{{ t('Biospex') }}</h1>
     <hr class="header mx-auto" style="width:300px;">
     <div class="text-center">
         {{ t('This is the starting point where Biospex Projects and Events can be created.') }}

@@ -17,7 +17,7 @@
 @endsection
 
 @section('content')
-    <h2 class="text-center pt-4 text-uppercase">{{ t('Reset Password') }}</h2>
+    <h1 class="page-title text-center pt-4 text-uppercase">{{ t('Reset Password') }}</h1>
     <hr class="header mx-auto" style="width:300px;">
     <div class="col-12 col-md-10 offset-md-1">
         <div class="card white box-shadow py-5 my-5 p-sm-5">
@@ -30,6 +30,7 @@
                         <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
                         <input type="email" class="form-control @error('email') is-invalid @enderror a11y-form-control"
                                id="email" name="email"
+                               autocomplete="email"
                                value="{{ $email ?? old('email') }}" required>
                         @error('email')
                         <span class="invalid-feedback" role="alert">
@@ -41,6 +42,7 @@
                         <label for="password" class="col-form-label required">{{ t('Password') }}:</label>
                         <input type="password" class="form-control @error('password') is-invalid @enderror a11y-form-control"
                                id="password" name="password"
+                               autocomplete="new-password"
                                value="{{ old('password') }}" required>
                         @error('password')
                         <span class="invalid-feedback" role="alert">
@@ -52,6 +54,7 @@
                         <label for="password_confirmation" class="col-form-label required">{{ t('Confirm Password') }}:</label>
                         <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror a11y-form-control"
                                id="password_confirmation" name="password_confirmation"
+                               autocomplete="new-password"
                                value="" required>
                         @error('password_confirmation')
                         <span class="invalid-feedback" role="alert">

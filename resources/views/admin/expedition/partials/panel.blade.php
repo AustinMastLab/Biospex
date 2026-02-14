@@ -1,7 +1,7 @@
 <div class="row">
     <div class="col-sm-10 mx-auto">
         <div class="jumbotron box-shadow pt-2 pb-5 my-5 p-sm-5">
-            <h1 class="text-center content-header text-uppercase">{{ $expedition->title }}</h1>
+            <h1 class="page-title text-center content-header text-uppercase">{{ $expedition->title }}</h1>
             <div class="col-12">
                 <div class="d-flex justify-content-between mt-4 mb-3">
                     {!! $expedition->project->present()->project_admin_icon_lrg !!}

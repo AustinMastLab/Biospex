@@ -16,7 +16,7 @@
                     @csrf
                     <input type="hidden" value="{{ Auth::id() }}" name="user_id" id="user_id">
                     <div class="col-12">
-                        <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Create Group') }}</h2>
+                        <h1 class="page-title text-center content-header mb-4 text-uppercase">{{ t('Create Group') }}</h1>
                         <div class="form-group">
                             <label for="title" class="col-form-label required">{{ t('Title') }}:</label>
                             <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }} a11y-form-control"

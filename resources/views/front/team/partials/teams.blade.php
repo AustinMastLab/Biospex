@@ -1,6 +1,6 @@
 <div class="mx-auto mb-4">
     <div class="card team px-4 box-shadow h-100" style="max-width: 25rem;">
-        <h1 class="oage-title text-center pt-4">{{ $team->present()->full_name }}</h1>
+        <h2 class="text-center pt-4">{{ $team->present()->full_name }}</h2>
         <hr>
         <p class="text-center"><strong>{{ $team->title }}</strong><br>
             {{ $team->department }}<br>

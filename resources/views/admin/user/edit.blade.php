@@ -11,7 +11,7 @@
         <div class="col-sm-8 mx-auto">
             <div class="card white box-shadow pt-2 pb-5 my-5 p-sm-5">
                 <div class="col-12">
-                    <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Edit Account') }}</h2>
+                    <h1 class="page-title text-center content-header mb-4 text-uppercase">{{ t('Edit Account') }}</h1>
                     <form method="post"
                           action="{{ route('admin.users.update', [$user]) }}"
                           role="form" enctype="multipart/form-data">
@@ -23,6 +23,7 @@
                             <input type="text"
                                    class="form-control {{ ($errors->has('first_name')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="first_name" name="first_name"
+                                   autocomplete="given-name"
                                    value="{{ old('first_name', $user->profile->first_name) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('first_name') }}</span>
                         </div>
@@ -31,6 +32,7 @@
                             <input type="text"
                                    class="form-control {{ ($errors->has('last_name')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="last_name" name="last_name"
+                                   autocomplete="family-name"
                                    value="{{ old('last_name', $user->profile->last_name) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('last_name') }}</span>
                         </div>
@@ -38,6 +40,7 @@
                             <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
                             <input type="email" class="form-control {{ ($errors->has('email')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="email" name="email"
+                                   autocomplete="email"
                                    value="{{ old('email', $user->email) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('email') }}</span>
                         </div>
@@ -97,6 +100,7 @@
                             <input type="password"
                                    class="form-control {{ ($errors->has('current_password')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="current_password" name="current_password"
+                                   autocomplete="current-password"
                                    required>
                             <span class="invalid-feedback">{{ $errors->first('current_password') }}</span>
                         </div>
@@ -106,6 +110,7 @@
                             <input type="password"
                                    class="form-control {{ ($errors->has('password')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="password" name="password"
+                                   autocomplete="new-password"
                                    required>
                             <span class="invalid-feedback">{{ $errors->first('password') }}</span>
                         </div>
@@ -115,6 +120,7 @@
                             <input type="password"
                                    class="form-control {{ ($errors->has('password_confirmation')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="password_confirmation" name="password_confirmation"
+                                   autocomplete="new-password"
                                    required>
                             <span class="invalid-feedback">{{ $errors->first('password_confirmation') }}</span>
                         </div>

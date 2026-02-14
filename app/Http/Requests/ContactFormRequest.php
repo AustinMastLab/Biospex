@@ -20,8 +20,6 @@
 
 namespace App\Http\Requests;
 
-use App\Rules\ReCaptcha;
-
 /**
  * Class ContactFormRequest
  */
@@ -48,7 +46,6 @@ class ContactFormRequest extends Request
             'name' => 'required',
             'email' => 'required|min:4|max:32|email',
             'message' => 'required',
-            'g-recaptcha-response' => ['required', new ReCaptcha],
         ];
     }
 }

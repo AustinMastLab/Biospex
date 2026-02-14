@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Header
+   ========================================================================== */
+
+#header-img,
+.header.navbar {
+  overflow: visible;
+}
+
+.header {
+  position: relative;
+  background-repeat: no-repeat;
+  background-size: cover;
+  z-index: 20 !important;
+}
+
+.header-admin {
+  background: linear-gradient(90deg, #406288 0, #21304c 99%);
+}
+
+header#header-img {
+  -webkit-background-size: cover;
+  -moz-background-size: cover;
+  -o-background-size: cover;
+  background-repeat: no-repeat;
+  background-size: cover;
+}
+
+.top-logo {
+  width: 235px;
+  padding: 25px;
+}
+
+.top-logo-admin {
+  width: 150px;
+  padding: 0px;
+}
+
+.header:before {
+  content: "";
+  position: absolute;
+  min-height: 100%;
+  width: 100%;
+  left: 0;
+  background: rgb(85, 99, 117);
+  background: linear-gradient(135deg, rgba(85, 99, 117, 1) 0%, rgba(17, 20, 33, 1) 72%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#556375', endColorstr='#111421', GradientType=1);
+  zoom: 1;
+  filter: alpha(opacity=7);
+  -webkit-opacity: .7;
+  -moz-opacity: .7;
+  opacity: .7;
+  z-index: -1;
+}

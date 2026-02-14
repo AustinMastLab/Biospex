@@ -1,0 +1,21 @@
+/* ==========================================================================
+   jqGrid
+   ========================================================================== */
+
+.ui-jqgrid.ui-jqgrid-bootstrap > .ui-jqgrid-view {
+  font-size: 1rem;
+}
+
+/* jqGrid: make table links use brand color (otherwise they inherit Bootstrap's blue) */
+.ui-jqgrid .ui-jqgrid-btable a,
+.ui-jqgrid .ui-jqgrid-pager a {
+  color: $brand-red;
+}
+
+.ui-jqgrid .ui-jqgrid-btable a:hover,
+.ui-jqgrid .ui-jqgrid-btable a:focus,
+.ui-jqgrid .ui-jqgrid-pager a:hover,
+.ui-jqgrid .ui-jqgrid-pager a:focus {
+  color: darken($brand-red, 8%);
+  text-decoration: underline;
+}

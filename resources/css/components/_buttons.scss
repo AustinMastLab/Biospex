@@ -1,0 +1,163 @@
+/* ==========================================================================
+   Buttons
+   ========================================================================== */
+
+/* Ensure Bootstrap link-style buttons follow the same brand color */
+.btn-link {
+  color: $brand-red;
+}
+
+.btn-link:hover,
+.btn-link:focus {
+  color: darken($brand-red, 8%);
+  text-decoration: underline;
+}
+
+.btn {
+  border-radius: 0;
+}
+
+.btn.btn-primary {
+  background-color: $brand-red;
+  border-color: $brand-red;
+  padding: 10px 30px;
+  color: white;
+  transition: .25s ease-out;
+}
+
+.btn.btn-primary.green {
+  background-color: #1e7e34; /* green */
+  border-color: #1e7e34;
+}
+
+.btn.btn-primary i {
+  color: #ffffff;
+}
+
+.btn.btn-primary:hover i {
+  color: $brand-red !important;
+}
+
+.btn.btn-primary:hover {
+  background-color: transparent;
+  color: $brand-red;
+  border-color: $brand-red;
+}
+
+.btn.btn-primary.green:hover {
+  background-color: transparent;
+  color: #1e7e34;
+  border-color: #1e7e34;
+}
+
+.btn-transcription-year, .btn-transcription-year:hover {
+  padding: 10px 30px;
+  background-color: transparent;
+  color: $brand-red;
+  border-color: $brand-red;
+}
+
+.btn-primary.focus {
+  box-shadow: 0 0 0 0.1rem rgba(255, 184, 184, 0.25);
+}
+
+.btn.btn-danger {
+  background-color: transparent;
+  color: white;
+  transition: .25s ease-out;
+}
+
+.btn.btn-danger:hover {
+  background-color: $brand-red;
+  color: white;
+}
+
+.btn-outline-primary {
+  color: $brand-red;
+  background-color: transparent;
+  background-image: none;
+  border-color: $brand-red;
+}
+
+.btn-outline-primary:hover {
+  color: white;
+  background-color: $brand-red;
+  background-image: none;
+  border-color: $brand-red;
+}
+
+.btn-outline-primary.focus, .btn-outline-primary:focus {
+  box-shadow: 0 0 0 0.2rem rgba(249, 186, 199, 0.15);
+}
+
+.btn-outline-primary:not(:disabled):not(.disabled).active, .btn-outline-primary:not(:disabled):not(.disabled):active, .show > .btn-outline-primary.dropdown-toggle {
+  color: inherit;
+  background-color: rgba(249, 186, 199, 0.15);
+  border-color: rgba(249, 186, 199, 0.15);
+}
+
+.btn-primary:not(:disabled):not(.disabled).active, .btn-primary:not(:disabled):not(.disabled):active, .show > .btn-primary.dropdown-toggle {
+  color: #fff;
+  background-color: rgba(249, 186, 199, 0.15);
+  border-color: rgba(249, 186, 199, 0.15);
+}
+
+.btn-outline-primary:not(:disabled):not(.disabled).active:focus, .btn-outline-primary:not(:disabled):not(.disabled):active:focus, .show > .btn-outline-primary.dropdown-toggle:focus {
+  box-shadow: 0 0 0 0.2rem rgba(249, 186, 199, .5);
+}
+
+@media only screen and (max-width: 768px) {
+  .btn.btn-danger, .btn-outline-primary, .btn-group {
+    margin: 8px auto;
+    left: 0;
+    right: 0;
+    width: 200px;
+    display: block;
+  }
+
+  .btn.btn-danger:hover {
+    background-color: $brand-red; /* red -- link or call to action color */
+    border-color: $brand-red;
+    color: white;
+  }
+}
+
+/* Project sort: restore brand color + keyboard accessibility */
+.sort-page {
+  appearance: none;
+  -webkit-appearance: none;
+
+  background: transparent;
+  border: 0;
+  padding: 0;
+  margin: 0;
+
+  display: inline-flex;
+  align-items: center;
+
+  color: $brand-red;
+  cursor: pointer;
+  font: inherit;
+  line-height: inherit;
+  text-transform: inherit;
+}
+
+.sort-page i {
+  color: $brand-red;
+}
+
+.sort-page:hover,
+.sort-page:focus {
+  color: darken($brand-red, 8%);
+}
+
+.sort-page:hover i,
+.sort-page:focus i {
+  color: darken($brand-red, 8%);
+}
+
+.sort-page:focus-visible {
+  outline: 3px solid rgba($brand-red, 0.65);
+  outline-offset: 3px;
+  border-radius: 3px;
+}

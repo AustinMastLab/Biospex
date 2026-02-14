@@ -1,0 +1,43 @@
+/* ==========================================================================
+   Modals
+   ========================================================================== */
+
+.modal-backdrop.show {
+  opacity: .925;
+}
+
+.modal-body {
+  padding: 0;
+}
+
+.modal-footer {
+  display: initial;
+  -ms-flex-align: center;
+  align-items: center;
+  -ms-flex-pack: center;
+  justify-content: initial;
+  text-align: center;
+  padding-top: 20px;
+  border-top: 1px solid #e9ecef;
+}
+
+h2.modal-number {
+  font-size: 4.25rem !important;
+  line-height: 2rem;
+}
+
+h2.modal-number > small {
+  line-height: 1.125rem;
+  text-transform: uppercase;
+  font-size: 1rem;
+}
+
+.scoreboard-title {
+  font-size: 2.1875rem;
+  color: #fff;
+}
+
+.bootbox-body {
+  text-align: center;
+  padding: 1rem;
+}

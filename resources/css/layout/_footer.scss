@@ -1,0 +1,17 @@
+/* ==========================================================================
+   Footer
+   ========================================================================== */
+
+footer {
+  padding-top: 1rem;
+  padding-bottom: 1rem;
+  background: rgb(64, 98, 136);
+  background: linear-gradient(to right, rgba(64, 98, 136, 1) 0%, rgba(33, 48, 76, 1) 99%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#406288', endColorstr='#21304c', GradientType=1);
+}
+
+footer p, footer a, footer .fa, footer i, footer li, footer svg, footer h6 {
+  margin-bottom: .25rem;
+  color: #e1e1e1;
+  text-rendering: optimizeLegibility;
+}

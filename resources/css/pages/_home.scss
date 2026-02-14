@@ -1,0 +1,174 @@
+/* ==========================================================================
+   Home Page
+   ========================================================================== */
+
+.header.home {
+  background-image: url(/images/page/banner-home.jpg);
+  height: 800px;
+  min-height: 89%;
+}
+
+.header.home:before {
+  content: "";
+  position: absolute;
+  min-height: 100%;
+  width: 100%;
+  left: 0;
+  background: transparent;
+  background-color: rgba(2, 35, 28, 0.25);
+}
+
+@media only screen and (max-width: 800px) {
+  .header.home {
+    background-position-x: 40%;
+  }
+}
+
+.home-heading {
+  padding-top: 3rem;
+  padding-bottom: 3rem;
+  margin-bottom: 0;
+  background-color: #fff;
+}
+
+.home-heading p:last-child {
+  margin-bottom: 0;
+}
+
+.home-heading .container {
+  max-width: 70rem;
+}
+
+.home-arrow {
+  top: 5px;
+  position: absolute;
+  width: 387px;
+  transform: translate(135%, 13%);
+  opacity: .35;
+}
+
+h2.home-header-cta {
+  font-size: 3.5rem;
+  color: #c83f29;
+}
+
+.tutorial-right-section {
+  margin-top: 140px;
+}
+
+@media only screen and (max-width: 800px) {
+  .tutorial-right-section {
+    margin-top: 14px;
+  }
+  h2.home-header-cta {
+    font-size: 2.625rem;
+    color: #e83f29;
+  }
+}
+
+@media only screen and (max-width: 1025px) {
+  .home-arrow {
+    top: 5px;
+    position: absolute;
+    width: 287px;
+    transform: translate(122%, 94%);
+    opacity: .35;
+  }
+}
+
+h1.home-banner-tag {
+  transform: translateY(200%);
+}
+
+h1.project-wide {
+  font-size: 3.875rem;
+  padding-bottom: 1rem;
+  line-height: 2.875rem;
+  color: #666; /* was #888; darkened to meet WCAG AA on white */
+}
+
+.content-header {
+  font-size: 2.875rem;
+  color: #666; /* was #888; darkened to meet WCAG AA on white */
+}
+
+@media only screen and (max-width: 991px) {
+  h1.home-banner-tag {
+    transform: translateY(70%);
+  }
+  h1.project-wide {
+    font-size: 3.125rem;
+  }
+}
+
+/* Home Page Carousel */
+.inside-carousel {
+  width: 500px;
+  height: 500px;
+  background-color: #ffffff;
+  border: 2px solid $brand-red;
+  background-size: cover;
+  border-radius: 50%;
+  margin: 0 auto;
+  left: 0;
+  right: 0;
+}
+
+@media only screen and (max-width: 768px) {
+  .inside-carousel {
+    overflow: hidden;
+    width: 400px;
+    height: 400px;
+  }
+}
+
+.carousel-item {
+  height: 100%;
+}
+
+#external-carousel-btns > li {
+  width: 70px;
+  height: 70px;
+  font-size: 1.875rem;
+  text-align-all: center;
+  color: #4b5563;
+  border: 2px solid $brand-red;
+  border-radius: 50%;
+  background-color: #ffffff;
+  box-shadow: 0 0 10px rgba(0, 0, 0, .25);
+  padding-top: 8px;
+}
+
+#external-carousel-btns > li:hover {
+  background-color: $brand-red;
+  color: #ffffff;
+  cursor: pointer;
+}
+
+#external-carousel-btns li.active {
+  background-color: $brand-red;
+  color: #ffffff;
+}
+
+#external-carousel-btns > li:focus {
+  outline: none;
+}
+
+#external-carousel-btns > li:focus-visible {
+  box-shadow:
+          0 0 0 3px rgba(255, 255, 255, 0.95),
+          0 0 0 6px rgba($brand-red, 0.65),
+          0 0 10px rgba(0, 0, 0, .25);
+}
+
+.circle-slider h3 {
+  color: $brand-red;
+  font-size: 1.4375rem;
+  text-transform: uppercase;
+}
+
+.circle-slider p {
+  font-size: 1rem;
+  color: black;
+  text-align: center;
+}

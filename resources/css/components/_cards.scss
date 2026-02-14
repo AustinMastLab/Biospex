@@ -1,0 +1,165 @@
+/* ==========================================================================
+   Cards
+   ========================================================================== */
+
+/* jumbotron */
+.jumbotron {
+  position: relative;
+  border: 0;
+  border-radius: 10px;
+  background-color: white;
+}
+
+/* cards */
+.card {
+  position: relative;
+  border: 0;
+  border-radius: 10px;
+  min-width: 333px;
+}
+
+.card.team {
+  min-width: 400px;
+}
+
+.card.black {
+  background-color: black;
+}
+
+.card-footer {
+  padding: 0;
+  background-color: transparent;
+}
+
+.card-body {
+  background-color: white;
+}
+
+.card .fa-times-circle {
+  position: absolute;
+  right: 15px;
+  top: 15px;
+  cursor: pointer;
+}
+
+.card ul.text {
+  margin: 0;
+  padding: 0;
+  display: block;
+  list-style-type: none;
+  -webkit-margin-before: 0;
+  -webkit-margin-after: 0;
+  -webkit-margin-start: 0px;
+  -webkit-margin-end: 0px;
+  -webkit-padding-start: 0px;
+  margin-before: 0;
+  margin-after: 0;
+  margin-start: 0px;
+  margin-end: 0px;
+  padding-start: 0px;
+}
+
+.card ul.text li {
+  list-style: none;
+  text-rendering: optimizeLegibility;
+}
+
+.card-img-top {
+  opacity: 0.45;
+  border-radius: 0.625rem;
+}
+
+.card-title {
+  color: #ffffff;
+}
+
+.card-body-img-top {
+  border-bottom-left-radius: 0.625rem;
+  border-bottom-right-radius: 0.625rem;
+}
+
+.card-img-overlay {
+  padding: 0 1.25rem 1.25rem 1.25rem;
+  height: 13.65rem;
+}
+
+.card-top:hover {
+  cursor: pointer;
+}
+
+.card-top > .card-img-top {
+  opacity: 0.45;
+  transition: .5s ease;
+  border-radius: 0.625rem;
+  max-height: 217.5px;
+}
+
+.card-top > .card-img-overlay > .card-info {
+  color: white;
+  position: absolute;
+  top: 11.875rem;
+  left: 18.75rem;
+  opacity: 1;
+  transition: .5s ease;
+}
+
+.card-top > .card-img-overlay > .card-title {
+  opacity: 1;
+  transition: .5s ease;
+}
+
+.card-top:hover > .card-img-top,
+.card-top:hover > .card-img-overlay > .card-title,
+.card-top:hover > .card-img-overlay > .card-info {
+  opacity: 0.1;
+  transition: .5s ease;
+}
+
+.card-top > .card-img-overlay > p {
+  color: #ffffff;
+  transition: .5s ease;
+  opacity: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  -ms-transform: translate(-50%, -50%);
+  width: 300px;
+}
+
+.card-top:hover > .card-img-overlay > p {
+  transition: .5s ease;
+  opacity: 1;
+}
+
+.card .btn-outline-primary {
+  border-color: $brand-red;
+  color: $brand-red;
+}
+
+.card .btn-outline-primary:hover {
+  background-color: $brand-red;
+  color: white;
+}
+
+.card.faq {
+  background-color: #eeeff9;
+}
+
+.project-banner {
+  position: relative;
+  cursor: pointer;
+  width: 100%;
+  vertical-align: top;
+}
+
+.project-banner:after {
+  content: '\A';
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background: rgba(0, 0, 0, 0.6);
+  opacity: 0.9;
+}

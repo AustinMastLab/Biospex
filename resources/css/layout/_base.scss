@@ -1,0 +1,90 @@
+/* ==========================================================================
+   Base Styles
+   ========================================================================== */
+
+html, body {
+  height: 100%;
+}
+
+.container {
+  max-width: 1450px;
+}
+
+a {
+  transition: color .25s ease-out, background-color .25s ease-out, border-color .25s ease-out;
+  color: $brand-red;
+}
+
+a:hover {
+  text-decoration: none;
+  color: #383333;
+}
+
+a > i {
+  transition: color .25s ease-in-out;
+}
+
+a:hover i {
+  color: $brand-red !important;
+}
+
+svg, p, .text, i, h1, h2, h3, h4, h5, button, .col-form-label {
+  color: #383333;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h5 {
+  font-size: 1rem;
+  text-transform: uppercase;
+  line-height: 1.5rem;
+  font-weight: 400 !important;
+  font-family: 'Work Sans', sans-serif;
+}
+
+p, .text, .col-form-label {
+  font-family: 'Work Sans', sans-serif;
+  font-size: 1.125rem;
+}
+
+a, li {
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: 'Raleway', sans-serif;
+  font-weight: 700;
+  color: #333;
+}
+
+h1 {
+  font-size: 2.25rem;
+  font-weight: 600;
+}
+
+h2 {
+  font-size: 1.5rem;
+}
+
+h3 {
+  font-size: 1.25rem;
+  margin-top: 1.5rem;
+}
+
+/* Use this when you need an H1 for semantics, but want H2-like styling */
+.page-title {
+  font-size: 1.5rem;     /* match h2 */
+  font-weight: 700;      /* match heading weight */
+}
+
+hr.white {
+  background-color: white;
+  color: white;
+}
+
+hr.header {
+  border: 1px solid rgba($brand-red, 1) !important;
+}

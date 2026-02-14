@@ -1,0 +1,275 @@
+/* ==========================================================================
+   Navbar
+   ========================================================================== */
+
+/* ==========================================================================
+   Navbar toggler (A11Y + layout)
+   - Must match BOTH:
+     - <header id="header-img"> ... <nav class="navbar ...">
+     - <header class="header home"> ... <nav class="navbar ...">
+   ========================================================================== */
+
+header#header-img .navbar .navbar-toggler,
+header.header .navbar .navbar-toggler,
+.header.navbar .navbar-toggler {
+  width: 70px;
+  height: 70px;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+
+  z-index: 50;
+}
+
+/* Draw a visible focus ring using ::after (doesn't depend on outline rendering) */
+header#header-img .navbar .navbar-toggler:focus,
+header#header-img .navbar .navbar-toggler:focus-visible,
+header.header .navbar .navbar-toggler:focus,
+header.header .navbar .navbar-toggler:focus-visible,
+.header.navbar .navbar-toggler:focus,
+.header.navbar .navbar-toggler:focus-visible {
+  outline: none !important;
+  box-shadow: none !important;
+}
+
+/* Remove/disable the button ::after ring (if it exists from earlier attempts) */
+header#header-img .navbar .navbar-toggler:focus::after,
+header#header-img .navbar .navbar-toggler:focus-visible::after,
+header.header .navbar .navbar-toggler:focus::after,
+header.header .navbar .navbar-toggler:focus-visible::after,
+.header.navbar .navbar-toggler:focus::after,
+.header.navbar .navbar-toggler:focus-visible::after {
+  content: none !important;
+}
+
+/* The actual visible focus indicator: use the existing circle around the hamburger */
+header#header-img .navbar .navbar-toggler:focus #hamburger-9:before,
+header#header-img .navbar .navbar-toggler:focus-visible #hamburger-9:before,
+header.header .navbar .navbar-toggler:focus #hamburger-9:before,
+header.header .navbar .navbar-toggler:focus-visible #hamburger-9:before,
+.header.navbar .navbar-toggler:focus #hamburger-9:before,
+.header.navbar .navbar-toggler:focus-visible #hamburger-9:before {
+  border-color: #ffffff !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.65) !important;
+}
+
+header#header-img .navbar .navbar-toggler:focus::after,
+header#header-img .navbar .navbar-toggler:focus-visible::after,
+header.header .navbar .navbar-toggler:focus::after,
+header.header .navbar .navbar-toggler:focus-visible::after,
+.header.navbar .navbar-toggler:focus::after,
+.header.navbar .navbar-toggler:focus-visible::after {
+  content: "";
+  position: absolute;
+  inset: 6px;
+  border-radius: 10px;
+
+  border: 3px solid #ffffff;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.65);
+
+  pointer-events: none;
+  z-index: 2;
+}
+
+/* Make sure the hamburger icon stays clickable/compact */
+header#header-img .navbar .navbar-toggler .hamburger,
+header.header .navbar .navbar-toggler .hamburger,
+.header.navbar .navbar-toggler .hamburger {
+  display: inline-block;
+}
+
+/* If your hamburger uses three "line" spans, this keeps them aligned */
+header#header-img .navbar .navbar-toggler .hamburger .line,
+header.header .navbar .navbar-toggler .hamburger .line,
+.header.navbar .navbar-toggler .hamburger .line {
+  display: block;
+}
+
+/* Make the collapsed/expanded menu area take full width so items don't get pushed off */
+.navbar .navbar-collapse {
+  width: 100%;
+}
+
+.navbar-nav .nav-link {
+  color: white !important;
+  z-index: 2;
+  text-align: center;
+}
+
+/* ==========================================================================
+   Hamburger menu toggle (custom icon)
+   ========================================================================== */
+
+.row .three {
+  padding: 80px 30px;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  background-color: #2c3e50;
+  color: #ecf0f1;
+  text-align: center;
+}
+
+.hamburger .line {
+  width: 50px;
+  height: 5px;
+  background-color: #ecf0f1;
+  display: block;
+  margin: 8px auto;
+  -webkit-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+.hamburger:hover {
+  cursor: pointer;
+}
+
+/* FIX: was top:-15px (made icon sit too high and focus ring appear offset) */
+#hamburger-9 {
+  position: absolute;
+  -webkit-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+
+  right: 17px;
+  top: 50%;
+  transform: translateY(-50%);
+}
+
+/* Keep centering while rotating */
+#hamburger-9.is-active {
+  right: 27px;
+  top: 50%;
+  transform: translateY(-50%) rotate(45deg);
+}
+
+#hamburger-9:before {
+  content: "";
+  position: absolute;
+  -webkit-box-sizing: border-box;
+  -moz-box-sizing: border-box;
+  box-sizing: border-box;
+  width: 70px;
+  height: 70px;
+  border: 5px solid transparent;
+  top: calc(50% - 35px);
+  left: calc(50% - 35px);
+  border-radius: 100%;
+  -webkit-transition: all 0.2s ease-in-out;
+  -o-transition: all 0.2s ease-in-out;
+  transition: all 0.2s ease-in-out;
+}
+
+#hamburger-9.is-active:before {
+  border: 5px solid #ecf0f1;
+}
+
+#hamburger-9.is-active .line {
+  width: 30px;
+}
+
+#hamburger-9.is-active .line:nth-child(2) {
+  opacity: 0;
+}
+
+#hamburger-9.is-active .line:nth-child(1) {
+  background-color: $brand-red;
+  -webkit-transform: translateY(13px);
+  -ms-transform: translateY(13px);
+  -o-transform: translateY(13px);
+  transform: translateY(13px);
+}
+
+#hamburger-9.is-active .line:nth-child(3) {
+  background-color: $brand-red;
+  -webkit-transform: translateY(-13px) rotate(90deg);
+  -ms-transform: translateY(-13px) rotate(90deg);
+  -o-transform: translateY(-13px) rotate(90deg);
+  transform: translateY(-13px) rotate(90deg);
+}
+
+/* ==========================================================================
+   Main nav buttons
+   ========================================================================== */
+
+li.nav-btn {
+  background-color: transparent;
+  border: 1px solid #dc3545;
+  color: white;
+  -webkit-transition: .25s ease-out;
+  -moz-transition: .25s ease-out;
+  -ms-transition: .25s ease-out;
+  -o-transition: .25s ease-out;
+  transition: .25s ease-out;
+  cursor: pointer;
+}
+
+li.nav-btn:hover {
+  background-color: $brand-red;
+  color: white;
+}
+
+li.nav-btn.show {
+  background-color: #bd2130;
+  border-color: #b21f2d;
+}
+
+@media only screen and (max-width: 768px) {
+  li.nav-btn {
+    margin: 8px auto;
+    left: 0;
+    right: 0;
+    width: 200px;
+    display: block;
+  }
+
+  li.nav-btn:hover {
+    background-color: $brand-red; /* red -- link or call to action color */
+    border-color: $brand-red;
+    color: white;
+  }
+}
+
+/* ==========================================================================
+   Skip link (A11Y)
+   ========================================================================== */
+
+a.skip-link {
+  position: absolute;
+  top: 0.5rem;
+  left: 0.5rem;
+
+  transform: translateY(-200%);
+  transition: transform 0.15s ease-in-out;
+
+  background-color: #ffffff;
+  color: $brand-red;
+
+  padding: 0.75rem 1rem;
+  z-index: 10000;
+
+  border: 2px solid $brand-red;
+  border-radius: 0.25rem;
+
+  text-decoration: underline;
+}
+
+a.skip-link:focus,
+a.skip-link:focus-visible {
+  transform: translateY(0);
+  position: fixed;
+
+  background-color: $brand-red;
+  color: #ffffff;
+  border-color: #ffffff;
+
+  outline: 3px solid #111111;
+  outline-offset: 2px;
+}

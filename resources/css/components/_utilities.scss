@@ -1,0 +1,129 @@
+/* ==========================================================================
+   Utilities
+   ========================================================================== */
+
+/* Ensure "call-to-action" elements stay brand red (including FontAwesome <i> icons) */
+.color-action {
+  color: $brand-red !important;
+}
+
+.box-shadow {
+  box-shadow: 0 0 25px rgba(0, 0, 0, .25);
+}
+
+.clockdiv {
+  color: #111;
+  font-weight: 100;
+  text-align: center;
+  font-size: 1.8rem;
+}
+
+.clockdiv > div {
+  padding: 10px;
+  border-radius: 3px;
+  background: #ececec;
+  display: inline-block;
+}
+
+.clockdiv div > span {
+  padding: 15px;
+  border-radius: 3px;
+  background: #ededed;
+  display: inline-block;
+}
+
+.smalltext {
+  padding-top: 5px;
+  font-size: 0.8rem;
+}
+
+.smallertext {
+  padding-top: 5px;
+  font-size: 0.875rem;
+  color: #495057;
+}
+
+.empty-icon .fa {
+  margin-right: 1.5rem;
+}
+
+.bg-brand-red {
+  background-color: $brand-red !important;
+}
+
+/* contributor logos */
+.figure-img > img {
+  max-width: 75px;
+  filter: grayscale(100%);
+  margin: 15px;
+}
+
+.loader {
+  border: 16px solid #f3f3f3; /* Light grey */
+  border-top: 16px solid $brand-red; /* was #e83f29 */
+  border-radius: 50%;
+  width: 120px;
+  height: 120px;
+  animation: spin 2s linear infinite;
+}
+
+@keyframes spin {
+  0% {
+    transform: rotate(0deg);
+  }
+  100% {
+    transform: rotate(360deg);
+  }
+}
+
+.tooltip .tooltip-custom {
+  font-size: 1.2rem;
+  max-width: 25rem;
+}
+
+.tooltip-inner .tooltip-custom {
+  padding: 10px;
+}
+
+.square {
+  height: 80px;
+  width: 80px;
+  margin: 1px;
+  border: 1px solid black;
+  font-size: .8rem;
+}
+
+.square:hover {
+  background-color: #a7abab;
+  color: #fff;
+  cursor: pointer
+}
+
+.clicked {
+  background-color: #a7abab;
+  color: #fff;
+  cursor: pointer
+}
+
+.logo {
+  border: none;
+}
+
+.talk-name {
+  font-size: .8em;
+}
+
+.talk-comment p {
+  font-size: .8em;
+}
+
+.fa-flag-green {
+  color: #1c7430;
+  cursor: help;
+}
+
+/* FIX: restore valid rule (matches original.css) */
+.fa-flag-grey {
+  color: #7e8ea1;
+  cursor: help;
+}

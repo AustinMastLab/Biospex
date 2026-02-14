@@ -17,7 +17,7 @@
 @endsection
 
 @section('content')
-    <h2 class="text-center pt-4">{{ t('Confirm Password') }}</h2>
+    <h2 class="text-center pt-4 text-uppercase">{{ t('Confirm Password') }}</h2>
     <hr class="header mx-auto" style="width:300px;">
     <div class="col-12 col-md-10 offset-md-1">
         <div class="card white box-shadow py-5 my-5 p-sm-5">
@@ -31,7 +31,7 @@
 
                     <div class="form-group">
                         <label for="password" class="col-form-label required">{{ t('Password') }}:</label>
-                        <input type="password" class="form-control @error('password') is-invalid @enderror"
+                        <input type="password" class="form-control @error('password') is-invalid @enderror a11y-form-control"
                                id="password" name="password"
                                required autocomplete="current-password">
 

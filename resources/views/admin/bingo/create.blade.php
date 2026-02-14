@@ -24,7 +24,7 @@
                             </div>
                             <div class="col-6 p-0">
                                 <select name="project_id" id="project_id"
-                                        class="form-control custom-select {{ ($errors->has('project_id')) ? 'is-invalid' : '' }}"
+                                        class="form-control custom-select {{ ($errors->has('project_id')) ? 'is-invalid' : '' }} a11y-form-control a11y-form-control"
                                         required>
                                     @foreach($projects as $key => $title)
                                         <option {{ $key == old('project_id') ?
@@ -35,7 +35,7 @@
                         </div>
                         <div class="form-group">
                             <label for="title" class="col-form-label required">{{ t('Title') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="title" name="title"
                                    pattern=".{5,20}" title="5 to 20 characters"
                                    value="{{ old('title') }}"
@@ -45,7 +45,7 @@
                         <div class="form-group">
                             <label for="directions" class="col-form-label required">{{ t('Directions') }}:</label>
                             <input type="text"
-                                   class="form-control {{ ($errors->has('directions')) ? 'is-invalid' : '' }}"
+                                   class="form-control {{ ($errors->has('directions')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="directions" name="directions"
                                    pattern=".{10,200}" title="10 to 200 characters"
                                    value="{{ old('directions') }}"
@@ -55,7 +55,7 @@
 
                         <div class="form-group">
                             <label for="contact" class="col-form-label required">{{ t('Contact') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('contact')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('contact')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="contact" name="contact" title="Email" placeholder="Email"
                                    value="{{ old('contact') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('contact') }}</span>

@@ -4,7 +4,7 @@
                class="form-label">{{ $fieldName ? ucfirst(str_replace('_', ' ', $fieldName)) : 'Image' }}</label>
         <input type="file"
                wire:model="file"
-               class="form-control @error('file') is-invalid @enderror"
+               class="form-control @error('file') is-invalid @enderror a11y-form-control"
                id="file"
                accept="image/*">
 

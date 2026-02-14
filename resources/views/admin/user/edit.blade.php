@@ -21,7 +21,7 @@
                             <label for="first_name" class="col-form-label required">{{ t('First Name') }}
                                 :</label>
                             <input type="text"
-                                   class="form-control {{ ($errors->has('first_name')) ? 'is-invalid' : '' }}"
+                                   class="form-control {{ ($errors->has('first_name')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="first_name" name="first_name"
                                    value="{{ old('first_name', $user->profile->first_name) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('first_name') }}</span>
@@ -29,14 +29,14 @@
                         <div class="form-group">
                             <label for="last_name" class="col-form-label required">{{ t('Last Name') }}:</label>
                             <input type="text"
-                                   class="form-control {{ ($errors->has('last_name')) ? 'is-invalid' : '' }}"
+                                   class="form-control {{ ($errors->has('last_name')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="last_name" name="last_name"
                                    value="{{ old('last_name', $user->profile->last_name) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('last_name') }}</span>
                         </div>
                         <div class="form-group">
                             <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
-                            <input type="email" class="form-control {{ ($errors->has('email')) ? 'is-invalid' : '' }}"
+                            <input type="email" class="form-control {{ ($errors->has('email')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="email" name="email"
                                    value="{{ old('email', $user->email) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('email') }}</span>
@@ -48,7 +48,7 @@
                             </div>
                             <div class="col-6 p-0">
                                 <select name="timezone" id="timezone"
-                                        class="form-control custom-select {{ ($errors->has('timezone')) ? 'is-invalid' : '' }}"
+                                        class="form-control custom-select {{ ($errors->has('timezone')) ? 'is-invalid' : '' }} a11y-form-control a11y-form-control"
                                         required>
                                     @foreach($timezones as $key => $value)
                                         <option {{ $key == old('timezone', $user->profile->timezone) ?
@@ -95,7 +95,7 @@
                             <label for="current_password" class="col-form-label required">{{ t('Old Password') }}
                                 :</label>
                             <input type="password"
-                                   class="form-control {{ ($errors->has('current_password')) ? 'is-invalid' : '' }}"
+                                   class="form-control {{ ($errors->has('current_password')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="current_password" name="current_password"
                                    required>
                             <span class="invalid-feedback">{{ $errors->first('current_password') }}</span>
@@ -104,7 +104,7 @@
                             <label for="password" class="col-form-label required">{{ t('New Password') }}
                                 :</label>
                             <input type="password"
-                                   class="form-control {{ ($errors->has('password')) ? 'is-invalid' : '' }}"
+                                   class="form-control {{ ($errors->has('password')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="password" name="password"
                                    required>
                             <span class="invalid-feedback">{{ $errors->first('password') }}</span>
@@ -113,7 +113,7 @@
                             <label for="password_confirmation"
                                    class="col-form-label required">{{ t('Confirm Password') }}:</label>
                             <input type="password"
-                                   class="form-control {{ ($errors->has('password_confirmation')) ? 'is-invalid' : '' }}"
+                                   class="form-control {{ ($errors->has('password_confirmation')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="password_confirmation" name="password_confirmation"
                                    required>
                             <span class="invalid-feedback">{{ $errors->first('password_confirmation') }}</span>

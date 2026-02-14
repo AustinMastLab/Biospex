@@ -14,7 +14,7 @@
                 <div class="custom-file">
                     <label for="file" class="custom-file-label">{{ t('Upload Reconciled With User Opinion') }}</label>
                     <input type="file"
-                           class="form-control custom-file-input mb-4 {{ ($errors->has('file')) ? 'is-invalid' : '' }}"
+                           class="form-control custom-file-input mb-4 {{ ($errors->has('file')) ? 'is-invalid' : '' }} a11y-form-control"
                            name="file" accept=".csv">
                 </div>
             </div>

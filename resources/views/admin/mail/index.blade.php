@@ -21,7 +21,7 @@
                                        class="col-form-label required">{{ t('Recipients') }}
                                     :</label>
                                 <select name="recipients" id="recipients"
-                                        class="form-control custom-select {{ ($errors->has('recipients')) ? 'is-invalid' : '' }}"
+                                        class="form-control custom-select {{ ($errors->has('recipients')) ? 'is-invalid' : '' }} a11y-form-control a11y-form-control"
                                         required>
                                     <option {{ old('recipients') === 'owners' ? ' selected=selected' : '' }} value="owners">
                                         Project Owners
@@ -36,7 +36,7 @@
 
                         <div class="form-group">
                             <label for="subject" class="col-form-label required">{{ t('Subject') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('subject')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('subject')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="subject" name="subject"
                                    value="{{ old('subject') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('subject') }}</span>
@@ -47,7 +47,7 @@
                             <label for="message" class="col-form-label required">{{ t('Message') }}
                                 :</label>
                             <textarea id="message" name="message"
-                                      class="form-control textarea {{ ($errors->has('message')) ? 'is-invalid' : '' }}"
+                                      class="form-control textarea {{ ($errors->has('message')) ? 'is-invalid' : '' }} a11y-form-control"
                                       required>{{ old('message') }}</textarea>
                             <span class="invalid-feedback">{{ $errors->first('message') }}</span>
                         </div>

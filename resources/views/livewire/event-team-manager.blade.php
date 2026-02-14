@@ -12,7 +12,7 @@
                     </span>
                 </div>
                 <input type="text"
-                       class="form-control {{ ($errors && (is_array($errors) ? isset($errors["teams.$index.title"]) : $errors->has("teams.$index.title"))) ? 'is-invalid' : '' }}"
+                       class="form-control {{ ($errors && (is_array($errors) ? isset($errors[ a11y-form-control"teams.$index.title"]) : $errors->has("teams.$index.title"))) ? 'is-invalid' : '' }}"
                        id="teams[{{ $index }}][title]" 
                        name="teams[{{ $index }}][title]"
                        wire:model.defer="teams.{{ $index }}.title"

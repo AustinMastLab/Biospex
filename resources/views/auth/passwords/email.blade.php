@@ -17,7 +17,7 @@
 @endsection
 
 @section('content')
-    <h2 class="text-center pt-4">{{ t('Send Password Instructions') }}</h2>
+    <h2 class="text-center pt-4 text-uppercase">{{ t('Send Password Instructions') }}</h2>
     <hr class="header mx-auto" style="width:300px;">
     <div class="col-12 col-md-10 offset-md-1">
         <div class="card white box-shadow py-5 my-5 p-sm-5">
@@ -27,7 +27,7 @@
                     @honeypot
                     <div class="form-group">
                         <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
-                        <input type="email" class="form-control @error('email') is-invalid @enderror"
+                        <input type="email" class="form-control @error('email') is-invalid @enderror a11y-form-control"
                                id="email" name="email"
                                value="{{ old('email') }}" required>
                         @error('email')

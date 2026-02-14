@@ -11,7 +11,7 @@
                     </span>
                 </div>
                 <input type="email"
-                       class="form-control {{ ($errors && isset($errors["invites.$index.email"])) ? 'is-invalid' : '' }}"
+                       class="form-control {{ ($errors && isset($errors[ a11y-form-control"invites.$index.email"])) ? 'is-invalid' : '' }}"
                        id="invites[{{ $index }}][email]" 
                        name="invites[{{ $index }}][email]"
                        wire:model.defer="invites.{{ $index }}.email"

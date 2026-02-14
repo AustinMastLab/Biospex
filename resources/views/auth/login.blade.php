@@ -32,7 +32,7 @@
                         @endif
                         <div class="form-group">
                             <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
-                            <input type="email" class="form-control @error('email') is-invalid @enderror"
+                            <input type="email" class="form-control @error('email') is-invalid @enderror a11y-form-control"
                                    id="email" name="email"
                                    autocomplete="email"
                                    value="{{ old('email') }}" required>
@@ -44,7 +44,7 @@
                         </div>
                         <div class="form-group">
                             <label for="password" class="col-form-label required">{{ t('Password') }}:</label>
-                            <input type="password" class="form-control @error('password') is-invalid @enderror"
+                            <input type="password" class="form-control @error('password') is-invalid @enderror a11y-form-control"
                                    id="password" name="password"
                                    autocomplete="current-password"
                                    value="{{ old('password') }}" required>

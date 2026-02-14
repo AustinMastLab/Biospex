@@ -50,7 +50,7 @@
     <div class="form-group col-sm-10 mx-auto text-center">
         <div class="form-row col-sm-6 m-auto mt-4 text-justify">
             <label for="name" class="col-form-label font-bold required">{{ t('Form Name') }}:</label>
-            <input type="text" class="form-control {{ ($errors->has('name')) ? 'is-invalid' : '' }}"
+            <input type="text" class="form-control {{ ($errors->has('name')) ? 'is-invalid' : '' }} a11y-form-control"
                    id="name" name="name"
                    value="{{ $form['name'] }}" required>
             <span class="invalid-feedback">{{ $errors->first('name') }}</span>

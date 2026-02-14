@@ -19,7 +19,7 @@
                         <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Edit Group') }}</h2>
                         <div class="form-group">
                             <label for="title" class="col-form-label required">{{ t('Title') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="title" name="title"
                                    value="{{ old('title', $group->title) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('title') }}</span>
@@ -28,7 +28,7 @@
                     <div class="form-group col-sm-6">
                         <label for="user_id" class="col-form-label required">{{ t('Owner') }}:</label>
                         <select name="user_id" id="user_id"
-                                class="form-control custom-select {{ ($errors->has('user_id')) ? 'is-invalid' : '' }}"
+                                class="form-control custom-select {{ ($errors->has('user_id')) ? 'is-invalid' : '' }} a11y-form-control a11y-form-control"
                                 required>
                             @foreach($users as $key => $name)
                                 <option {{ $key == old('user_id', $group->owner->id) ?

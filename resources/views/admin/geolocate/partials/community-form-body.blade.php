@@ -37,7 +37,7 @@
                     <label id="community-label" for="community"
                            class="col-form-label">{{ t('New GeoLocate Community') }}:</label>
                     <input type="text"
-                           class="w-100 form-control"
+                           class="w-100 form-control a11y-form-control"
                            id="community" name="community"
                            placeholder="{{ t('Enter new community name') }}">
                 </div>
@@ -48,7 +48,7 @@
                 <div class="form-group form-inline">
                     <label for="data-source" class="col-form-label required">{{ t('Data Source') }}:</label>
                     <input type="text"
-                           class="w-100 form-control"
+                           class="w-100 form-control a11y-form-control"
                            id="data-source" name="data_source"
                            value="{{ isset($expedition->geoLocateDataSource->data_source) ? $expedition->geoLocateDataSource->data_source : '' }}"
                            placeholder="Enter data source" required>

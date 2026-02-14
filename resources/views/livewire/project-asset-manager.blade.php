@@ -17,7 +17,7 @@
                         <select name="assets[{{ $index }}][type]"
                                 id="assets[{{ $index }}][type]"
                                 wire:model.defer="assets.{{ $index }}.type"
-                                class="form-control custom-select {{ ($errors && isset($errors["assets.$index.type"])) ? 'is-invalid' : '' }}">
+                                class="form-control custom-select {{ ($errors && isset($errors[ a11y-form-control a11y-form-control"assets.$index.type"])) ? 'is-invalid' : '' }}">
                             <option value="">None</option>
                             @foreach(config('config.project_assets') as $name)
                                 <option value="{{ $name }}">{{ $name }}</option>
@@ -40,7 +40,7 @@
                     <label class="col-form-label"
                            for="assets[{{ $index }}][name]">{{ t('URL or Name') }}</label>
                     <input type="text"
-                           class="form-control {{ ($errors && isset($errors["assets.$index.name"])) ? 'is-invalid' : '' }}"
+                           class="form-control {{ ($errors && isset($errors[ a11y-form-control"assets.$index.name"])) ? 'is-invalid' : '' }}"
                            id="assets[{{ $index }}][name]"
                            name="assets[{{ $index }}][name]"
                            wire:model.defer="assets.{{ $index }}.name"
@@ -51,7 +51,7 @@
                     <label class="col-form-label"
                            for="assets[{{ $index }}][description]">{{ t('Description') }}</label>
                     <input type="text"
-                           class="form-control {{ ($errors && isset($errors["assets.$index.description"])) ? 'is-invalid' : '' }}"
+                           class="form-control {{ ($errors && isset($errors[ a11y-form-control"assets.$index.description"])) ? 'is-invalid' : '' }}"
                            id="assets[{{ $index }}][description]"
                            name="assets[{{ $index }}][description]"
                            wire:model.defer="assets.{{ $index }}.description"

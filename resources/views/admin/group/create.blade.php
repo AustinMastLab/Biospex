@@ -19,7 +19,7 @@
                         <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Create Group') }}</h2>
                         <div class="form-group">
                             <label for="title" class="col-form-label required">{{ t('Title') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="title" name="title"
                                    value="{{ old('title') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('title') }}</span>

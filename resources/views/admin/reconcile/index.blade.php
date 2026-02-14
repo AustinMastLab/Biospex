@@ -12,7 +12,7 @@
 
     <div class="row mt-5 justify-content-center">
         {{ $reconciles->links() }}
-        <select name="pagination" id="pagination" class="form-control custom-select ml-2" style="width: 100px"
+        <select name="pagination" id="pagination" class="form-control custom-select ml-2 a11y-form-control a11y-form-control" style="width: 100px"
                 required>
             @foreach($reconciles->getUrlRange(1, $reconciles->total()) as $page => $url)
                 <option value="{{ $url }}" {{ $reconciles->url($reconciles->currentPage()) === $url ? ' selected=selected' : '' }}>{{ $page }}</option>
@@ -55,7 +55,7 @@
                                 <label for="{{ $encodedColumn }}"
                                        class="col-form-label">{{ t('Your expert opinion of') }}
                                     <br> {{ $decodedColumn }}:</label>
-                                <textarea class="form-control" rows="3"
+                                <textarea class="form-control a11y-form-control" rows="3"
                                           id="{{ $encodedColumn }}"
                                           name="{{ $encodedColumn }}">{{ $reconciles->first()->{$encodedColumn} }}</textarea>
                             </div>
@@ -134,7 +134,7 @@
     </div>
     <div class="row mt-5 justify-content-center">
         {{ $reconciles->links() }}
-        <select name="pagination" id="pagination" class="form-control custom-select ml-2" style="width: 100px"
+        <select name="pagination" id="pagination" class="form-control custom-select ml-2 a11y-form-control a11y-form-control" style="width: 100px"
                 required>
             @foreach($reconciles->getUrlRange(1, $reconciles->total()) as $page => $url)
                 <option value="{{ $url }}" {{ $reconciles->url($reconciles->currentPage()) === $url ? ' selected=selected' : '' }}>{{ $page }}</option>

@@ -6,7 +6,7 @@
                     <span class="input-group-text btn btn-primary btn-add px-3 py-0" id="basic-addon{{$i}}"><i
                                 class="fas fa-plus"></i></span>
             </div>
-            <input type="text" class="form-control {{ ($errors->has("teams.$i.title")) ? 'is-invalid' : '' }}"
+            <input type="text" class="form-control {{ ($errors->has( a11y-form-control"teams.$i.title")) ? 'is-invalid' : '' }}"
                    id="teams[{{ $i }}][title]"
                    name="teams[{{ $i }}][title]"
                    value="{{ old("teams.$i.title", $teams[$i]->title ?? '') }}">

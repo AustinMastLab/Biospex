@@ -17,7 +17,7 @@
 @endsection
 
 @section('content')
-    <h2 class="text-center pt-4">{{ t('Register Account') }}</h2>
+    <h2 class="text-center pt-4 text-uppercase">{{ t('Register Account') }}</h2>
     <hr class="header mx-auto" style="width:300px;">
     <div class="col-12 col-md-10 offset-md-1">
         <div class="card white box-shadow py-5 my-5 p-sm-5">
@@ -28,7 +28,7 @@
                     @honeypot
                     <div class="form-group">
                         <label for="name" class="col-form-label required">{{ t('Display Name') }}:</label>
-                        <input type="text" class="form-control @error('name') is-invalid @enderror"
+                        <input type="text" class="form-control @error('name') is-invalid @enderror a11y-form-control"
                                id="name" name="name"
                                value="{{ old('name') }}" required>
                         @error('name')
@@ -39,7 +39,7 @@
                     </div>
                     <div class="form-group">
                         <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
-                        <input type="email" class="form-control @error('email') is-invalid @enderror"
+                        <input type="email" class="form-control @error('email') is-invalid @enderror a11y-form-control"
                                id="email" name="email"
                                value="{{ old('email', isset($invite->email) ? $invite->email : null) }}" required>
                         @error('email')
@@ -50,7 +50,7 @@
                     </div>
                     <div class="form-group">
                         <label for="password" class="col-form-label required">{{ t('Password') }}:</label>
-                        <input type="password" class="form-control @error('password') is-invalid @enderror"
+                        <input type="password" class="form-control @error('password') is-invalid @enderror a11y-form-control"
                                id="password" name="password"
                                value="{{ old('password') }}" required>
                         @error('password')
@@ -62,7 +62,7 @@
                     <div class="form-group">
                         <label for="password_confirmation" class="col-form-label required">{{ t('Confirm Password') }}
                             :</label>
-                        <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror"
+                        <input type="password" class="form-control @error('password_confirmation') is-invalid @enderror a11y-form-control"
                                id="password_confirmation" name="password_confirmation"
                                value="{{ old('password_confirmation') }}" required>
                         @error('password_confirmation')

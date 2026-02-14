@@ -5,7 +5,7 @@
                 <div class="col-4 mb-2">
                     <label for="word" class="col-form-label required">{{ t('Word') }}:</label>
                     <input type="text"
-                           class="form-control {{ ($errors->has("words.$i.word")) ? 'is-invalid' : '' }}"
+                           class="form-control {{ ($errors->has( a11y-form-control"words.$i.word")) ? 'is-invalid' : '' }}"
                            id="words[{{ $i }}][word]"
                            pattern=".{1,30}" title="1 to 30 characters"
                            name="words[{{ $i }}][word]"
@@ -18,7 +18,7 @@
                 <div class="col-8 mb-2">
                     <label for="definition" class="col-form-label">{{ t('Mouseover Text') }}:</label>
                     <input type="text"
-                           class="form-control"
+                           class="form-control a11y-form-control"
                            id="words[{{ $i }}][definition]"
                            pattern=".{1,200}" title="1 to 200 characters"
                            name="words[{{ $i }}][definition]"

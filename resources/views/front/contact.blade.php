@@ -29,7 +29,7 @@
                     <div class="form-group">
                         <label for="name" class="col-form-label required">{{ t('Name') }}:</label>
                         <input type="text"
-                               class="form-control a11y-form-control {{ ($errors->has('name')) ? 'is-invalid' : '' }}"
+                               class="form-control a11y-form-control {{ ($errors->has('name')) ? 'is-invalid' : '' }} a11y-form-control"
                                id="name"
                                name="name"
                                autocomplete="name"
@@ -40,7 +40,7 @@
                     <div class="form-group">
                         <label for="email" class="col-form-label required">{{ t('Email') }}:</label>
                         <input type="email"
-                               class="form-control a11y-form-control {{ ($errors->has('email')) ? 'is-invalid' : '' }}"
+                               class="form-control a11y-form-control {{ ($errors->has('email')) ? 'is-invalid' : '' }} a11y-form-control"
                                id="email"
                                name="email"
                                autocomplete="email"
@@ -52,7 +52,7 @@
                     <div class="form-group">
                         <label for="message" class="col-form-label required">{{ t('Message') }}:</label>
                         <textarea rows="6"
-                                  class="form-control a11y-form-control {{ ($errors->has('message')) ? 'is-invalid' : '' }}"
+                                  class="form-control a11y-form-control {{ ($errors->has('message')) ? 'is-invalid' : '' }} a11y-form-control"
                                   id="message"
                                   name="message"
                                   autocomplete="off"

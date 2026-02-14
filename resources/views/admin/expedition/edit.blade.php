@@ -21,7 +21,7 @@
                         <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Edit Expedition') }}</h2>
                         <div class="form-group">
                             <label for="title" class="col-form-label required">{{ t('Title') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="title" name="title"
                                    value="{{ old('title', $expedition->title) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('title') }}</span>
@@ -30,7 +30,7 @@
                         <div class="form-group">
                             <label for="description" class="col-form-label required">{{ t('Description') }}:</label>
                             <input type="text"
-                                   class="form-control {{ ($errors->has('description')) ? 'is-invalid' : '' }}"
+                                   class="form-control {{ ($errors->has('description')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="description" name="description"
                                    value="{{ old('description', $expedition->description) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('description') }}</span>
@@ -38,7 +38,7 @@
 
                         <div class="form-group">
                             <label for="keywords" class="col-form-label required">{{ t('Keywords') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('keywords')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('keywords')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="keywords" name="keywords" placeholder="{{ t('Separated by commas') }}"
                                    value="{{ old('keywords', $expedition->keywords) }}" required>
                             <span class="invalid-feedback">{{ $errors->first('keywords') }}</span>
@@ -63,7 +63,7 @@
 
                                 </i></label>
                             <select name="workflow_id" id="workflow-id"
-                                    class="form-control custom-select col-sm-5 {{ ($errors->has('workflow_id')) ? 'is-invalid' : '' }}"
+                                    class="form-control custom-select col-sm-5 {{ ($errors->has('workflow_id')) ? 'is-invalid' : '' }} a11y-form-control a11y-form-control"
                                     {{ $expedition->locked === 1 ? 'disabled' : '' }}
                                     required>
                                 @foreach($workflowOptions as $key => $name)

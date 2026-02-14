@@ -6,7 +6,7 @@
         <div class="dfelx form-row align-items-center">
             <div class="col-10">
                 <input type="text" name="panoptes_workflow_id" id="panoptes_workflow_id"
-                       class="form-control {{ ($errors->has('panoptes_workflow_id')) ? 'has-error' : '' }}"
+                       class="form-control {{ ($errors->has('panoptes_workflow_id')) ? 'has-error' : '' }} a11y-form-control"
                        placeholder="{{ t('Enter Workflow Id after Expedition submitted to Zooniverse') }}"
                        value="{{ old('panoptes_workflow_id', $expedition->panoptesProject->panoptes_workflow_id ?? '') }}"
                        required/>

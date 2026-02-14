@@ -48,10 +48,10 @@
                     <div class="form-group {{ ($errors->has('nfn_user')) ? 'has-error' : '' }}">
                         <label for="name" class="col-form-label required">{{ t('Zooniverse Username') }}:</label>
                         @if($active)
-                            <input type="text" class="form-control {{ ($errors->has('nfn_user')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('nfn_user')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="nfn_user" name="nfn_user" value="{{ old('nfn_user') }}" required>
                         @else
-                            <input type="text" class="form-control {{ ($errors->has('nfn_user')) ? 'is-invalid' : '' }}"
+                            <input type="text" class="form-control {{ ($errors->has('nfn_user')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="nfn_user" name="nfn_user" value="" placeholder="{{ t('Event Closed') }}"
                                    disabled="disabled">
                         @endif

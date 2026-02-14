@@ -84,7 +84,7 @@
                     <div class="form-group">
                         <label for="recordset" class="mb-0">{{ t('Record Set Id/Url') }} <span
                                     class="color-action">*</span></label>
-                        <input type="text" name="recordset" id="dwc-recordset" class="form-control"
+                        <input type="text" name="recordset" id="dwc-recordset" class="form-control a11y-form-control"
                                title="Must be valid UUID"
                                pattern="([a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}){1}"
                                required>
@@ -128,7 +128,7 @@
                     <div class="form-group">
                         <label for="dwc-url" class="mb-0">{{ t('URL') }} <span
                                     class="color-action">*</span></label>
-                        <input type="url" name="dwc-url" id="dwc-url" class="form-control" required>
+                        <input type="url" name="dwc-url" id="dwc-url" class="form-control a11y-form-control" required>
                     </div>
                     <div class="text-center mt-4">
                         <button type="submit"

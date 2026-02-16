@@ -271,7 +271,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="resources" class="col-form-label">{{ t('Resources') }}:</label>
+                            <span class="col-form-label d-block">{{ t('Resources') }}:</span>
                             <div class="controls col-sm-12">
                                 @include('admin.project.partials.assets')
                             </div>

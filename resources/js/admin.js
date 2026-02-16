@@ -1,21 +1,3 @@
-/*
- * Copyright (C) 2014 - 2025, Biospex
- * biospex@gmail.com
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program.  If not, see <https://www.gnu.org/licenses/>.
- */
-
 $(function () {
 
     function fixSummernoteA11y($textarea) {
@@ -27,37 +9,135 @@ $(function () {
         let $label = $('label[for="' + textareaId + '"]').first();
 
         // Find the generated editor for THIS textarea
-        // Summernote typically inserts .note-editor after the textarea
         let $editor = $textarea.nextAll('.note-editor').first();
         if (!$editor.length) {
-            // Fallback: sometimes it’s wrapped differently
             $editor = $textarea.closest('.note-editor');
         }
-
         if (!$editor.length) return;
 
-        // 1) Give the editable textbox an accessible name
+        // A) Patch the Summernote HELP modal footer ("Summernote 0.9.1 · Project · Issues")
+        // Silktide flags this as “semantic links” because it’s navigation-like but not a list.
+        $('.note-modal').each(function () {
+            let $modal = $(this);
+
+            // Look for the specific footer paragraph Summernote generates
+            let $p = $modal.find('.modal-footer p.text-center').first();
+            if (!$p.length) return;
+
+            // Avoid re-patching
+            if ($p.data('a11yPatched')) return;
+
+            // Only patch the one that looks like the Summernote help footer
+            let text = $p.text().replace(/\s+/g, ' ').trim();
+            if (!text.toLowerCase().includes('summernote')) return;
+
+            // Build a semantic list using the existing links (and any plain text chunks)
+            let $ul = $('<ul class="note-a11y-help-links" role="list"></ul>');
+
+            $p.contents().each(function () {
+                // Keep anchors as items; keep meaningful text chunks too
+                if (this.nodeType === Node.ELEMENT_NODE && this.tagName.toLowerCase() === 'a') {
+                    $ul.append($('<li></li>').append($(this)));
+                    return;
+                }
+
+                if (this.nodeType === Node.TEXT_NODE) {
+                    let chunk = (this.textContent || '').replace(/\s+/g, ' ').trim();
+
+                    // Drop separators like "·"
+                    chunk = chunk.replace(/[·•|]/g, '').trim();
+                    if (!chunk) return;
+
+                    $ul.append($('<li></li>').text(chunk));
+                }
+            });
+
+            if ($ul.children().length) {
+                $p.empty().append($ul);
+                $p.data('a11yPatched', true);
+            }
+        });
+
+        // B) Remove Summernote link popover's empty anchor (<a target="_blank"></a>)
+        // Silktide flags it as an inaccessible/screen-reader link (no href, no text).
+        $editor.find('.note-link-popover a[target="_blank"]').each(function () {
+            let $a = $(this);
+            let href = ($a.attr('href') || '').trim();
+            let text = ($a.text() || '').trim();
+
+            if (href === '' && text === '') {
+                $a.remove();
+            }
+        });
+
+        // 1) Name the editable region
         if ($label.length) {
             if (!$label.attr('id')) {
                 $label.attr('id', textareaId + '-label');
             }
-
             let $editable = $editor.find('.note-editable[role="textbox"]').first();
             if ($editable.length) {
                 $editable.attr('aria-labelledby', $label.attr('id'));
-                $editable.removeAttr('aria-label'); // avoid conflicting/empty labels
-                $editable.removeAttr('title'); // optional: keep naming consistent
+                $editable.removeAttr('aria-label');
+                $editable.removeAttr('title');
+            }
+
+            // NEW: also label Summernote "code view" textarea (note-codable)
+            let $codable = $editor.find('textarea.note-codable').first();
+            if ($codable.length) {
+                $codable.attr('aria-labelledby', $label.attr('id'));
+                $codable.attr('aria-label', $label.text().trim() + ' (HTML source)');
             }
         } else {
-            // If there is no label for some reason, at least provide a non-empty name
             let $editable = $editor.find('.note-editable[role="textbox"]').first();
             if ($editable.length && !$editable.attr('aria-label') && !$editable.attr('aria-labelledby')) {
                 $editable.attr('aria-label', 'Rich text editor');
             }
+
+            // NEW: fallback label for code view
+            let $codable = $editor.find('textarea.note-codable').first();
+            if ($codable.length && !$codable.attr('aria-label') && !$codable.attr('aria-labelledby')) {
+                $codable.attr('aria-label', 'Rich text editor (HTML source)');
+            }
         }
 
-        // 2) Remove prohibited aria-label from resize bar (axe: aria-prohibited-attr)
+        // 2) Remove prohibited aria-label from resize bar
         $editor.find('.note-resizebar[aria-label]').removeAttr('aria-label');
+
+        // 3) Label generated color pickers (Silktide “Field labels”)
+        $editor.find('input[id^="backColorPicker-"]').each(function () {
+            let $i = $(this);
+            if (!$i.attr('aria-label')) $i.attr('aria-label', 'Background color');
+        });
+        $editor.find('input[id^="foreColorPicker-"]').each(function () {
+            let $i = $(this);
+            if (!$i.attr('aria-label')) $i.attr('aria-label', 'Text color');
+        });
+
+        // 4) “Semantic links” in dropdowns: wrap menu items in <ul><li>
+        // Summernote uses these dropdown menus; sometimes they are rebuilt after init.
+        $editor.find('.note-dropdown-menu, .dropdown-menu').each(function () {
+            let $menu = $(this);
+
+            if ($menu.children('ul.note-a11y-list').length) return;
+
+            // Only wrap direct interactive children
+            let $items = $menu.children('a, button');
+            if (!$items.length) return;
+
+            let $ul = $('<ul class="note-a11y-list" role="list"></ul>');
+            $items.each(function () {
+                $ul.append($('<li></li>').append($(this)));
+            });
+
+            $menu.empty().append($ul);
+        });
+    }
+
+    function patchAllSummernotes() {
+        $('.textarea').each(function () {
+            fixSummernoteA11y($(this));
+        });
     }
 
     // Restore: clipboard support used in admin pages
@@ -99,32 +179,39 @@ $(function () {
             ],
             callbacks: {
                 onInit: function () {
-                    let $t = $(this);
-
-                    // If `this` isn't the textarea, patch all (safe fallback)
-                    if (!$t.is('textarea')) {
-                        $('.textarea').each(function () {
-                            fixSummernoteA11y($(this));
-                        });
-                        return;
-                    }
-
-                    fixSummernoteA11y($t);
-                    setTimeout(function () {
-                        fixSummernoteA11y($t);
-                    }, 0);
+                    patchAllSummernotes();
+                    setTimeout(patchAllSummernotes, 0);
                 }
             }
         });
-
-        // Extra safety: patch after Summernote has had time to build the UI
-        textarea.each(function () {
-            let $t = $(this);
-            setTimeout(function () {
-                fixSummernoteA11y($t);
-            }, 0);
-        });
     }
+
+    // Keep patching as Summernote/Bootstrap rebuilds menus/toolbars dynamically.
+    // This is what usually makes “nothing changed” happen with a11y scanners.
+    let observer = new MutationObserver(function (mutations) {
+        for (let i = 0; i < mutations.length; i++) {
+            let m = mutations[i];
+            if (!m.addedNodes || !m.addedNodes.length) continue;
+
+            for (let j = 0; j < m.addedNodes.length; j++) {
+                let node = m.addedNodes[j];
+                if (!node || node.nodeType !== 1) continue;
+
+                // If Summernote UI or dropdown menus were added/changed, re-patch.
+                if (
+                    node.matches('.note-editor, .note-dropdown-menu, .dropdown-menu') ||
+                    (node.querySelector && node.querySelector('.note-editor, .note-dropdown-menu, .dropdown-menu'))
+                ) {
+                    patchAllSummernotes();
+                    // quick exit for this batch
+                    i = mutations.length;
+                    break;
+                }
+            }
+        }
+    });
+
+    observer.observe(document.body, { childList: true, subtree: true });
 
     // Restore: datetimepicker init
     $.datetimepicker.setLocale('en')

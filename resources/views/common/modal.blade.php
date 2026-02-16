@@ -5,7 +5,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <div class="empty-icon"><i class="fa fa-fw"></i></div>
-                <div><h2 id="modal-title" class="color-action"></h2></div>
+                <div><h2 id="modal-title" class="color-action">{{ t('Dialog') }}</h2></div>
                 <div>
                     <button type="button" class="close" data-dismiss="modal" aria-label="Close">
                         <span><i class="far fa-times-circle"></i></span>

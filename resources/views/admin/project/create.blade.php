@@ -39,16 +39,20 @@
 
                         <div class="form-group">
                             <label for="title" class="col-form-label required">{{ t('Title') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }} a11y-form-control"
+                            <input type="text"
+                                   class="form-control {{ ($errors->has('title')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="title" name="title"
+                                   autocomplete="organization-title"
                                    value="{{ old('title') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('title') }}</span>
                         </div>
 
                         <div class="form-group">
                             <label for="contact" class="col-form-label required">{{ t('Contact') }}:</label>
-                            <input type="text" class="form-control {{ ($errors->has('contact')) ? 'is-invalid' : '' }} a11y-form-control"
+                            <input type="text"
+                                   class="form-control {{ ($errors->has('contact')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="contact" name="contact"
+                                   autocomplete="name"
                                    value="{{ old('contact') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('contact') }}</span>
                         </div>
@@ -69,7 +73,10 @@
                                    class="col-form-label {{ ($errors->has('contact_title')) ? 'is-invalid' : '' }} required">
                                 {{ t('Contact Title') }}
                                 :</label>
-                            <input type="text" class="form-control a11y-form-control" id="contact_title" name="contact_title"
+                            <input type="text"
+                                   class="form-control a11y-form-control"
+                                   id="contact_title" name="contact_title"
+                                   autocomplete="organization-title"
                                    value="{{ old('contact_title') }}" required>
                             <span class="invalid-feedback">{{ $errors->first('contact_title') }}</span>
                         </div>
@@ -79,6 +86,7 @@
                             <input type="text"
                                    class="form-control {{ ($errors->has('organization')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="organization" name="organization"
+                                   autocomplete="organization"
                                    value="{{ old('organization') }}">
                             <span class="invalid-feedback">{{ $errors->first('organization') }}</span>
                         </div>
@@ -88,7 +96,10 @@
                                    class="col-form-label pl-0 {{ ($errors->has('organization_website')) ? 'is-invalid' : '' }}">
                                 {{ t('Organization Website') }}
                                 :</label>
-                            <input type="url" class="form-control a11y-form-control" id="organization_website" name="organization_website"
+                            <input type="url"
+                                   class="form-control a11y-form-control"
+                                   id="organization_website" name="organization_website"
+                                   autocomplete="url"
                                    value="{{ old('organization_website') }}">
                             <span class="invalid-feedback">{{ $errors->first('organization_website') }}</span>
                         </div>
@@ -173,35 +184,35 @@
 
                         <div class="form-group">
                             <label for="blog_url" class="col-form-label">{{ t('Project Blog') }}:</label>
-                            <input type="url" class="form-control {{ ($errors->has('blog_url')) ? 'is-invalid' : '' }} a11y-form-control"
-                                   id="blog_url" name="blog_url" placeholder="{{ t('http://blog.com') }}"
+                            <input type="url"
+                                   class="form-control {{ ($errors->has('blog_url')) ? 'is-invalid' : '' }} a11y-form-control"
+                                   id="blog_url" name="blog_url"
+                                   autocomplete="url"
+                                   placeholder="{{ t('http://blog.com') }}"
                                    value="{{ old('blog_url') }}">
                             <span class="invalid-feedback">{{ $errors->first('blog_url') }}</span>
                         </div>
 
                         <div class="form-group">
                             <label for="facebook" class="col-form-label">{{ t('Facebook') }}:</label>
-                            <input type="url" class="form-control {{ ($errors->has('facebook')) ? 'is-invalid' : '' }} a11y-form-control"
-                                   id="facebook" name="facebook" placeholder="{{ t('http://facebook.com/example') }}"
+                            <input type="url"
+                                   class="form-control {{ ($errors->has('facebook')) ? 'is-invalid' : '' }} a11y-form-control"
+                                   id="facebook" name="facebook"
+                                   autocomplete="url"
+                                   placeholder="{{ t('http://facebook.com/example') }}"
                                    value="{{ old('facebook') }}">
                             <span class="invalid-feedback">{{ $errors->first('facebook') }}</span>
                         </div>
 
                         <div class="form-group">
                             <label for="twitter" class="col-form-label">{{ t('Twitter') }}:</label>
-                            <input type="url" class="form-control {{ ($errors->has('twitter')) ? 'is-invalid' : '' }} a11y-form-control"
-                                   id="twitter" name="twitter" placeholder="{{ t('http://twitter.com/example') }}"
+                            <input type="url"
+                                   class="form-control {{ ($errors->has('twitter')) ? 'is-invalid' : '' }} a11y-form-control"
+                                   id="twitter" name="twitter"
+                                   autocomplete="url"
+                                   placeholder="{{ t('http://twitter.com/example') }}"
                                    value="{{ old('twitter') }}">
                             <span class="invalid-feedback">{{ $errors->first('twitter') }}</span>
-                        </div>
-
-                        <div class="form-group">
-                            <label for="activities" class="col-form-label">{{ t('Activities') }}:</label>
-                            <input type="text" class="form-control a11y-form-control"
-                                   {{ ($errors->has('activities')) ? 'is-invalid' : '' }}
-                                   id="activities" name="activities"
-                                   value="{{ old('activities') }}">
-                            <span class="invalid-feedback">{{ $errors->first('activities') }}</span>
                         </div>
 
                         <div class="form-group">
@@ -210,6 +221,7 @@
                             <input type="text"
                                    class="form-control {{ ($errors->has('language_skills')) ? 'is-invalid' : '' }} a11y-form-control"
                                    id="language_skills" name="language_skills"
+                                   autocomplete="off"
                                    value="{{ old('language_skills') }}">
                             <span class="invalid-feedback">{{ $errors->first('language_skills') }}</span>
                         </div>
@@ -233,18 +245,23 @@
                                        readonly>
                             </div>
                             <div class="form-group col-sm-4 pt-3">
-                                <a href="#" data-toggle="modal" data-target="#project-banner-modal"
-                                   data-hover="tooltip" title="{{ t('Click to select banner.') }}">
+                                <button type="button"
+                                        class="btn btn-link p-0"
+                                        data-toggle="modal"
+                                        data-target="#project-banner-modal"
+                                        data-hover="tooltip"
+                                        title="{{ t('Click to select banner.') }}"
+                                        aria-label="{{ t('Click to select banner.') }}">
                                     {{ t('Click to select banner.') }}
                                     <img class="img-fluid" id="banner-img"
                                          src="{{ old('banner_file', project_banner_file_url()) }}"
-                                         alt="Project Banner"/>
-                                </a>
+                                         alt="{{ t('Project banner preview') }}"/>
+                                </button>
                             </div>
                         </div>
 
                         <div class="form-group">
-                            <label for="resources" class="col-form-label">{{ t('Resources') }}:</label>
+                            <span class="col-form-label d-block">{{ t('Resources') }}:</span>
                             <div class="controls col-sm-12">
                                 @include('admin.project.partials.assets')
                             </div>

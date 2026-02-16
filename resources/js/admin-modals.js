@@ -22,6 +22,12 @@ $(function () {
         if ($body.hasClass('modal-open') === false) {
             $body.addClass('modal-open')
         }
+
+        // Ensure the global modal heading is never empty (Silktide scans at odd times)
+        let $title = $('#modal-title');
+        if ($title.length && $title.text().trim() === '') {
+            $title.text('Dialog');
+        }
     })
 
     let $globalModal = $('.global-modal');
@@ -32,7 +38,9 @@ $(function () {
 
         $(this).data('size', size)
         $(this).find('div.modal-dialog').addClass(size)
-        $('#modal-title').html($target.data('title'))
+
+        let title = ($target.data('title') || '').toString().trim();
+        $('#modal-title').html(title !== '' ? title : 'Dialog');
 
         $modalBody.html('<div class="loader mx-auto"></div>')
         $modalBody.load($target.data("url"), function () {
@@ -60,7 +68,7 @@ $(function () {
         let size = $(this).data('size');
         $(this).find('div.modal-dialog').removeClass(size).data('size', '')
         $(this).find('.modal-body').html('')
-        $('#modal-title').html('')
+        $('#modal-title').html('Dialog');
     })
 
     // GeoLocate Community and datasource form.

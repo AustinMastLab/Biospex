@@ -2,6 +2,9 @@
 <html lang="en">
 @include('admin.layout.head')
 <body>
+<a href="#main-content" class="skip-link">
+    {{ t('Skip to main content') }}
+</a>
 <header>
     <nav class="header-admin navbar navbar-expand-md box-shadow">
         <a href="/"><img src="/images/page/biospex_logo.svg" alt="BIOSPEX"
@@ -9,7 +12,7 @@
         @include('common.nav')
     </nav>
 </header>
-<div class="container mb-4">
+<main id="main-content" class="container mb-4">
     @include('common.notices')
     @yield('content')
     @include('common.wedigbio-progress-modal')
@@ -17,7 +20,7 @@
     @include('common.process-modal')
     @include('common.ocr-main-modal')
     @include('common.modal')
-</div>
+</main>
 @include('admin.layout.foot')
 </body>
 </html>

@@ -19,10 +19,53 @@
 $(function () {
     am4core.options.autoDispose = true;
 
+    let a11yScheduled = false;
+
+    function scheduleTranscriptChartA11yFix() {
+        if (a11yScheduled) return;
+        a11yScheduled = true;
+
+        window.requestAnimationFrame(function () {
+            a11yScheduled = false;
+            fixTranscriptChartSvgA11y();
+        });
+    }
+
+    function fixTranscriptChartSvgA11y() {
+        try {
+            const container = document.getElementById('transcripts');
+            if (!container) return;
+
+            const svg = container.querySelector('svg');
+            if (!svg) return;
+
+            // We expose the accessible name/description on #transcripts (HTML),
+            // so hide the amCharts SVG internals from screen readers/scanners.
+            svg.setAttribute('aria-hidden', 'true');
+            svg.setAttribute('focusable', 'false');
+
+            // Remove amCharts-generated landmark-ish nodes that Silktide flags as "g field label".
+            svg.querySelectorAll('g[role], g[aria-label], g[aria-labelledby]').forEach(function (node) {
+                node.removeAttribute('role');
+                node.removeAttribute('aria-label');
+                node.removeAttribute('aria-labelledby');
+            });
+
+            // Also strip focus hooks if any appear.
+            svg.querySelectorAll('[tabindex]').forEach(function (node) {
+                node.removeAttribute('tabindex');
+            });
+            svg.querySelectorAll('[focusable]').forEach(function (node) {
+                node.removeAttribute('focusable');
+            });
+        } catch (e) {
+            // swallow
+        }
+    }
+
     let buildChart = function (data) {
                 let transcripts = am4core.createFromConfig(data, "transcripts", am4charts.XYChart);
 
-                // Match EventRate behavior: no zoom-out button; enable wheel zoom + pan cursor
                 transcripts.zoomOutButton.disabled = true;
                 transcripts.mouseWheelBehavior = "zoomX";
                 transcripts.chartContainer.wheelable = true;
@@ -35,22 +78,20 @@ $(function () {
 
                 let cellSize = 1.5;
                 transcripts.events.on("datavalidated", function (ev) {
-                    // Get objects of interest
                     let chart = ev.target;
                     let categoryAxis = chart.yAxes.getIndex(0);
 
-                    // Calculate how we need to adjust chart height
                     let adjustHeight = chart.data.length * cellSize - categoryAxis.pixelHeight;
-
-                    // get current chart height
                     let targetHeight = chart.pixelHeight + adjustHeight;
 
-                    // Set it on chart's container
                     chart.svgContainer.htmlElement.style.height = targetHeight + "px";
+
+                    scheduleTranscriptChartA11yFix();
                 });
 
                 transcripts.events.on('ready', function () {
                     $("#script-modal").modal("hide");
+                    scheduleTranscriptChartA11yFix();
                 });
             },
         loadChart = function (url) {

@@ -27,8 +27,39 @@ table.dataTable tbody a {
   color: $brand-red;
 }
 
+/* A11y: striped rows are gray; darken link color there to meet WCAG AA for small text */
+table.dataTable.table-striped tbody tr:nth-of-type(odd) a {
+  color: darken($brand-red, 14%);
+}
+
 table.dataTable tbody a:hover,
 table.dataTable tbody a:focus {
   color: darken($brand-red, 8%);
   text-decoration: underline;
+}
+
+/**
+ * ADA: DataTables "Search" inputs need sufficient contrast.
+ * DataTables creates: .dataTables_wrapper .dataTables_filter input[type="search"]
+ * Keep this scoped to DataTables so we don't affect every input site-wide.
+ */
+.dataTables_wrapper {
+  .dataTables_filter {
+    input[type="search"] {
+      color: #212529;
+      background-color: #ffffff;
+      border: 2px solid #495057;
+
+      &::placeholder {
+        color: #6c757d;
+        opacity: 1; // ensure consistent placeholder contrast across browsers
+      }
+
+      &:focus {
+        border-color: #005fcc;
+        box-shadow: 0 0 0 0.2rem rgba(0, 95, 204, 0.25);
+        outline: 0;
+      }
+    }
+  }
 }

@@ -145,4 +145,35 @@ class GroupPresenter extends Presenter
                     aria-label="'.$ariaLabel.'">
                     <i class="fas fa-user-plus fa-2x" aria-hidden="true"></i></a>';
     }
+
+    public function groupRemoveMemberIcon($user): string
+    {
+        $memberName = e(
+            method_exists($user, 'present')
+                ? (string) $user->present()->full_name_or_email
+                : (string) ($user->email ?? $user->name ?? $user->id)
+        );
+
+        $groupTitle = (string) ($this->model->title ?? '');
+        $groupKey = (string) ($this->model->uuid ?? $this->model->id);
+
+        $ariaLabel = e(t(
+            'Remove member from group: %s (group %s)',
+            $memberName,
+            $groupKey
+        ));
+
+        return '<a href="'.route('admin.groups-user.destroy', [$this->model, $user]).'"'
+            .' class="prevent-default"'
+            .' title="'.e(t('Remove member from group: %s', $memberName)).'"'
+            .' aria-label="'.$ariaLabel.'"'
+            .' data-hover="tooltip"'
+            .' data-method="delete"'
+            .' data-confirm="confirmation"'
+            .' data-title="'.e(t('Remove member')).'?"'
+            .' data-content="'.e(t('This will permanently remove this member from the group.')).'">'
+            .'<i class="fas fa-trash-alt" aria-hidden="true"></i>'
+            .'<span class="sr-only">'.$ariaLabel.'</span>'
+            .'</a>';
+    }
 }

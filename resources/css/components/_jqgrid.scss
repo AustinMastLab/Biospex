@@ -19,3 +19,63 @@
   color: darken($brand-red, 8%);
   text-decoration: underline;
 }
+
+/* Improve contrast for jqGrid form controls (filter toolbar, etc.) */
+.ui-jqgrid {
+  /* Give the filter toolbar a subtle background so controls stand out */
+  .ui-search-toolbar {
+    background-color: #f8f9fa;
+  }
+
+  /* Filter toolbar controls */
+  .ui-search-toolbar input[type="text"],
+  .ui-search-toolbar input[type="search"],
+  .ui-search-toolbar select,
+  .ui-search-toolbar textarea,
+
+  /* Pager controls (jqGrid uses these classes) */
+  .ui-jqgrid-pager .ui-pg-input,
+  .ui-jqgrid-pager .ui-pg-selbox,
+  .ui-jqgrid-toppager .ui-pg-input,
+  .ui-jqgrid-toppager .ui-pg-selbox,
+
+  /* Some skins render plain inputs/selects in pager */
+  .ui-jqgrid-pager input,
+  .ui-jqgrid-pager select,
+  .ui-jqgrid-toppager input,
+  .ui-jqgrid-toppager select {
+    color: #212529 !important;
+    background-color: #ffffff !important;
+    border: 2px solid #495057 !important; /* darker/thicker border = passes “distinct” checks more reliably */
+    border-radius: 0.25rem;
+  }
+
+  .ui-search-toolbar input::placeholder,
+  .ui-search-toolbar textarea::placeholder {
+    color: #495057 !important;
+    opacity: 1; /* Firefox */
+  }
+
+  .ui-search-toolbar input:focus,
+  .ui-search-toolbar select:focus,
+  .ui-search-toolbar textarea:focus,
+  .ui-jqgrid-pager .ui-pg-input:focus,
+  .ui-jqgrid-pager .ui-pg-selbox:focus,
+  .ui-jqgrid-toppager .ui-pg-input:focus,
+  .ui-jqgrid-toppager .ui-pg-selbox:focus {
+    outline: 3px solid #0a58ca !important;
+    outline-offset: 1px;
+    box-shadow: none !important;
+  }
+
+  /* Disabled controls can also get flagged if they fade too much */
+  .ui-search-toolbar input:disabled,
+  .ui-search-toolbar select:disabled,
+  .ui-jqgrid-pager .ui-pg-input:disabled,
+  .ui-jqgrid-pager .ui-pg-selbox:disabled {
+    opacity: 1;
+    color: #6c757d !important;
+    background-color: #e9ecef !important;
+    border-color: #6c757d !important;
+  }
+}

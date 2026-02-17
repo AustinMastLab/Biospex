@@ -24,29 +24,18 @@
                     @if($group->users->isEmpty())
                         <p class="text-center">{{ t('No users') }}</p>
                     @else
-                        <table id="members-tbl" class="table table-striped table-bordered dt-responsive nowrap"
-                               style="width:100%; font-size: .8rem">
+                        <table id="members-tbl" class="table table-striped table-bordered dt-responsive nowrap" style="width:100%; font-size: .8rem">
                             <thead>
                             <tr>
-                                <th style="width: 5%"></th>
-                                <th>{{ t('Member') }}</th>
+                                <th scope="col" style="width: 5%"></th>
+                                <th scope="col">{{ t('Member') }}</th>
                             </tr>
                             </thead>
                             <tbody>
-                            @foreach($group->users as $user)
-                                <tr>
-                                    <td><a href="{{ route('admin.groups-user.destroy', [$group, $user]) }}"
-                                           class="prevent-default"
-                                           title="{{ t('Delete Member') }}"
-                                           aria-label="{{ t('Delete Member') }}"
-                                           data-hover="tooltip"
-                                           data-method="delete"
-                                           data-confirm="confirmation"
-                                           data-title="{{ t('Delete Member') }}?"
-                                           data-content="{{ t('This will permanently delete the member') }}">
-                                            <i class="fas fa-trash-alt" aria-hidden="true"></i>
-                                            <span class="sr-only">{{ t('Delete Member') }}</span>
-                                            </a>
+                                @foreach($group->users as $user)
+                                    <tr>
+                                        <td>
+                                            {!! $group->present()->groupRemoveMemberIcon($user) !!}
                                         </td>
                                         <td>{{ $user->present()->full_name_or_email }}</td>
                                     </tr>
@@ -70,8 +59,8 @@
                                style="width:100%; font-size: .8rem">
                             <thead>
                             <tr>
-                                <th>{{ t('Title') }}</th>
-                                <th>{{ t('Description') }}</th>
+                                <th scope="col">{{ t('Title') }}</th>
+                                <th scope="col">{{ t('Description') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -97,8 +86,8 @@
                                style="width:100%; font-size: .8rem">
                             <thead>
                             <tr>
-                                <th>{{ t('Title') }}</th>
-                                <th>{{ t('Status') }}</th>
+                                <th scope="col">{{ t('Title') }}</th>
+                                <th scope="col">{{ t('Status') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -123,8 +112,8 @@
                             <thead>
                             <tr>
                                 <th></th>
-                                <th>{{ t('Name') }}</th>
-                                <th>{{ t('# Assigned Expeditions') }}</th>
+                                <th scope="col">{{ t('Name') }}</th>
+                                <th scope="col">{{ t('# Assigned Expeditions') }}</th>
                             </tr>
                             </thead>
                             <tbody>

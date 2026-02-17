@@ -222,6 +222,34 @@ $(function () {
                 // jqGrid header divs have role="columnheader" but aren't inside required role="row"
                 $('[id^="jqgh_jqGridTable_"]').removeAttr('role');
 
+                // Ensure column headers have proper table scopes (axe/pa11y: th-has-scope).
+                // jqGrid may render headers in a separate header table under #gview_jqGridTable,
+                // and can rebuild them after loadComplete (resize/remap/frozen columns/etc).
+                const applyHeaderScopes = function () {
+                    const $root = $('#gview_jqGridTable');
+                    if (!$root.length) return;
+
+                    $root.find('th').each(function () {
+                        const $th = $(this);
+
+                        // Only set for actual jqGrid column header cells (be conservative).
+                        const id = ($th.attr('id') || '').toString();
+                        const isJqGridHeader =
+                            $th.hasClass('ui-th-column') ||
+                            id.startsWith('jqGridTable_') ||
+                            id.startsWith('jqgh_jqGridTable_');
+
+                        if (!isJqGridHeader) return;
+
+                        if (!$th.attr('scope')) {
+                            $th.attr('scope', 'col');
+                        }
+                    });
+                };
+
+                applyHeaderScopes();
+                setTimeout(applyHeaderScopes, 0);
+
                 // filterToolbar selects need an accessible name
                 $('select[id^="gs_jqGridTable_"]').each(function () {
                     const $el = $(this);
@@ -397,11 +425,20 @@ $(function () {
  */
 function mapFormatter(column) {
     let functionsMapping = {
-        "imagePreview": function (cellValue) {
+        "imagePreview": function (cellValue, options, rowObject) {
             let url = encodeURIComponent(cellValue);
-            return '<a href="' + cellValue + '" target="_new">View Image</a>&nbsp;&nbsp;'
-                + '<a href="#" class="thumb-view" data-url="' + Laravel.imagePreviewPath + url + '" data-toggle="modal" data-dismiss="modal" data-toggle="modal" data-size="modal-lg" data-target="#global-modal" data-hover="tooltip" data-title="Preview Thumbnail" title="Preview Thumbnail">View Thumb</a>&nbsp;&nbsp;'
-                + '<a href="#" class="url-view" data-url="' + Laravel.imagePreviewPath + cellValue + '&url-view=true" data-toggle="modal" data-dismiss="modal" data-toggle="modal" data-size="modal-lg" data-target="#global-modal" data-hover="tooltip" data-title="View URL" title="Preview URL">View URL</a>'
+
+            const rowId = (options && options.rowId) ? String(options.rowId).trim() : '';
+            const context = rowId ? ` (row ${rowId})` : '';
+            const safeUrlText = (cellValue || '').toString().trim();
+
+            const viewImageAria = `View image ${safeUrlText}${context}`;
+            const viewThumbAria = `View thumbnail ${safeUrlText}${context}`;
+            const viewUrlAria = `View image URL ${safeUrlText}${context}`;
+
+            return '<a href="' + cellValue + '" target="_blank" rel="noopener noreferrer" aria-label="' + viewImageAria + '">View Image</a>&nbsp;&nbsp;'
+                + '<a href="#" class="thumb-view" data-url="' + Laravel.imagePreviewPath + url + '" data-toggle="modal" data-dismiss="modal" data-toggle="modal" data-size="modal-lg" data-target="#global-modal" data-hover="tooltip" data-title="Preview Thumbnail" title="Preview Thumbnail" aria-label="' + viewThumbAria + '">View Thumb</a>&nbsp;&nbsp;'
+                + '<a href="#" class="url-view" data-url="' + Laravel.imagePreviewPath + cellValue + '&url-view=true" data-toggle="modal" data-dismiss="modal" data-toggle="modal" data-size="modal-lg" data-target="#global-modal" data-hover="tooltip" data-title="View URL" title="Preview URL" aria-label="' + viewUrlAria + '">View URL</a>';
         }
     };
 

@@ -10,14 +10,19 @@
                         <i class="fas fa-plus"></i>
                     </span>
                 </div>
+
+                <label class="sr-only" for="invites-{{ $index }}-email">
+                    {{ t('Email address') }}
+                </label>
                 <input type="email"
                        class="form-control {{ ($errors && isset($errors["invites.$index.email"])) ? 'is-invalid' : '' }} a11y-form-control"
-                       id="invites[{{ $index }}][email]"
+                       id="invites-{{ $index }}-email"
                        name="invites[{{ $index }}][email]"
                        autocomplete="email"
                        wire:model.defer="invites.{{ $index }}.email"
                        value="{{ old("invites.$index.email", $invite['email'] ?? '') }}"
                        placeholder="{{ t('Email') }}" required>
+
                 @if(count($invites) > 1)
                     <div class="input-group-append">
                         <span class="input-group-text btn btn-danger px-3 py-0"
@@ -27,9 +32,10 @@
                         </span>
                     </div>
                 @endif
+
                 <span class="invalid-feedback">{{ ($errors && isset($errors["invites.$index.email"])) ? $errors["invites.$index.email"][0] : '' }}</span>
             </div>
-            
+
             <!-- Hidden input for invite id if it exists -->
             @if(isset($invite['id']) && $invite['id'])
                 <input type="hidden"

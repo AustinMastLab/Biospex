@@ -65,7 +65,7 @@
                         'maxSize' => 10240,
                         'allowedTypes' => ['txt', 'doc', 'docx', 'csv', 'pdf'],
                         'projectUuid' => $projectUuid ?? null
-                    ], key('file-upload-' . $index))
+                    ], 'file-upload-' . $index)
                 </div>
                 <input type="hidden"
                        id="assets[{{ $index }}][id]"

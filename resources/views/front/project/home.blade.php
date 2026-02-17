@@ -170,11 +170,11 @@
     @if($project->bingos->isNotEmpty())
         <div class="row">
             <div class="col-sm-8 offset-md-2 mt-5">
-                <h1 class="text-center content-header mt-5" id="bingos">{{ t('Games') }}</h1>
+                <h1 class="text-center content-header mt-5">{{ t('Games') }}</h1>
                 <hr class="header mx-auto">
             </div>
-            <div id="bingos-main" class="col-sm-12 show">
-                <div id="bingos" class="row col-sm-12 mx-auto justify-content-center">
+            <div id="games-main" class="col-sm-12 show">
+                <div id="games" class="row col-sm-12 mx-auto justify-content-center">
                     @foreach($project->bingos as $bingo)
                         @include('front.bingo.partials.bingo-loop', ['project' => $project])
                     @endforeach
@@ -187,7 +187,7 @@
         <div class="row">
             <div class="col-sm-10 mx-auto mt-5">
                 <h1 class="text-center content-header text-uppercase mt-5"
-                    id="expeditions">{{ t('Digitizations') }}</h1>
+                    id="digitizations">{{ t('Digitizations') }}</h1>
                 <div class="text-center mt-4 mb-4">
                     @foreach($years as $year)
                         <button class="btn btn-primary btn-transcription" id="year{{ $year }}"
@@ -206,7 +206,7 @@
         <div class="row">
             <div class="col-sm-10 mx-auto mt-5">
                 <h1 class="text-center content-header text-uppercase mt-5"
-                    id="expeditions">{{ t('Heat Map Digitized Specimens') }}</h1>
+                    id="specimens">{{ t('Heat Map Digitized Specimens') }}</h1>
                 <hr class="header mx-auto">
                 <div class="jumbotron box-shadow pt-2 pb-5">
                     <div id="mapDiv" class="d-flex" style="width:100%; height: 500px"></div>

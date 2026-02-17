@@ -55,7 +55,7 @@
                             @enderror
                         </div>
                         <div class="custom-control custom-checkbox">
-                            <input type="checkbox" class="custom-control-input" id="remember" name="remember">
+                            <input type="checkbox" class="custom-control-input a11y-form-control" id="remember" name="remember">
                             <label class="custom-control-label" for="remember">{{ t('Remember Me') }}</label>
                         </div>
                         @include('common.submit-button')

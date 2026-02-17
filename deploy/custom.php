@@ -158,7 +158,7 @@ task('deploy:ci-artifacts', function () {
 
     $githubToken = $_ENV['GITHUB_TOKEN'] ?? getenv('GITHUB_TOKEN') ?? '';
     $githubSha = $_ENV['GITHUB_SHA'] ?? getenv('GITHUB_SHA') ?? '';
-    $githubRepo = $_ENV['GITHUB_REPO'] ?? getenv('GITHUB_REPO') ?? 'iDigBio/Biospex';
+    $githubRepo = $_ENV['GITHUB_REPO'] ?? getenv('GITHUB_REPO') ?? 'AustinMastLab/Biospex';
 
     // If not running in GitHub Actions, skip this task (manual deploy path)
     if (! $githubActions) {

@@ -21,7 +21,7 @@ require 'deploy/custom.php';
  */
 
 // Deployment Configuration
-set('repository', 'https://github.com/iDigBio/Biospex.git');
+set('repository', 'https://github.com/AustinMastLab/Biospex.git');
 set('base_path', '/data/web');
 set('remote_user', 'ubuntu');
 set('php_fpm_version', '8.3');

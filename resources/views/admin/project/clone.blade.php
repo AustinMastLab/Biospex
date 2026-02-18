@@ -24,7 +24,7 @@
         <div class="col-sm-10 mx-auto">
             <div class="card white box-shadow pt-2 pb-5 my-5 p-sm-5">
                 <div class="col-12">
-                    <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Clone Project') }}</h2>
+                    <h1 class="page-title text-center content-header mb-4 text-uppercase">{{ t('Clone Project') }}</h1>
                     <form method="post" id="projectFrm" action="{{ route('admin.projects.store') }}"
                           role="form"
                           enctype="multipart/form-data">
@@ -77,42 +77,44 @@
                             <span class="invalid-feedback">{{ $errors->first('contact_email') }}</span>
                         </div>
 
-                        <div class="form-group">
-                            <label for="contact_title"
-                                   class="col-form-label {{ ($errors->has('contact_title')) ? 'is-invalid' : '' }} required">
-                                {{ t('Contact Title') }}
-                                :</label>
-                            <input type="text" class="form-control a11y-form-control" id="contact_title" name="contact_title"
-                                   value="{{ old('contact_title', $project->contact_title) }}" required>
-                            <span class="invalid-feedback">{{ $errors->first('contact_title') }}</span>
-                        </div>
+                            <div class="form-group">
+                                <label for="contact_title"
+                                       class="col-form-label {{ ($errors->has('contact_title')) ? 'is-invalid' : '' }} required">
+                                    {{ t('Contact Title') }}
+                                    :</label>
+                                <input type="text" class="form-control a11y-form-control" id="contact_title" name="contact_title"
+                                       value="{{ old('contact_title', $project->contact_title) }}" required>
+                                <span class="invalid-feedback">{{ $errors->first('contact_title') }}</span>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="organization" class="col-form-label">{{ t('Organization') }}:</label>
-                            <input type="text"
-                                   class="form-control {{ ($errors->has('organization')) ? 'is-invalid' : '' }} a11y-form-control"
-                                   id="organization" name="organization"
-                                   value="{{ old('organization', $project->organization) }}">
-                            <span class="invalid-feedback">{{ $errors->first('organization') }}</span>
-                        </div>
+                            <div class="form-group">
+                                <label for="organization" class="col-form-label">{{ t('Organization') }}:</label>
+                                <input type="text"
+                                       class="form-control {{ ($errors->has('organization')) ? 'is-invalid' : '' }} a11y-form-control"
+                                       id="organization" name="organization"
+                                       autocomplete="organization"
+                                       value="{{ old('organization', $project->organization) }}">
+                                <span class="invalid-feedback">{{ $errors->first('organization') }}</span>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="organization_website"
-                                   class="col-form-label pl-0 {{ ($errors->has('organization_website')) ? 'is-invalid' : '' }}">
-                                {{ t('Organization Website') }}
-                                :</label>
-                            <input type="url" class="form-control a11y-form-control" id="organization_website" name="organization_website"
-                                   value="{{ old('organization_website', $project->organization_website) }}">
-                            <span class="invalid-feedback">{{ $errors->first('organization_website') }}</span>
-                        </div>
+                            <div class="form-group">
+                                <label for="organization_website"
+                                       class="col-form-label pl-0 {{ ($errors->has('organization_website')) ? 'is-invalid' : '' }}">
+                                    {{ t('Organization Website') }}
+                                    :</label>
+                                <input type="url" class="form-control a11y-form-control" id="organization_website" name="organization_website"
+                                       autocomplete="url"
+                                       value="{{ old('organization_website', $project->organization_website) }}">
+                                <span class="invalid-feedback">{{ $errors->first('organization_website') }}</span>
+                            </div>
 
-                        <div class="form-group">
-                            <label for="project_partners" class="col-form-label">{{ t('Project Partners') }}:</label>
-                            <textarea id="project_partners" name="project_partners"
-                                      class="form-control {{ ($errors->has('project_partners')) ? 'is-invalid' : '' }} a11y-form-control"
-                            >{{ old('project_partners', $project->project_partners) }}</textarea>
-                            <span class="invalid-feedback">{{ $errors->first('project_partners') }}</span>
-                        </div>
+                            <div class="form-group">
+                                <label for="project_partners" class="col-form-label">{{ t('Project Partners') }}:</label>
+                                <textarea id="project_partners" name="project_partners"
+                                          class="form-control {{ ($errors->has('project_partners')) ? 'is-invalid' : '' }} a11y-form-control"
+                                >{{ old('project_partners', $project->project_partners) }}</textarea>
+                                <span class="invalid-feedback">{{ $errors->first('project_partners') }}</span>
+                            </div>
 
                         <div class="form-group">
                             <label for="funding_source" class="col-form-label">{{ t('Funding Source') }}:</label>

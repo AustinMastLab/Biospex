@@ -25,10 +25,10 @@
                                style="width:100%; font-size: .8rem">
                             <thead>
                             <tr>
-                                <th>{{ t('User') }}</th>
-                                <th>{{ t('Expeditions') }}</th>
-                                <th>{{ t('Digitizations') }}</th>
-                                <th>{{ t('Last Date') }}</th>
+                                <th scope="col">{{ t('User') }}</th>
+                                <th scope="col">{{ t('Expeditions') }}</th>
+                                <th scope="col">{{ t('Digitizations') }}</th>
+                                <th scope="col">{{ t('Last Date') }}</th>
                             </tr>
                             </thead>
                             <tbody>
@@ -66,7 +66,17 @@
         <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
         <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
         <script>
-            const table = $('#transcribers-tbl').DataTable({
+            const $tbl = $('#transcribers-tbl');
+
+            $tbl
+                .on('init.dt draw.dt', function () {
+                    if (window.improveDataTablePaginationA11y) {
+                        setTimeout(function () {
+                            window.improveDataTablePaginationA11y('transcribers-tbl');
+                        }, 0);
+                    }
+                })
+                .DataTable({
                     initComplete: function () {
                         const $filterInput = $('#transcribers-tbl_filter input[type="search"]');
 
@@ -77,7 +87,8 @@
                         });
                     }
                 });
-            </script>
+        </script>
+        </script>
         @endif
         @if(isset($transcriptions))
             <script src="{{ asset('js/amChartStat.min.js')}}"></script>

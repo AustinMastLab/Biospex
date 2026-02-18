@@ -20,6 +20,16 @@
     <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
     <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
     <script>
-        $('#words-tbl').DataTable();
+        const $tbl = $('#words-tbl');
+
+        $tbl
+            .on('init.dt draw.dt', function () {
+                if (window.improveDataTablePaginationA11y) {
+                    setTimeout(function () {
+                        window.improveDataTablePaginationA11y('words-tbl');
+                    }, 0);
+                }
+            })
+            .DataTable();
     </script>
 @endpush

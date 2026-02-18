@@ -12,7 +12,7 @@
         <div class="col-sm-10 mx-auto">
             <div class="card white box-shadow pt-2 pb-5 my-5 p-sm-5">
                 <div class="col-12">
-                    <h2 class="text-center content-header mb-4 text-uppercase">{{ t('Edit Project') }}</h2>
+                    <h1 class="page-title text-center content-header mb-4 text-uppercase">{{ t('Edit Project') }}</h1>
 
                     {{-- Display any general errors --}}
                     @if ($errors->any())
@@ -104,6 +104,7 @@
                             <label for="organization" class="col-form-label">{{ t('Organization') }}:</label>
                             <input type="text"
                                    class="form-control {{ ($errors->has('organization')) ? 'is-invalid' : '' }} a11y-form-control"
+                                   autocomplete="organization"
                                    id="organization" name="organization"
                                    value="{{ old('organization', $project->organization) }}">
                             <span class="invalid-feedback">{{ $errors->first('organization') }}</span>
@@ -114,7 +115,9 @@
                                    class="col-form-label pl-0 {{ ($errors->has('organization_website')) ? 'is-invalid' : '' }}">
                                 {{ t('Organization Website') }}
                                 :</label>
-                            <input type="url" class="form-control a11y-form-control" id="organization_website" name="organization_website"
+                            <input type="url" class="form-control a11y-form-control"
+                                   autocomplete="url"
+                                   id="organization_website" name="organization_website"
                                    value="{{ old('organization_website', $project->organization_website) }}">
                             <span class="invalid-feedback">{{ $errors->first('organization_website') }}</span>
                         </div>

@@ -25,19 +25,25 @@ namespace App\Presenters;
  */
 class EventTeamPresenter extends Presenter
 {
-    /**
-     * Return return copy icon.
-     *
-     * @return string
-     */
     public function teamJoinUrlIcon()
     {
-        return '<a href="'.route('front.events_team_user.create', [$this->model]).'" 
-            class="btn btn-primary p-2 m-1 prevent-default clipboard"
-            title="'.t('Copy To Clipboard').'" 
-            data-hover="tooltip"
-            data-clipboard-text="'.route('front.events_team_user.create', [$this->model]).'">
-            <i class="fas fa-clipboard align-middle" aria-hidden="true"></i>
-            <span class="align-middle">'.$this->model->title.'</span></a>';
+        $url = route('front.events_team_user.create', [$this->model]);
+
+        $teamTitle = (string) $this->model->title;
+
+        $ariaLabel = e(t('Copy invite link for team: %s', $teamTitle));
+        $visibleText = e($teamTitle);
+        $srText = e(t('Copy invite link for team: %s', $teamTitle));
+
+        return '<button type="button"
+                class="btn btn-primary p-2 m-1 clipboard"
+                aria-label="'.$ariaLabel.'"
+                title="'.e(t('Copy To Clipboard')).'"
+                data-hover="tooltip"
+                data-clipboard-text="'.e($url).'">
+                <i class="fas fa-clipboard align-middle" aria-hidden="true"></i>
+                <span class="sr-only">'.$srText.'</span>
+                <span class="align-middle">'.$visibleText.'</span>
+            </button>';
     }
 }

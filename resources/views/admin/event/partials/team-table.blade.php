@@ -9,9 +9,9 @@
                style="width:100%; font-size: .8rem">
             <thead>
             <tr>
-                <th>{{ t('Teams') }}</th>
-                <th>{{ t('Users') }}</th>
-                <th>{{ t('Digitizations') }}</th>
+                <th scope="col">{{ t('Teams') }}</th>
+                <th scope="col">{{ t('Users') }}</th>
+                <th scope="col">{{ t('Digitizations') }}</th>
             </tr>
             </thead>
             <tbody>

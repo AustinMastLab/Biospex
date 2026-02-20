@@ -112,13 +112,16 @@
                             </div>
                         </div>
 
-                        <div class="form-group">
-                            <label for="teams" class="col-form-label">{{ t('Teams') }}:</label>
-                            <div class="controls col-sm-12">
-                                @livewire('event-team-manager', ['teams' => $event->teams, 'event' => $event, 'errors' => $errors->toArray()])
+                            <div class="form-group">
+                                <fieldset class="col-form-label p-0 m-0 border-0">
+                                    <legend class="col-form-label mb-2">{{ t('Teams') }}:</legend>
+
+                                    <div class="controls col-sm-12">
+                                        @livewire('event-team-manager', ['teams' => $event->teams, 'event' => $event, 'errors' => $errors->toArray()])
+                                    </div>
+                                </fieldset>
                             </div>
-                        </div>
-                        @include('common.cancel-submit-buttons')
+                            @include('common.cancel-submit-buttons')
                     </form>
                 </div>
             </div>

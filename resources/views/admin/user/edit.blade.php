@@ -60,13 +60,13 @@
                                 </select>
                             </div>
                         </div>
-                        <div class="form-group">
-                            <label for="notification" class="form-check-inline col-form-label">
-                                <input class="form-check-input" type="checkbox" name="notification"
-                                       value="{{ old('notification', $user->notification) }}" {{ $user->notification === 1 ? "checked" : "" }}>
-                                Notification (Receive notifications for projects you belong to)
-                            </label>
-                        </div>
+                            <div class="form-group">
+                                <label class="form-check-inline col-form-label">
+                                    <input class="form-check-input" type="checkbox" name="notification"
+                                           value="1" {{ old('notification', $user->notification) ? 'checked' : '' }}>
+                                    Notification (Receive notifications for projects you belong to)
+                                </label>
+                            </div>
                         <div class="form-row mt-4">
                             <div class="form-group col-sm-6 mt-4">
                                 @livewire('image-upload', ['modelType' => 'Profile', 'fieldName' => 'avatar', 'maxSize' => 2048], key('avatar-upload-'.$user->id))

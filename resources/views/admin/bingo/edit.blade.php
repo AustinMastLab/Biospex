@@ -63,11 +63,12 @@
                             <span class="invalid-feedback">{{ $errors->first('contact') }}</span>
                         </div>
 
-                        <div class="form-group">
-                            <label for="words" class="col-form-label">{{ t('Words') }}:</label>
-                            @include('admin.bingo.partials.words', ['words' => $bingo->words])
-                        </div>
-                        @include('common.cancel-submit-buttons')
+                            <div class="form-group">
+                                <label class="col-form-label required">{{ t('Words') }}:</label>
+                                @include('admin.bingo.partials.words', ['words' => null])
+                            </div>
+                            @include('common.cancel-submit-buttons')
+
                     </form>
                 </div>
             </div>

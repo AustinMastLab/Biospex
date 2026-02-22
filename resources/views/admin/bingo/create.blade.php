@@ -62,7 +62,7 @@
                         </div>
 
                         <div class="form-group">
-                            <label for="words" class="col-form-label required">{{ t('Words') }}:</label>
+                            <label class="col-form-label required">{{ t('Words') }}:</label>
                             @include('admin.bingo.partials.words', ['words' => null])
                         </div>
                         @include('common.cancel-submit-buttons')

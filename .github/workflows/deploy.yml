@@ -113,22 +113,29 @@ jobs:
       - name: Create Release
         id: create_release
         run: |
-          gh release create "${{ steps.new_version.outputs.new_version }}" \
-            --title "Release ${{ steps.new_version.outputs.new_version }}" \
-            --notes "$(cat <<EOF
+          NOTES_FILE="$(mktemp)"
+
+          cat > "$NOTES_FILE" <<'EOF'
           ## What's Changed
 
           Auto-generated release from main branch.
 
           **Commits included:**
-          \`\`\`
-          $COMMIT_MESSAGE
-          \`\`\`
+          ```
+          __COMMITS_HERE__
+          ```
 
           **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ steps.version_bump.outputs.current_version }}...${{ steps.new_version.outputs.new_version }}
           EOF
-          )"
-          echo "tag_name=${{ steps.new_version.outputs.new_version }}" >> $GITHUB_OUTPUT
+
+          # Replace placeholder with the commit message safely (no shell expansion)
+          perl -0777 -pe 's/__COMMITS_HERE__/\Q$ENV{COMMIT_MESSAGE}\E/g' -i "$NOTES_FILE"
+
+          gh release create "${{ steps.new_version.outputs.new_version }}" \
+            --title "Release ${{ steps.new_version.outputs.new_version }}" \
+            --notes-file "$NOTES_FILE"
+
+          echo "tag_name=${{ steps.new_version.outputs.new_version }}" >> "$GITHUB_OUTPUT"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           COMMIT_MESSAGE: ${{ github.event.head_commit.message }}

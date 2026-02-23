@@ -49,12 +49,6 @@ return [
         'secret' => env('STRIPE_SECRET'),
     ],
 
-    'recaptcha' => [
-        'site_key' => env('RECAPTCHA_SITE_KEY'),
-        'secret_key' => env('RECAPTCHA_SECRET_KEY'),
-        'url' => env('RECAPTCHA_URL', 'https://www.google.com/recaptcha/api/siteverify'),
-    ],
-
     // config/services.php
     'aws' => [
         'region' => env('AWS_REGION', 'us-east-2'),

@@ -42,9 +42,9 @@
                         @endforeach
                     @endif
                 </div>
-                <form action="{{ route('front.events_team_user.store', [$team]) }}" method="post" role="form"
-                      class="recaptcha">
+                <form action="{{ route('front.events_team_user.store', [$team]) }}" method="post" role="form">
                     @csrf
+                    @honeypot
                     <div class="form-group {{ ($errors->has('nfn_user')) ? 'has-error' : '' }}">
                         <label for="name" class="col-form-label required">{{ t('Zooniverse Username') }}:</label>
                         @if($active)
@@ -57,7 +57,6 @@
                         @endif
                         <span class="invalid-feedback">{{ $errors->first('nfn_user') }}</span>
                     </div>
-                    @include('common.recaptcha')
                     @include('common.submit-button')
                 </form>
             </div>

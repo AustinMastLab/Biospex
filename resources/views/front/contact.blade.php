@@ -23,7 +23,7 @@
     <div class="col-12 col-md-10 offset-md-1">
         <div class="jumbotron box-shadow py-5 my-5 p-sm-5">
             <div class="col-8 mx-auto">
-                <form action="{{ route('front.contact.create') }}" method="post" role="form" class="recaptcha">
+                <form action="{{ route('front.contact.create') }}" method="post" role="form">
                     @csrf
                     @honeypot
                     <div class="form-group">

@@ -20,9 +20,6 @@ return [
     'boolean' => 'The :attribute field must be true or false.',
     'confirmed' => 'The :attribute confirmation does not match.',
     'custom' => [
-        'g-recaptcha-response' => [
-            'required' => 'Please verify that you are not a robot.',
-        ],
         'current_password' => [
             'required' => 'You must enter your old password.',
             'min' => 'Your old password must be at least 6 characters long.',

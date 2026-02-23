@@ -49,29 +49,33 @@ jobs:
           # Get the latest tag, default to 0.0.0 if no tags exist
           LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
           echo "Latest tag: $LATEST_TAG"
-          
+
           # Check commit messages in the current push for version bump indicators
-          # Use git log with --grep to search only the pushed commits
           COMMITS=$(git log ${LATEST_TAG}..HEAD --oneline)
           echo "Commits since last tag:"
           echo "$COMMITS"
-          
-          # Get the specific commit message for this push
-          CURRENT_COMMIT_MSG="${{ github.event.head_commit.message }}"
-          echo "Current commit message: $(printf '%s' "$CURRENT_COMMIT_MSG")"
-          
+
+          # Get the specific commit message for this push (literal; do NOT let bash interpret `...`)
+          CURRENT_COMMIT_MSG="$(cat <<'EOF'
+          ${{ github.event.head_commit.message }}
+          EOF
+          )"
+
+          echo "Current commit message:"
+          printf '%s\n' "$CURRENT_COMMIT_MSG"
+
           # Determine version bump based on the current commit message only
-          if echo "$CURRENT_COMMIT_MSG" | grep -i "\[major\]\|\[breaking\]"; then
+          if printf '%s' "$CURRENT_COMMIT_MSG" | grep -Eqi '\[(major|breaking)\]'; then
             BUMP_TYPE="major"
-          elif echo "$CURRENT_COMMIT_MSG" | grep -i "\[minor\]\|\[feature\]"; then
-            BUMP_TYPE="minor"  
+          elif printf '%s' "$CURRENT_COMMIT_MSG" | grep -Eqi '\[(minor|feature)\]'; then
+            BUMP_TYPE="minor"
           else
             BUMP_TYPE="patch"
           fi
-          
+
           echo "Bump type: $BUMP_TYPE"
-          echo "bump_type=$BUMP_TYPE" >> $GITHUB_OUTPUT
-          echo "current_version=$LATEST_TAG" >> $GITHUB_OUTPUT
+          echo "bump_type=$BUMP_TYPE" >> "$GITHUB_OUTPUT"
+          echo "current_version=$LATEST_TAG" >> "$GITHUB_OUTPUT"
 
       - name: Calculate new version
         id: new_version

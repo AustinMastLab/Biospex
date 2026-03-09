@@ -4,7 +4,7 @@
         @foreach($category->faqs as $key => $faq)
             <div class="card faq">
                 <div class="card-header" id="heading{{ $faq->id }}">
-                    <button class="faq btn text-left p-0" data-toggle="collapse"
+                    <button class="faq btn text-left d-block w-100" data-toggle="collapse"
                             data-target="#collapse{{ $faq->id }}" aria-expanded="true"
                             aria-controls="collapse{{ $faq->id }}">
                         {{ $faq->question }}

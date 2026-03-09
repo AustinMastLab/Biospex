@@ -146,6 +146,24 @@
   background-color: #eeeff9;
 }
 
+.card.faq .card-header .btn.faq {
+  min-height: 44px;
+  width: 100%;
+  padding: 12px 0;
+  white-space: normal;
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.card.faq .card-header .btn.faq:hover,
+.card.faq .card-header .btn.faq:focus,
+.card.faq .card-header .btn.faq:active {
+  border: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
 .project-banner {
   position: relative;
   cursor: pointer;

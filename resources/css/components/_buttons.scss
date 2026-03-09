@@ -129,11 +129,13 @@
 
   background: transparent;
   border: 0;
-  padding: 0;
+  padding: 10px 12px;
   margin: 0;
 
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  min-height: 44px;
 
   color: $brand-red;
   cursor: pointer;

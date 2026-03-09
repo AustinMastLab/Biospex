@@ -96,10 +96,25 @@ header.header .navbar .navbar-toggler .hamburger .line,
   width: 100%;
 }
 
+.navbar-nav .nav-item {
+  display: flex;
+  align-items: center;
+}
+
 .navbar-nav .nav-link {
   color: white !important;
   z-index: 2;
   text-align: center;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 44px;
+  padding: 10px 12px;
+}
+
+li.nav-btn .nav-link {
+  min-height: 44px;
+  padding: 10px 16px;
 }
 
 /* ==========================================================================

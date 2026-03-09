@@ -88,3 +88,10 @@ hr.white {
 hr.header {
   border: 1px solid rgba($brand-red, 1) !important;
 }
+
+.project-wide + .col-12 + hr + .col-12 a,
+.project-wide + .col-12 + hr + .col-12 p > a {
+  display: inline-flex;
+  align-items: center;
+  min-height: 44px;
+}

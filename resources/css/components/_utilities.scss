@@ -127,3 +127,11 @@
   color: #7e8ea1;
   cursor: help;
 }
+
+.a11y-target-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}

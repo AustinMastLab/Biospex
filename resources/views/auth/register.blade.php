@@ -79,7 +79,7 @@
                     @include('common.submit-button')
                 </form>
                 <div class="mt-4 text-center">
-                    <a href="{{ route('app.get.login') }}">{{ t('Already have an account? Login') }}</a>
+                    <a href="{{ route('app.get.login') }}" class="a11y-target-link">{{ t('Already have an account? Login') }}</a>
                 </div>
             </div>
         </div>

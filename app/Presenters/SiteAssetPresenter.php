@@ -40,7 +40,7 @@ class SiteAssetPresenter extends Presenter
             $filename = basename($this->model->download_path);
             $ariaLabel = e(t('Open file: %s (site asset %s; opens in a new tab)', (string) $filename, (string) $this->model->id));
 
-            return '<a href="'.$url.'" target="_blank" rel="noopener noreferrer" aria-label="'.$ariaLabel.'"><i class="fas fa-file" aria-hidden="true"></i> '.e((string) $filename).'</a>';
+            return '<a href="'.$url.'" target="_blank" rel="noopener noreferrer" class="site-asset-link" aria-label="'.$ariaLabel.'"><i class="fas fa-file" aria-hidden="true"></i> '.e((string) $filename).'</a>';
         }
 
         return '';

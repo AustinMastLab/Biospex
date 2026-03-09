@@ -6,28 +6,27 @@
   font-size: .8rem;
 }
 
-/* Global: improve Bootstrap/DataTables pagination contrast (Axe color-contrast) */
+/* Global: improve Bootstrap/DataTables pagination contrast */
 .page-link {
-  color: $brand-red; /* was #0056b3 */
+  color: $brand-red;
 }
 
 .page-link:hover,
 .page-link:focus {
-  color: darken($brand-red, 8%); /* was #003d80 */
+  color: darken($brand-red, 8%);
 }
 
 .page-item.active .page-link {
-  background-color: $brand-red; /* was #0056b3 */
-  border-color: $brand-red;     /* was #0056b3 */
+  background-color: $brand-red;
+  border-color: $brand-red;
   color: #ffffff;
 }
 
-/* Optional: make DataTables table links use brand color too (this is what Axe is flagging on Group show) */
+/* DataTables table links */
 table.dataTable tbody a {
   color: $brand-red;
 }
 
-/* A11y: striped rows are gray; darken link color there to meet WCAG AA for small text */
 table.dataTable.table-striped tbody tr:nth-of-type(odd) a {
   color: darken($brand-red, 14%);
 }
@@ -38,11 +37,7 @@ table.dataTable tbody a:focus {
   text-decoration: underline;
 }
 
-/**
- * ADA: DataTables "Search" inputs need sufficient contrast.
- * DataTables creates: .dataTables_wrapper .dataTables_filter input[type="search"]
- * Keep this scoped to DataTables so we don't affect every input site-wide.
- */
+/* DataTables search input */
 .dataTables_wrapper {
   .dataTables_filter {
     input[type="search"] {
@@ -52,7 +47,7 @@ table.dataTable tbody a:focus {
 
       &::placeholder {
         color: #6c757d;
-        opacity: 1; // ensure consistent placeholder contrast across browsers
+        opacity: 1;
       }
 
       &:focus {
@@ -62,4 +57,27 @@ table.dataTable tbody a:focus {
       }
     }
   }
+}
+
+/* DataTables pagination target size */
+.dataTables_wrapper .dataTables_paginate .pagination .page-item:not(.previous):not(.next) {
+  width: 44px;
+  height: 44px;
+}
+
+.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
+  box-sizing: border-box;
+  width: 100%;
+  height: 44px !important;
+  min-width: 44px !important;
+  padding: 0 12px !important;
+  line-height: 1 !important;
+}
+
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.previous .page-link,
+.dataTables_wrapper .dataTables_paginate .pagination .page-item.next .page-link {
+  min-width: 44px !important;
 }

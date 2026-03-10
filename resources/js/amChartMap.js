@@ -27,7 +27,7 @@ $(function () {
             am4core.useTheme(am4themes_animated);
 
             map = am4core.create("mapDiv", am4maps.MapChart);
-            map.hiddenState.properties.opacity = 0; // this creates initial fade-in
+            map.hiddenState.properties.opacity = 0;
 
             map.geodata = window[statevar];
             map.projection = new am4maps.projections.Miller();
@@ -42,7 +42,6 @@ $(function () {
             polygonSeries.heatRules.push({
                 property: "fill",
                 target: polygonSeries.mapPolygons.template,
-                //min: am4core.color("#00abff"),
                 min: am4core.color("#a7abab"),
                 max: am4core.color("#aa0002"),
                 minValue: 0,
@@ -69,9 +68,6 @@ $(function () {
                 heatLegend.valueAxis.hideTooltip();
             });
 
-            map.zoomControl = new am4maps.ZoomControl();
-            map.zoomControl.valign = "top";
-
             polygonSeries.data = JSON.parse(data.counties);
         });
 
@@ -85,7 +81,7 @@ $(function () {
         am4core.useTheme(am4themes_animated);
 
         map = am4core.create("mapDiv", am4maps.MapChart);
-        map.hiddenState.properties.opacity = 0; // this creates initial fade-in
+        map.hiddenState.properties.opacity = 0;
         map.geodata = am4geodata_usaLow;
         map.projection = new am4maps.projections.AlbersUsa();
 
@@ -102,7 +98,6 @@ $(function () {
         });
         polygonSeries.useGeodata = true;
 
-        // add heat legend
         heatLegend = am4core.create("mapLegendDiv", am4maps.HeatLegend);
         heatLegend.width = am4core.percent(100);
         heatLegend.series = polygonSeries;
@@ -130,14 +125,10 @@ $(function () {
                 });
         });
 
-
         polygonSeries.mapPolygons.template.strokeOpacity = 0.4;
         polygonSeries.mapPolygons.template.events.on("out", function () {
             heatLegend.valueAxis.hideTooltip();
         });
-
-        map.zoomControl = new am4maps.ZoomControl();
-        map.zoomControl.valign = "top";
 
         polygonSeries.data = JSON.parse(Laravel.states);
     };

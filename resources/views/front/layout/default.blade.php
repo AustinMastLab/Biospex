@@ -66,7 +66,7 @@ sub footer -->
 
                 <!-- Content -->
                 <img src="/images/page/biospex_logo.svg" alt="BIOSPEX">
-                <p class="small pt-2">{{ t("is funded by a grant from the National Science Foundation's Advances in Biological Informatics Program (Award Number 1458550). iDigBio is funded by grants from the National Science Foundation's Advancing Digitization of Biodiversity Collections Program (DBI-1115210 [2011-2018] and DBI-1547229 [2016-2021]). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.") }}</p>
+                <p class="text-left small pt-2">{{ t("is funded by a grant from the National Science Foundation's Advances in Biological Informatics Program (Award Number 1458550). iDigBio is funded by grants from the National Science Foundation's Advancing Digitization of Biodiversity Collections Program (DBI-1115210 [2011-2018] and DBI-1547229 [2016-2021]). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.") }}</p>
             </div>
             <!-- Grid column -->
             <div class="col-sm-1">

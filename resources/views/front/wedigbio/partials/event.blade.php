@@ -2,16 +2,16 @@
     <div class="card px-4 box-shadow h-100">
         <div class="card-body text-center">
             @if(event_before($event, 'UTC'))
-                <h3 class="card-text">{{ t('Starting') }} {{ $event->present()->start_date_to_string }}</h3>
+                <p class="card-text event-card-status">{{ t('Starting') }} {{ $event->present()->start_date_to_string }}</p>
             @endif
             @if($event->active)
-                <h3 class="card-text">{{ t('Happening Now!') }}</h3>
+                <p class="card-text event-card-status">{{ t('Happening Now!') }}</p>
             @endif
-            <h4 class="text-center pt-4">{{ t('WeDigBio') }}</h4>
-            <h5 class="text-center color-action">
+            <h3 class="text-center pt-4 event-card-title">{{ t('WeDigBio') }}</h3>
+            <p class="text-center color-action event-card-meta">
                 {{ $event->present()->start_date_to_string }} {{ t('To') }}<br>
                 {{ $event->present()->end_date_to_string }} {{ t('UTC') }}<br>
-            </h5>
+            </p>
         </div>
         @if( ! event_before($event, 'UTC'))
             <div class="text-center">

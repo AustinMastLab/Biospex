@@ -87,6 +87,12 @@ h1.project-wide {
   color: #666; /* was #888; darkened to meet WCAG AA on white */
 }
 
+.project-wide-subtitle {
+  display: inline-block;
+  font-size: 16px;
+  color: #444;
+}
+
 .content-header {
   font-size: 2.875rem;
   color: #666; /* was #888; darkened to meet WCAG AA on white */
@@ -126,39 +132,54 @@ h1.project-wide {
   height: 100%;
 }
 
-#external-carousel-btns > li {
+#external-carousel-btns {
+  padding-left: 0;
+  margin-bottom: 0;
+}
+
+#external-carousel-btns .list-inline-item {
+  margin-right: 0.5rem;
+}
+
+#external-carousel-btns .list-inline-item:last-child {
+  margin-right: 0;
+}
+
+#external-carousel-btns .carousel-step-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 70px;
   height: 70px;
-  font-size: 1.875rem;
-  text-align-all: center;
-  color: #4b5563;
+  padding: 0;
   border: 2px solid $brand-red;
   border-radius: 50%;
   background-color: #ffffff;
+  color: #4b5563;
+  font-size: 1.875rem;
+  line-height: 1;
   box-shadow: 0 0 10px rgba(0, 0, 0, .25);
-  padding-top: 8px;
-}
-
-#external-carousel-btns > li:hover {
-  background-color: $brand-red;
-  color: #ffffff;
   cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
 }
 
-#external-carousel-btns li.active {
+#external-carousel-btns .carousel-step-button:hover,
+#external-carousel-btns .carousel-step-button.active,
+#external-carousel-btns .carousel-step-button[aria-current="true"] {
   background-color: $brand-red;
   color: #ffffff;
 }
 
-#external-carousel-btns > li:focus {
+#external-carousel-btns .carousel-step-button:focus {
   outline: none;
 }
 
-#external-carousel-btns > li:focus-visible {
+#external-carousel-btns .carousel-step-button:focus-visible {
   box-shadow:
-          0 0 0 3px rgba(255, 255, 255, 0.95),
-          0 0 0 6px rgba($brand-red, 0.65),
-          0 0 10px rgba(0, 0, 0, .25);
+    0 0 0 3px rgba(255, 255, 255, 0.95),
+    0 0 0 6px rgba($brand-red, 0.65),
+    0 0 10px rgba(0, 0, 0, .25);
 }
 
 .circle-slider h3 {
@@ -171,4 +192,69 @@ h1.project-wide {
   font-size: 1rem;
   color: black;
   text-align: center;
+}
+
+.project-detail-heading {
+  display: block;
+  margin-top: 1.5rem !important;
+  margin-bottom: 0.5rem !important;
+  color: #383333;
+  font-family: Raleway, sans-serif;
+  font-size: 1.25rem;
+  font-weight: 700;
+  line-height: 1.2;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+}
+
+.a11y-target-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 44px;
+  min-height: 44px;
+}
+
+.carousel-step-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 82px;
+  height: 82px;
+  padding: 0;
+  border-radius: 50%;
+  border: 2px solid $brand-red;
+  background-color: #fff;
+  color: #3f5368;
+  font-size: 2.25rem;
+  line-height: 1;
+  cursor: pointer;
+  box-shadow: 0 0 25px rgba(0, 0, 0, .15);
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.carousel-step-button.active,
+.carousel-step-button[aria-current="true"] {
+  background-color: $brand-red;
+  color: #fff;
+}
+
+.carousel-step-button:hover {
+  text-decoration: none;
+}
+
+.carousel-step-button:focus {
+  outline: 2px solid #3f5368;
+  outline-offset: 3px;
+}
+
+.carousel-step-button:focus:not(:focus-visible) {
+  outline: none;
+}
+
+.carousel-step-button:focus-visible {
+  outline: 2px solid #3f5368;
+  outline-offset: 3px;
 }

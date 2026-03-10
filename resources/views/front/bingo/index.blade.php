@@ -21,6 +21,7 @@
     <hr class="header mx-auto" style="width:300px;">
     <div class="row">
         @if($bingos->isNotEmpty())
+            <h2 class="sr-only">{{ t('Bingo games list') }}</h2>
             @foreach($bingos as $bingo)
                 @include('front.bingo.partials.bingo-loop', ['project' => $bingo->project])
             @endforeach

@@ -20,6 +20,7 @@ $(function () {
     am4core.options.autoDispose = true;
 
     let a11yScheduled = false;
+    let transcriptChartA11yObserver = null;
 
     function scheduleTranscriptChartA11yFix() {
         if (a11yScheduled) return;
@@ -31,6 +32,20 @@ $(function () {
         });
     }
 
+    function makeNodeUnfocusable(node) {
+        node.removeAttribute('tabindex');
+        node.removeAttribute('focusable');
+        node.removeAttribute('role');
+        node.removeAttribute('aria-label');
+        node.removeAttribute('aria-labelledby');
+        node.removeAttribute('aria-controls');
+        node.removeAttribute('aria-checked');
+        node.removeAttribute('aria-hidden');
+        node.setAttribute('tabindex', '-1');
+        node.setAttribute('focusable', 'false');
+        node.setAttribute('aria-hidden', 'true');
+    }
+
     function fixTranscriptChartSvgA11y() {
         try {
             const container = document.getElementById('transcripts');
@@ -39,28 +54,74 @@ $(function () {
             const svg = container.querySelector('svg');
             if (!svg) return;
 
-            // We expose the accessible name/description on #transcripts (HTML),
-            // so hide the amCharts SVG internals from screen readers/scanners.
             svg.setAttribute('aria-hidden', 'true');
             svg.setAttribute('focusable', 'false');
 
-            // Remove amCharts-generated landmark-ish nodes that Silktide flags as "g field label".
-            svg.querySelectorAll('g[role], g[aria-label], g[aria-labelledby]').forEach(function (node) {
+            svg.querySelectorAll(
+                '[role], [aria-label], [aria-labelledby], [aria-controls], [aria-checked]'
+            ).forEach(function (node) {
                 node.removeAttribute('role');
                 node.removeAttribute('aria-label');
                 node.removeAttribute('aria-labelledby');
+                node.removeAttribute('aria-controls');
+                node.removeAttribute('aria-checked');
             });
 
-            // Also strip focus hooks if any appear.
-            svg.querySelectorAll('[tabindex]').forEach(function (node) {
-                node.removeAttribute('tabindex');
+            svg.querySelectorAll(
+                '[tabindex], [focusable], [role="switch"], [aria-controls], [aria-checked]'
+            ).forEach(function (node) {
+                makeNodeUnfocusable(node);
             });
-            svg.querySelectorAll('[focusable]').forEach(function (node) {
-                node.removeAttribute('focusable');
+
+            svg.querySelectorAll(
+                '[aria-hidden="true"], [display="none"], [visibility="hidden"], [opacity="0"]'
+            ).forEach(function (node) {
+                makeNodeUnfocusable(node);
+
+                node.querySelectorAll(
+                    'a, button, [tabindex], [focusable], [role], [aria-controls], [aria-checked]'
+                ).forEach(function (child) {
+                    makeNodeUnfocusable(child);
+                });
             });
         } catch (e) {
             // swallow
         }
+    }
+
+    function observeTranscriptChartA11y() {
+        const container = document.getElementById('transcripts');
+        if (!container) return;
+
+        if (transcriptChartA11yObserver) {
+            transcriptChartA11yObserver.disconnect();
+        }
+
+        transcriptChartA11yObserver = new MutationObserver(function (mutations) {
+            for (const mutation of mutations) {
+                if (mutation.type === 'childList' || mutation.type === 'attributes') {
+                    scheduleTranscriptChartA11yFix();
+                    return;
+                }
+            }
+        });
+
+        transcriptChartA11yObserver.observe(container, {
+            childList: true,
+            subtree: true,
+            attributes: true,
+            attributeFilter: [
+                'tabindex',
+                'focusable',
+                'role',
+                'aria-hidden',
+                'aria-label',
+                'aria-labelledby',
+                'display',
+                'visibility',
+                'opacity',
+            ],
+        });
     }
 
     let buildChart = function (data) {
@@ -91,6 +152,7 @@ $(function () {
 
                 transcripts.events.on('ready', function () {
                     $("#script-modal").modal("hide");
+                    observeTranscriptChartA11y();
                     scheduleTranscriptChartA11yFix();
                 });
             },

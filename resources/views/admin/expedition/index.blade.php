@@ -18,6 +18,7 @@
             >{{ t('view completed expeditions') }}</button>
         </div>
     </div>
+    <h2 class="sr-only">{{ t('Expeditions list') }}</h2>
     <div class="row">
         <div id="active-expeditions-main" class="col-sm-12 show">
             <livewire:admin.expeditions-index type="active" />

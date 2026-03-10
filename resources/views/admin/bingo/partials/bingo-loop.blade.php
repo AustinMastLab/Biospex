@@ -1,12 +1,12 @@
 <div class="col-md-4 mb-4">
     <div class="card px-4 box-shadow h-100">
         <div class="card-body text-center">
-            <h4 class="text-center pt-4">{{ $bingo->title }}</h4>
-            <h5 class="text-center color-action">
+            <h3 class="text-center pt-4 bingo-card-title">{{ $bingo->title }}</h3>
+            <p class="text-center color-action bingo-card-meta">
                 {{ $bingo->present()->create_date_to_string }}
                 {{ t('for') }}<br>
                 {{ $bingo->project->title }}
-            </h5>
+            </p>
             {!! $bingo->present()->generate_card_button !!}
         </div>
         <div class="card-footer">

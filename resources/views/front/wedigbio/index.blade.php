@@ -19,6 +19,7 @@
 @section('content')
     <h1 class="page-title text-center pt-4 text-uppercase">{{ t('WeDigBio Events') }}</h1>
     <hr class="header mx-auto" style="width:300px;">
+    <h2 class="sr-only">{{ t('WeDigBio events list') }}</h2>
     <div class="row">
         <div class="col-sm-12 mt-5">
             <canvas id="event-conffeti" style="z-index: -1; position:fixed; top:0;left:0"></canvas>

@@ -5,7 +5,7 @@
                  src="{{ $expedition->present()->show_medium_logo }}"
                  alt="{{ $expedition->present()->logo_alt }}">
             <div class="card-img-overlay">
-                <h2 class="card-title text-center pt-3">{{ $expedition->title }}</h2>
+                <h3 class="card-title expedition-card-title text-center pt-3">{{ $expedition->title }}</h3>
                 <i class="card-info fas fa-info-circle float-right"></i>
                 <p>{{ $expedition->description }}</p>
             </div>

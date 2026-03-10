@@ -52,40 +52,40 @@
     <section>
         <div class="row">
             <div class="col d-flex justify-content-center">
-                <div class="col-md-4 text-center" role="group" aria-label="External carousel buttons">
+                <div class="col-md-4 text-center" role="group" aria-label="{{ t('Process steps') }}">
                     <h2>The Process<br>
                         <span class="smallertext">{{ t('Specimen digitization is easy as 123') }}</span></h2>
                     <ul id="external-carousel-btns" class="list-inline">
-                        <li
-                                data-target="#processCarousel"
-                                data-slide-to="0"
-                                class="carousel-li-0 active list-inline-item"
-                                role="button"
-                                tabindex="0"
-                                aria-controls="processCarousel"
-                                aria-current="true"
-                                aria-label="{{ t('Go to process step 1') }}"
-                        >1
+                        <li class="list-inline-item">
+                            <button
+                                    type="button"
+                                    data-target="#processCarousel"
+                                    data-slide-to="0"
+                                    class="carousel-step-button active"
+                                    aria-controls="processCarousel"
+                                    aria-current="true"
+                                    aria-label="{{ t('Go to process step 1') }}"
+                            >1</button>
                         </li>
-                        <li
-                                data-target="#processCarousel"
-                                data-slide-to="1"
-                                class="carousel-li-1 list-inline-item"
-                                role="button"
-                                tabindex="0"
-                                aria-controls="processCarousel"
-                                aria-label="{{ t('Go to process step 2') }}"
-                        >2
+                        <li class="list-inline-item">
+                            <button
+                                    type="button"
+                                    data-target="#processCarousel"
+                                    data-slide-to="1"
+                                    class="carousel-step-button"
+                                    aria-controls="processCarousel"
+                                    aria-label="{{ t('Go to process step 2') }}"
+                            >2</button>
                         </li>
-                        <li
-                                data-target="#processCarousel"
-                                data-slide-to="2"
-                                class="carousel-li-2 list-inline-item"
-                                role="button"
-                                tabindex="0"
-                                aria-controls="processCarousel"
-                                aria-label="{{ t('Go to process step 3') }}"
-                        >3
+                        <li class="list-inline-item">
+                            <button
+                                    type="button"
+                                    data-target="#processCarousel"
+                                    data-slide-to="2"
+                                    class="carousel-step-button"
+                                    aria-controls="processCarousel"
+                                    aria-label="{{ t('Go to process step 3') }}"
+                            >3</button>
                         </li>
                     </ul>
                 </div>
@@ -248,27 +248,20 @@
             const container = document.getElementById('external-carousel-btns');
             if (!container) return;
 
-            container.addEventListener('keydown', function (e) {
-                const key = e.key;
-                const isActivate = (key === 'Enter' || key === ' ' || key === 'Spacebar');
-                if (!isActivate) return;
-
-                const li = e.target && e.target.closest ? e.target.closest('li[data-target][data-slide-to]') : null;
-                if (!li) return;
-
-                e.preventDefault(); // prevents page scroll on Space
-                li.click(); // lets Bootstrap's data-api handle the slide
-            });
-
-            // Optional: keep aria-current in sync when the active circle changes
             container.addEventListener('click', function (e) {
-                const li = e.target && e.target.closest ? e.target.closest('li[data-target][data-slide-to]') : null;
-                if (!li) return;
+                const button = e.target && e.target.closest
+                    ? e.target.closest('button[data-target][data-slide-to]')
+                    : null;
 
-                container.querySelectorAll('li[aria-current="true"]').forEach(function (n) {
+                if (!button) return;
+
+                container.querySelectorAll('.carousel-step-button[aria-current="true"]').forEach(function (n) {
                     n.removeAttribute('aria-current');
+                    n.classList.remove('active');
                 });
-                li.setAttribute('aria-current', 'true');
+
+                button.setAttribute('aria-current', 'true');
+                button.classList.add('active');
             });
         })();
     </script>

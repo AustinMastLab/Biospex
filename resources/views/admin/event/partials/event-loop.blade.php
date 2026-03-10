@@ -2,11 +2,11 @@
     <div class="card px-4 box-shadow h-100">
         <div class="card-body text-center">
             @if(event_before($event))
-                <h3 class="card-text">{{ t('Starting') }} {{ $event->present()->start_date_to_string }}</h3>
+                <p class="card-text event-card-status">{{ t('Starting') }} {{ $event->present()->start_date_to_string }}</p>
             @elseif( ! event_active($event))
-                <h3 class="card-text">{{ t('Completed') }}</h3>
+                <p class="card-text event-card-status event-card-status-completed">{{ t('Completed') }}</p>
             @else
-                <h2 class="card-text">{{ t('Time Remaining') }}</h2>
+                <p class="card-text event-card-status">{{ t('Time Remaining') }}</p>
                 <div class="clockdiv" data-value="{{ $event->present()->scoreboard_date }}">
                     <div>
                         <span class="days"></span>
@@ -26,14 +26,14 @@
                     </div>
                 </div>
             @endif
-            <h4 class="text-center pt-4">{{ $event->title }}</h4>
-            <h5 class="text-center color-action">
+            <h3 class="text-center pt-4 event-card-title">{{ $event->title }}</h3>
+            <p class="text-center color-action event-card-meta">
                 {{ $event->present()->start_date_to_string }}<br>
                 {{ t('to') }}<br>
                 {{ $event->present()->end_date_to_string }}<br>
                 {{ str_replace('_', ' ', $event->timezone) }}<br>
                 {{ t('for') }} {{ $event->project->title }}
-            </h5>
+            </p>
         </div>
         @if( ! event_before($event))
             <div class="text-center">

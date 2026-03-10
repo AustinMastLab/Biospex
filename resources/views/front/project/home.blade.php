@@ -134,7 +134,7 @@
                 <span class="text">{{ get_project_transcriber_count($project->id) }} {{ t('Participants') }}</span>
             </div>
             <hr class="header mx-auto">
-        </div>
+        </div>,
         <div id="active-expeditions-main" class="col-sm-12 show">
             <livewire:front.expeditions-index type="active" :project-id="$project->id" />
         </div>
@@ -206,7 +206,7 @@
         <div class="row">
             <div class="col-sm-10 mx-auto mt-5">
                 <h1 class="text-center content-header text-uppercase mt-5"
-                    id="specimens">{{ t('Heat Map Digitized Specimens') }}</h1>
+                    id="specimens">{{ t('Digitized Specimens Heat Map') }}</h1>
                 <hr class="header mx-auto">
                 <div class="jumbotron box-shadow pt-2 pb-5">
                     <div id="mapDiv" class="d-flex" style="width:100%; height: 500px"></div>
@@ -234,4 +234,3 @@
         eventConfetti.render();
     </script>
 @endpush
-

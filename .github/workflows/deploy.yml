@@ -333,11 +333,11 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REPO: ${{ github.repository }}
+          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
       - name: Revoke Runner IP from AWS Security Group
         if: always()
         run: |
           aws ec2 revoke-security-group-ingress \
             --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
             --protocol tcp \
-            --port 22 \
             --cidr ${{ steps.ip.outputs.ipv4 }}/32

@@ -95,3 +95,8 @@ hr.header {
   align-items: center;
   min-height: 44px;
 }
+
+.jumbotron a {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

@@ -1,22 +1,22 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-<meta name="description" content="">
-<meta name="author" content="{{ t('FSU Department of Biological Science') }}">
-<meta name="csrf-param" content="_token">
-<meta name="csrf-token" content="{{ csrf_token() }}">
-<meta name="google-site-verification" content="DRVQlYZQo5OkUlUhNG8Re-CgYEB7ELA0I_3qJJlzb0U"/>
-<title>@yield('title') | {{ t('BIOSPEX') }} — {{ t('Lead Public Digitization Expeditions') }}</title>
-@include('common.favicon')
-<link href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700" rel="stylesheet">
-<script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous" SameSite="none Secure"></script>
-<link href="{{ mix('/css/front.css') }}" rel="stylesheet" type="text/css"/>
-@stack('styles')
-@production
-@include('common.google-analytics')
-@endproduction
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="{{ t('FSU Department of Biological Science') }}">
+    <meta name="csrf-param" content="_token">
+    <meta name="csrf-token" content="{{ csrf_token() }}">
+    <meta name="google-site-verification" content="DRVQlYZQo5OkUlUhNG8Re-CgYEB7ELA0I_3qJJlzb0U"/>
+    <title>@yield('title') | {{ t('BIOSPEX') }} — {{ t('Lead Public Digitization Expeditions') }}</title>
+    @include('common.favicon')
+    <link href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700" rel="stylesheet">
+    <script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous" SameSite="none Secure"></script>
+    <link href="{{ mix('/css/front.css') }}" rel="stylesheet" type="text/css"/>
+    @stack('styles')
+    @production
+        @include('common.google-analytics')
+    @endproduction
 </head>
 <body>
 <a href="#main-content" class="skip-link">
@@ -39,14 +39,14 @@ sub footer -->
         <div class="row py-3 align-items-center">
             <!-- Grid column -->
             <div class="col-md-10 col-md-offset-1 text-center d-inline d-sm-flex align-items-start justify-content-between">
-                <h3>{{ t('Get Connected') }}</h3>
+                <h2 class="footer-connect-heading">{{ t('Get Connected') }}</h2>
                 <a href="https://twitter.com/BIOSPEX"
-                       target="_blank"
-                       rel="noopener noreferrer"
-                       class="figure-img"
-                       aria-label="{{ t('Twitter') }}">
-                        <i class="fab fa-twitter fa-4x" aria-hidden="true"></i>
-                    </a>
+                   target="_blank"
+                   rel="noopener noreferrer"
+                   class="figure-img"
+                   aria-label="{{ t('Twitter') }}">
+                    <i class="fab fa-twitter fa-4x" aria-hidden="true"></i>
+                </a>
             </div>
         </div>
         <!-- Grid row-->
@@ -66,7 +66,7 @@ sub footer -->
 
                 <!-- Content -->
                 <img src="/images/page/biospex_logo.svg" alt="BIOSPEX">
-                <p class="small pt-2">{{ t("is funded by a grant from the National Science Foundation's Advances in Biological Informatics Program (Award Number 1458550). iDigBio is funded by grants from the National Science Foundation's Advancing Digitization of Biodiversity Collections Program (DBI-1115210 [2011-2018] and DBI-1547229 [2016-2021]). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.") }}</p>
+                <p class="text-left small pt-2">{{ t("is funded by a grant from the National Science Foundation's Advances in Biological Informatics Program (Award Number 1458550). iDigBio is funded by grants from the National Science Foundation's Advancing Digitization of Biodiversity Collections Program (DBI-1115210 [2011-2018] and DBI-1547229 [2016-2021]). Any opinions, findings, and conclusions or recommendations expressed in this material are those of the author(s) and do not necessarily reflect the views of the National Science Foundation.") }}</p>
             </div>
             <!-- Grid column -->
             <div class="col-sm-1">
@@ -74,7 +74,7 @@ sub footer -->
             <!-- Grid column -->
             <div class="col-md-2 col-12 mx-auto mb-4">
                 <!-- Links -->
-                <h6 class="text-uppercase font-weight-bold">{{ t('About') }}</h6>
+                <h2 class="h6 text-uppercase font-weight-bold text-white">{{ t('About') }}</h2>
                 <hr class="white mb-2 mt-2 d-inline-block mx-auto" style="width:60px;">
                 <p>
                     <a href="{{ route('front.teams.index') }}">{{ t('Team') }}</a>
@@ -93,7 +93,7 @@ sub footer -->
             <!-- Grid column -->
             <!-- Grid column -->
             <div class="col-md-2  mx-auto mb-4">
-                <h6 class="text-uppercase font-weight-bold">{{ t('Content') }}</h6>
+                <h2 class="h6 text-uppercase font-weight-bold text-white">{{ t('Content') }}</h2>
                 <hr class="white mb-2 mt-2 d-inline-block mx-auto" style="width:60px;">
                 <p>
                     <a href="{{ route('front.projects.index') }}">{{ t('Projects') }}</a>

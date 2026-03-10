@@ -18,6 +18,7 @@
 
     <div class="row">
         @if($bingos->isNotEmpty())
+            <h2 class="sr-only">{{ t('Bingo games list') }}</h2>
             @foreach($bingos as $bingo)
                 @include('admin.bingo.partials.bingo-loop')
             @endforeach

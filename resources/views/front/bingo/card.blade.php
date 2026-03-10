@@ -9,7 +9,7 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <meta name="google-site-verification" content="DRVQlYZQo5OkUlUhNG8Re-CgYEB7ELA0I_3qJJlzb0U"/>
     <title>
-        {{ t('BIOSPEX | Bingo') }}
+        {{ t('Bingo Game Card: %s', e((string) $bingo->title)) }} | {{ t('BIOSPEX') }}
     </title>
     @include('common.favicon')
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700" rel="stylesheet">

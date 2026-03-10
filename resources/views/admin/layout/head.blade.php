@@ -8,7 +8,7 @@
     <meta name="google-site-verification" content="DRVQlYZQo5OkUlUhNG8Re-CgYEB7ELA0I_3qJJlzb0U"/>
     <title>@yield('title') | {{ t('BIOSPEX') }}</title>
     @include('common.favicon')
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:700|Work+Sans">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700">
     <script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous"></script>
     <link href="{{ mix('/css/admin.css') }}" rel="stylesheet" type="text/css"/>
     @stack('styles')

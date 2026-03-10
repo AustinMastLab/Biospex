@@ -22,6 +22,7 @@
         </div>
     </div>
 
+    <h2 class="sr-only">{{ t('Events list') }}</h2>
     <div class="row">
         <div id="active-events-main" class="col-sm-12 show">
             <livewire:admin.events-index type="active" />

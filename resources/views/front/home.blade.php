@@ -37,7 +37,7 @@
     <section class="home-heading text-center" id="learn-more">
         <div class="container">
             <img src="/images/page/logo-tagline-action.png" alt="BIOSPEX: Lead Public Digitization Expeditions">
-            <p class="text-justify mt-4">{{ t('BIOSPEX is a base camp for launching, advertising, and managing targeted
+            <p class="mt-4">{{ t('BIOSPEX is a base camp for launching, advertising, and managing targeted
             efforts to digitize the world\'s 3 billion biodiversity research specimens in ways that involve the public.
             Such specimens include fish in jars, plants on sheets, fossils in drawers, insects on pins, and many other
             types. “Digitization” is a broad reference to creating digital data about the physical specimens and includes

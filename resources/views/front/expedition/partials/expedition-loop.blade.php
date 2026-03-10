@@ -27,7 +27,7 @@
             <div class="d-flex align-items-start justify-content-between mt-4 mx-auto">
                 {!! isset($project) ? $project->present()->project_page_icon : $expedition->project->present()->project_page_icon !!}
                 @isset($expedition->panoptesProject)
-                    @if ($expedition->zooActorExpedition->state > 1)
+                    @if ($expedition->zooActorExpedition->state === 2)
                         {!! $expedition->panoptesProject->present()->url !!}
                     @endif
                 @endisset

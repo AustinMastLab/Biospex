@@ -19,6 +19,7 @@
 }
 
 header#header-img {
+  position: relative;
   -webkit-background-size: cover;
   -moz-background-size: cover;
   -o-background-size: cover;
@@ -42,13 +43,13 @@ header#header-img {
   min-height: 100%;
   width: 100%;
   left: 0;
-  background: rgb(85, 99, 117);
-  background: linear-gradient(135deg, rgba(85, 99, 117, 1) 0%, rgba(17, 20, 33, 1) 72%);
-  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#556375', endColorstr='#111421', GradientType=1);
+  background: rgb(65, 77, 94);
+  background: linear-gradient(135deg, rgba(65, 77, 94, 1) 0%, rgba(10, 12, 22, 1) 72%);
+  filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#414d5e', endColorstr='#0a0c16', GradientType=1);
   zoom: 1;
-  filter: alpha(opacity=7);
-  -webkit-opacity: .7;
-  -moz-opacity: .7;
-  opacity: .7;
+  filter: alpha(opacity=78);
+  -webkit-opacity: .78;
+  -moz-opacity: .78;
+  opacity: .78;
   z-index: -1;
 }

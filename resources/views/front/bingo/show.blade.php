@@ -24,6 +24,7 @@
     @else
     <h1 class="page-title text-center pt-4 text-uppercase">{{ $bingo->title }}</h1>
     <hr class="header mx-auto" style="width:300px;">
+    <h2 class="sr-only">{{ t('Single Bingo Show') }}</h2>
     <div class="d-flex align-items-center justify-content-center ">
         @include('front.bingo.partials.bingo-loop', ['project' => $bingo->project])
     </div>

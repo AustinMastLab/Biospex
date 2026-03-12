@@ -18,7 +18,7 @@
 <div class="collapse navbar-collapse w-100" id="navbarsExampleDefault">
     <ul class="navbar-nav ml-auto">
         <li class="nav-item mr-2 dropdown">
-            <a class="nav-link dropdown-toggle text-uppercase" href="#" id="dropdown00" data-toggle="dropdown"
+            <a class="nav-link nav-audit-contrast dropdown-toggle text-uppercase" href="#" id="dropdown00" data-toggle="dropdown"
                aria-haspopup="true"
                aria-expanded="false">{{ t('About') }}</a>
             <div class="dropdown-menu" aria-labelledby="dropdown00">
@@ -30,21 +30,21 @@
         </li>
 
         <li class="nav-item active">
-            <a class="nav-link mr-2 text-uppercase" href="{{ route('front.projects.index') }}">
+            <a class="nav-link nav-audit-contrast mr-2 text-uppercase" href="{{ route('front.projects.index') }}">
                 {{ t('Projects') }} <span class="sr-only">(current)</span>
             </a>
         </li>
 
         <li class="nav-item mr-2">
-            <a class="nav-link text-uppercase" href="{{ route('front.expeditions.index') }}">{{ t('Expeditions') }}</a>
+            <a class="nav-link nav-audit-contrast text-uppercase" href="{{ route('front.expeditions.index') }}">{{ t('Expeditions') }}</a>
         </li>
 
         <li class="nav-item mr-2">
-            <a class="nav-link text-uppercase" href="{{ route('front.events.index') }}">{{ t('Events') }}</a>
+            <a class="nav-link nav-audit-contrast text-uppercase" href="{{ route('front.events.index') }}">{{ t('Events') }}</a>
         </li>
 
         <li class="nav-item mr-2 dropdown">
-            <a class="nav-link dropdown-toggle text-uppercase" href="#" id="dropdown01" data-toggle="dropdown"
+            <a class="nav-link nav-audit-contrast dropdown-toggle text-uppercase" href="#" id="dropdown01" data-toggle="dropdown"
                aria-haspopup="true"
                aria-expanded="false">{{ t('WeDigBio') }}</a>
             <div class="dropdown-menu" aria-labelledby="dropdown01">
@@ -73,11 +73,11 @@
         </li>
 
         <li class="nav-item mr-2">
-            <a class="nav-link text-uppercase" href="{{ route('front.bingos.index') }}">{{ t('Games') }}</a>
+            <a class="nav-link nav-audit-contrast text-uppercase" href="{{ route('front.bingos.index') }}">{{ t('Games') }}</a>
         </li>
 
         <li class="nav-item mr-2">
-            <a class="nav-link text-uppercase" href="{{ route('front.contact.index') }}">{{ t('Contact') }}</a>
+            <a class="nav-link nav-audit-contrast text-uppercase" href="{{ route('front.contact.index') }}">{{ t('Contact') }}</a>
         </li>
 
         @if(Auth::check())
@@ -128,7 +128,7 @@
             </li>
         @else
             <li class="nav-item nav-btn">
-                <a class="nav-link text-uppercase mx-auto" href="{{ route('app.get.login') }}">{{ t('Login') }}</a>
+                <a class="nav-link nav-audit-contrast text-uppercase mx-auto" href="{{ route('app.get.login') }}">{{ t('Login') }}</a>
             </li>
         @endif
     </ul>

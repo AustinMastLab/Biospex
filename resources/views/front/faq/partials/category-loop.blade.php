@@ -4,16 +4,26 @@
         @foreach($category->faqs as $key => $faq)
             <div class="card faq">
                 <div class="card-header" id="heading{{ $faq->id }}">
-                    <button class="faq btn text-left d-block w-100" data-toggle="collapse"
-                            data-target="#collapse{{ $faq->id }}" aria-expanded="true"
-                            aria-controls="collapse{{ $faq->id }}">
+                    <button
+                            id="faq-button-{{ $faq->id }}"
+                            class="faq btn text-left d-block w-100"
+                            type="button"
+                            data-toggle="collapse"
+                            data-target="#collapse{{ $faq->id }}"
+                            aria-expanded="false"
+                            aria-controls="collapse{{ $faq->id }}"
+                    >
                         {{ $faq->question }}
                     </button>
                 </div>
 
-                <div id="collapse{{ $faq->id }}" class="collapse"
-                     aria-labelledby="heading{{ $faq->id }}"
-                     data-parent="#accordion{{ $category->id }}">
+                <div
+                        id="collapse{{ $faq->id }}"
+                        class="collapse"
+                        role="region"
+                        aria-labelledby="faq-button-{{ $faq->id }}"
+                        data-parent="#accordion{{ $category->id }}"
+                >
                     <div class="card-body">
                         {!! $faq->answer !!}
                     </div>

@@ -180,6 +180,13 @@
   box-shadow: none;
 }
 
+.card.faq .card-header .btn.faq:focus-visible {
+  outline: 3px solid #111111;
+  outline-offset: 3px;
+  border-radius: 4px;
+  background-color: rgba(255, 255, 255, 0.55);
+}
+
 .card-footer .site-asset-link {
   display: inline-flex;
   align-items: center;

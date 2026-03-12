@@ -17,6 +17,10 @@
 #
 
 name: Build and Deploy
+
+env:
+  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+
 on:
   push:
     branches:
@@ -39,7 +43,7 @@ jobs:
     outputs:
       release-tag: ${{ steps.create_release.outputs.tag_name }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
         with:
           fetch-depth: 0 # Fetch all history for proper versioning
 
@@ -151,7 +155,7 @@ jobs:
     environment: production
     if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Get Runner IP
         id: ip
         uses: haythem/public-ip@v1.3
@@ -250,7 +254,7 @@ jobs:
     # Skip deployment if commit message contains [skip deploy] or [no deploy]
     if: "github.ref == 'refs/heads/development' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - name: Get Runner IP
         id: ip
         uses: haythem/public-ip@v1.3

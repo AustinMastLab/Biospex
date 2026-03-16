@@ -139,7 +139,7 @@
 
                     @if($expedition)
                         <div class="card mb-5 px-4 box-shadow">
-                            <h2 class="text-center pt-4">{{ $expedition->project->title }}</h2>
+                            <h3 class="text-center pt-4 home-card-heading">{{ $expedition->project->title }}</h3>
                             <hr>
                             <div class="row card-body pb-2">
                                 <div class="col-12">
@@ -177,7 +177,7 @@
                     <h2>{{ t('The Progress') }}</h2>
 
                     <div class="card mb-4 px-4 box-shadow">
-                        <h2 class="text-center pt-4">{{ t('BIOSPEX Stats') }}</h2>
+                        <h3 class="text-center pt-4 home-card-heading">{{ t('BIOSPEX Stats') }}</h3>
                         <hr>
                         <div class="row card-body pb-5">
                             <div class="col-12">
@@ -199,7 +199,7 @@
                                      src="{{ $expedition->present()->show_medium_logo }}"
                                      alt="{{ $expedition->present()->logo_alt }}">
                                 <div class="card-img-overlay">
-                                    <h2 class="card-title text-center pt-4">{{ $expedition->title }}</h2>
+                                    <h3 class="card-title text-center pt-4 expedition-card-title">{{ $expedition->title }}</h3>
                                     <i class="card-info fas fa-info-circle fa-2x float-right"
                                        style="top: 20rem; left: 31.25rem;"></i>
                                     <p>{{ $expedition->description }}</p>

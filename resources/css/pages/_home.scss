@@ -208,6 +208,16 @@ h1.project-wide {
   text-rendering: optimizeLegibility;
 }
 
+.home-card-heading {
+  margin-top: 0;
+  margin-bottom: 0.5rem;
+  font-family: Raleway, sans-serif;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1.2;
+  color: #333;
+}
+
 .a11y-target-link {
   display: inline-flex;
   align-items: center;

@@ -26,7 +26,10 @@ class PanoptesProjectsTable
                     ->sortable(),
                 TextColumn::make('panoptes_workflow_id')
                     ->numeric(thousandsSeparator: '')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(query: function ($query, string $search) {
+                        return $query->where('panoptes_workflow_id', $search);
+                    }),
                 TextColumn::make('slug')
                     ->searchable(),
                 TextColumn::make('title')

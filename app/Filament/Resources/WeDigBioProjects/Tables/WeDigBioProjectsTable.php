@@ -17,10 +17,14 @@ class WeDigBioProjectsTable
             ->columns([
                 TextColumn::make('panoptes_project_id')
                     ->numeric(thousandsSeparator: '')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(),
                 TextColumn::make('panoptes_workflow_id')
                     ->numeric(thousandsSeparator: '')
-                    ->sortable(),
+                    ->sortable()
+                    ->searchable(query: function ($query, string $search) {
+                        return $query->where('panoptes_workflow_id', $search);
+                    }),
                 TextColumn::make('title')
                     ->searchable(),
                 TextColumn::make('created_at')

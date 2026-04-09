@@ -24,6 +24,7 @@ use DateTime;
 use Generator;
 use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
+use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\HandlerStack;
@@ -31,24 +32,10 @@ use GuzzleHttp\Middleware;
 use GuzzleHttp\Pool;
 use GuzzleHttp\RetryMiddleware;
 use Illuminate\Support\Facades\Cache;
+use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
-use League\OAuth2\Client\Token\AccessTokenInterface;
 use Psr\Http\Message\RequestInterface;
 
-/**
- * Class HttpRequest
- *
- * Handles HTTP requests with OAuth2 authentication and retry capabilities.
- * Provides functionality for making authenticated HTTP requests, managing access tokens,
- * and handling request retries with customizable retry strategies.
- *
- * Features:
- * - OAuth2 authentication integration
- * - Automatic token refresh
- * - Configurable retry mechanism with exponential backoff
- * - Support for request pooling
- * - Direct HTTP client creation without OAuth2
- */
 class HttpRequest
 {
     /**
@@ -57,9 +44,9 @@ class HttpRequest
     protected GenericProvider $provider;
 
     /**
-     * Current OAuth2 access token
+     * Current OAuth2 access token string
      */
-    protected AccessTokenInterface $accessToken;
+    protected ?string $accessToken = null;
 
     /**
      * Maximum number of retry attempts for failed requests
@@ -70,7 +57,6 @@ class HttpRequest
      * Set authentication provider with retry middleware
      *
      * @param  array  $config  Configuration options for the OAuth2 provider
-     * @return GenericProvider Configured OAuth2 provider instance
      */
     public function setHttpProvider(array $config = []): GenericProvider
     {
@@ -89,8 +75,6 @@ class HttpRequest
 
     /**
      * Get a configured HTTP client from the OAuth2 provider
-     *
-     * @return ClientInterface Configured GuzzleHttp client
      */
     public function getHttpClient(): ClientInterface
     {
@@ -102,28 +86,45 @@ class HttpRequest
      *
      * @param  string  $token  Cache key for storing the access token
      *
-     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws IdentityProviderException
+     * @throws GuzzleException
      */
     protected function setAccessToken(string $token): void
     {
         $accessToken = $this->provider->getAccessToken('client_credentials');
-        Cache::put($token, $accessToken, 720);
+
+        Cache::put($token, [
+            'access_token' => $accessToken->getToken(),
+            'expires_at' => $accessToken->getExpires(),
+        ], 720);
+
+        $this->accessToken = $accessToken->getToken();
     }
 
     /**
-     *  Verify and refresh the access token if expired
+     * Verify and refresh the access token if expired
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
-     * @throws \League\OAuth2\Client\Provider\Exception\IdentityProviderException
+     * @param  string  $token
+     *
+     * @throws GuzzleException
+     * @throws IdentityProviderException
      */
     public function checkAccessToken($token): void
     {
-        if (Cache::get($token) === null || Cache::get($token)->hasExpired()) {
+        $cachedToken = Cache::get($token);
+
+        if (
+            ! is_array($cachedToken) ||
+            empty($cachedToken['access_token']) ||
+            empty($cachedToken['expires_at']) ||
+            time() >= (int) $cachedToken['expires_at']
+        ) {
             $this->setAccessToken($token);
+
+            return;
         }
 
-        $this->accessToken = Cache::get($token);
+        $this->accessToken = $cachedToken['access_token'];
     }
 
     /**
@@ -135,7 +136,11 @@ class HttpRequest
      */
     protected function buildAuthenticatedRequest(string $method, string $uri, array $options = []): RequestInterface
     {
-        return $this->provider->getAuthenticatedRequest($method, $uri, $this->accessToken->getToken(), $options);
+        if ($this->accessToken === null) {
+            throw new \RuntimeException('Access token has not been initialized.');
+        }
+
+        return $this->provider->getAuthenticatedRequest($method, $uri, $this->accessToken, $options);
     }
 
     /**
@@ -143,7 +148,6 @@ class HttpRequest
      *
      * @param  Generator  $promises  Generator of request promises
      * @param  array  $poolConfig  Pool configuration options
-     * @return Pool Configured request pool
      */
     public function pool(Generator $promises, array $poolConfig): Pool
     {
@@ -208,6 +212,7 @@ class HttpRequest
      * Set maximum number of retry attempts
      *
      * @param  int  $maxRetries  Maximum number of retries
+     * @return $this
      */
     public function setMaxRetries(int $maxRetries): self
     {
@@ -220,7 +225,6 @@ class HttpRequest
      * Create a standalone Guzzle HTTP client with retry middleware
      *
      * @param  array  $config  Additional client configuration
-     * @return Client Configured Guzzle client
      */
     public function createDirectHttpClient(array $config = []): Client
     {

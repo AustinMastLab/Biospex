@@ -18,9 +18,6 @@
 
 name: Build and Deploy
 
-env:
-  FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
-
 on:
   push:
     branches:
@@ -43,7 +40,7 @@ jobs:
     outputs:
       release-tag: ${{ steps.create_release.outputs.tag_name }}
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0 # Fetch all history for proper versioning
 
@@ -155,10 +152,10 @@ jobs:
     environment: production
     if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
       - name: Get Runner IP
         id: ip
-        uses: haythem/public-ip@v1.3
+        uses: haythem/public-ip@v1.4
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -178,7 +175,7 @@ jobs:
           extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -254,10 +251,10 @@ jobs:
     # Skip deployment if commit message contains [skip deploy] or [no deploy]
     if: "github.ref == 'refs/heads/development' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v5
+      - uses: actions/checkout@v4
       - name: Get Runner IP
         id: ip
-        uses: haythem/public-ip@v1.3
+        uses: haythem/public-ip@v1.4
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -277,7 +274,7 @@ jobs:
           extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}

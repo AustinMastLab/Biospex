@@ -37,7 +37,7 @@ jobs:
       new_version: ${{ steps.new_version.outputs.new_version }}
       current_version: ${{ steps.version_bump.outputs.current_version }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0 # Fetch all history for proper versioning
 
@@ -119,12 +119,12 @@ jobs:
     environment: production
     if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get Runner IP
         id: ip
         uses: haythem/public-ip@v1.3
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::147899039648:role/GitHubActionsDeployRole
           aws-region: ${{ secrets.AWS_REGION }}
@@ -142,7 +142,7 @@ jobs:
           extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -151,7 +151,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'yarn'
@@ -188,7 +188,7 @@ jobs:
           # Rename to package name
           mv "$TEMP_DIR" deployment-package
       - name: Upload deployment artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: biospex-${{ github.sha }}
           path: deployment-package/
@@ -220,7 +220,7 @@ jobs:
       contents: write
     if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           fetch-depth: 0
 
@@ -257,12 +257,12 @@ jobs:
     # Skip deployment if commit message contains [skip deploy] or [no deploy]
     if: "github.ref == 'refs/heads/development' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
       - name: Get Runner IP
         id: ip
-        uses: haythem/public-ip@v1.4
+        uses: haythem/public-ip@v1.3
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v4
+        uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::147899039648:role/GitHubActionsDeployRole
           aws-region: ${{ secrets.AWS_REGION }}
@@ -280,7 +280,7 @@ jobs:
           extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
       - name: Cache Composer packages
         id: composer-cache
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: vendor
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
@@ -289,7 +289,7 @@ jobs:
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: '20'
           cache: 'yarn'
@@ -326,7 +326,7 @@ jobs:
           # Rename to package name
           mv "$TEMP_DIR" deployment-package
       - name: Upload deployment artifact
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: biospex-${{ github.sha }}
           path: deployment-package/

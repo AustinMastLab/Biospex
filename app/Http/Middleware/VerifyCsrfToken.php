@@ -30,7 +30,5 @@ class VerifyCsrfToken extends Middleware
      * @var array
      */
     protected $except = [
-        //
-        'aws-sns-webhook/',
     ];
 }

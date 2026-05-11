@@ -45,7 +45,7 @@ class LabelReconciliationJob implements ShouldQueue
     /**
      * Execute the job.
      *
-     * @throws \Exception|\Throwable
+     * @throws \Exception|Throwable
      */
     public function handle(
         ReconcileProcessAll $reconcileProcessAll,

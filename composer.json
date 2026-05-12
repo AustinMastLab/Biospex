@@ -8,7 +8,7 @@
   ],
   "license": "MIT",
   "require": {
-    "php": "^8.3",
+    "php": "^8.4",
     "ext-curl": "*",
     "ext-dom": "*",
     "ext-fileinfo": "*",
@@ -23,7 +23,7 @@
     "laravel/framework": "^13.0",
     "laravel/reverb": "^1.0",
     "laravel/sanctum": "^4.0",
-    "laravel/tinker": "^2.0",
+    "laravel/tinker": "^3.0",
     "laravel/ui": "^4.0",
     "league/csv": "^9.0",
     "league/flysystem-aws-s3-v3": "^3.0",
@@ -39,15 +39,14 @@
     "spatie/laravel-honeypot": "^4.0",
     "spatie/laravel-responsecache": "^8.0",
     "supervisorphp/supervisor": "^5.0",
-    "tio/laravel": "^1.0",
-    "valentin-morice/filament-json-column": "dev-dev"
+    "tio/laravel": "^1.0"
   },
   "require-dev": {
     "deployer/deployer": "^7.0",
     "fakerphp/faker": "^1.0",
-    "fruitcake/laravel-debugbar": "^4.0",
+    "fruitcake/laravel-debugbar": "*",
     "kitloong/laravel-migrations-generator": "^7.0",
-    "laradumps/laradumps": "^4.0",
+    "laradumps/laradumps": "^5.0",
     "laravel/boost": "^2.0",
     "laravel/breeze": "^2.0",
     "laravel/pail": "^1.0",

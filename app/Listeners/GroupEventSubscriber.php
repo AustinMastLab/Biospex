@@ -68,7 +68,6 @@ class GroupEventSubscriber
      */
     public function onUserLogin($event)
     {
-        \Log::info('User logged in: '.Auth::id());
         $this->setUserGroupSession();
     }
 
@@ -77,7 +76,6 @@ class GroupEventSubscriber
      */
     public function onUserLogout($event)
     {
-        \Log::info('User logged out: '.Auth::id());
         Session::flush();
     }
 

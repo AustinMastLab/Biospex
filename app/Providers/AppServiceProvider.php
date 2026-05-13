@@ -26,6 +26,7 @@ use App\Models\Project;
 use App\Observers\EventPublicCacheObserver;
 use App\Observers\ExpeditionPublicCacheObserver;
 use App\Observers\ProjectPublicCacheObserver;
+use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Redis;
@@ -72,7 +73,7 @@ class AppServiceProvider extends ServiceProvider
     public function register(): void
     {
         if ($this->app->environment() !== 'production') {
-            $this->app->register(\Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider::class);
+            $this->app->register(IdeHelperServiceProvider::class);
         }
     }
 }

@@ -1,5 +1,11 @@
 <?php
 
+use App\Services\Cache\FlashReplacer;
+use Spatie\ResponseCache\CacheProfiles\CacheAllSuccessfulGetRequests;
+use Spatie\ResponseCache\Hasher\DefaultHasher;
+use Spatie\ResponseCache\Replacers\CsrfTokenReplacer;
+use Spatie\ResponseCache\Serializers\DefaultSerializer;
+
 /*
  * Copyright (C) 2014 - 2025, Biospex
  * biospex@gmail.com
@@ -33,7 +39,7 @@ return [
      *  You can provide your own class given that it implements the
      *  CacheProfile interface.
      */
-    'cache_profile' => Spatie\ResponseCache\CacheProfiles\CacheAllSuccessfulGetRequests::class,
+    'cache_profile' => CacheAllSuccessfulGetRequests::class,
 
     /*
      *  Optionally, you can specify a header that will force a cache bypass.
@@ -89,8 +95,8 @@ return [
      * Each replacer must implement the Replacer interface.
      */
     'replacers' => [
-        \Spatie\ResponseCache\Replacers\CsrfTokenReplacer::class,
-        \App\Services\Cache\FlashReplacer::class,
+        CsrfTokenReplacer::class,
+        FlashReplacer::class,
     ],
 
     /*
@@ -106,10 +112,10 @@ return [
      * This class is responsible for generating a hash for a request. This hash
      * is used to look up a cached response.
      */
-    'hasher' => \Spatie\ResponseCache\Hasher\DefaultHasher::class,
+    'hasher' => DefaultHasher::class,
 
     /*
      * This class is responsible for serializing responses.
      */
-    'serializer' => \Spatie\ResponseCache\Serializers\DefaultSerializer::class,
+    'serializer' => DefaultSerializer::class,
 ];

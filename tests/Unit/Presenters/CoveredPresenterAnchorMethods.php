@@ -35,6 +35,7 @@ class CoveredPresenterAnchorMethods
             'BingoPresenter::twitterIcon',
             'BingoPresenter::facebookIcon',
             'BingoPresenter::contactIcon',
+            'BingoPresenter::generateCardButton',
 
             // EventPresenter
             'EventPresenter::twitterIcon',
@@ -76,6 +77,7 @@ class CoveredPresenterAnchorMethods
             'GroupPresenter::groupDeleteIconLrg',
             'GroupPresenter::groupInviteIcon',
             'GroupPresenter::groupInviteIconLrg',
+            'GroupPresenter::groupRemoveMemberIcon',
 
             // PanoptesProjectPresenter
             'PanoptesProjectPresenter::url',

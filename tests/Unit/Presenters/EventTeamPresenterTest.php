@@ -20,26 +20,28 @@
 
 namespace Tests\Unit\Presenters;
 
+use Database\Factories\EventTeamFactory;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class, PresenterTestHelpers::class);
 
 it('renders teamJoinUrlIcon with required attributes and unique data-clipboard-text token', function () {
-    $team1 = \Database\Factories\EventTeamFactory::new()->create(['title' => 'Team One']);
-    $team2 = \Database\Factories\EventTeamFactory::new()->create(['title' => 'Team Two']);
+    $team1 = EventTeamFactory::new()->create(['title' => 'Team One']);
+    $team2 = EventTeamFactory::new()->create(['title' => 'Team Two']);
 
     $out1 = $team1->present()->teamJoinUrlIcon();
     $out2 = $team2->present()->teamJoinUrlIcon();
 
-    // The teamJoinUrlIcon doesn't have an aria-label, but it has a title.
-    // Our helper now checks visible text for tokens when requireAriaLabel=false.
-    $this->assertLinkRenderedAndSafe($out1, [$team1->title], false);
-    $this->assertLinkRenderedAndSafe($out2, [$team2->title], false);
+    // Basic button and span structure
+    expect($out1)->toContain('<button')->toContain('</button>')->toContain('</span>');
+    expect($out2)->toContain('<button')->toContain('</button>')->toContain('</span>');
 
-    // Basic anchor and span structure
-    expect($out1)->toContain('<a')->toContain('</a>')->toContain('</span>');
-    expect($out2)->toContain('<a')->toContain('</a>')->toContain('</span>');
+    // Clipboard button should expose an accessible name containing the team title.
+    expect($out1)->toContain('aria-label="Copy invite link for team: Team One"');
+    expect($out2)->toContain('aria-label="Copy invite link for team: Team Two"');
+    expect($out1)->toContain('Team One');
+    expect($out2)->toContain('Team Two');
 
     // Must include non-empty title and data-clipboard-text attributes
     expect($out1)->toMatch('/\btitle="[^"]+"/');
@@ -57,32 +59,35 @@ it('renders teamJoinUrlIcon with required attributes and unique data-clipboard-t
     expect($m2[1])->toContain($team2->uuid);
     expect($m1[1])->not->toBe($m2[1]);
 
-    // Attribute explosion quick check (<=3 empty attributes on <a>)
-    preg_match('/<a\b[^>]*>/i', $out1, $a1);
-    preg_match_all('/\s[a-zA-Z0-9_-]+=""/m', $a1[0] ?? '', $ea1);
+    // Attribute explosion quick check (<=3 empty attributes on <button>)
+    preg_match('/<button\b[^>]*>/i', $out1, $button1);
+    preg_match_all('/\s[a-zA-Z0-9_-]+=""/m', $button1[0] ?? '', $ea1);
     expect(count($ea1[0] ?? []))->toBeLessThanOrEqual(3);
 });
 
 it('handles danger strings in EventTeamPresenter without breaking attributes or markup', function (string $danger) {
-    $team = \Database\Factories\EventTeamFactory::new()->create(['title' => $danger]);
+    $team = EventTeamFactory::new()->create(['title' => $danger]);
 
     $out = $team->present()->teamJoinUrlIcon();
 
-    // Still renders anchor and span end tags
-    expect($out)->toContain('<a')->toContain('</a>')->toContain('</span>');
+    // Still renders button and span end tags
+    expect($out)->toContain('<button')->toContain('</button>')->toContain('</span>');
 
     // Attributes present and non-empty; ensure no raw quotes in attribute values
+    preg_match('/\baria-label="([^"]+)"/', $out, $aria);
     preg_match('/\btitle="([^"]+)"/', $out, $t);
     preg_match('/\bdata-clipboard-text="([^"]+)"/', $out, $dct);
 
+    expect($aria[1] ?? '')->not->toBeEmpty();
     expect($t[1] ?? '')->not->toBeEmpty();
     expect($dct[1] ?? '')->not->toBeEmpty();
+    expect($aria[1])->not->toContain('"');
     expect($t[1])->not->toContain('"');
     expect($dct[1])->not->toContain('"');
 
     // Attribute explosion quick check
-    preg_match('/<a\b[^>]*>/i', $out, $a);
-    preg_match_all('/\s[a-zA-Z0-9_-]+=""/m', $a[0] ?? '', $ea);
+    preg_match('/<button\b[^>]*>/i', $out, $button);
+    preg_match_all('/\s[a-zA-Z0-9_-]+=""/m', $button[0] ?? '', $ea);
     expect(count($ea[0] ?? []))->toBeLessThanOrEqual(3);
 })->with([
     'Normal Title',

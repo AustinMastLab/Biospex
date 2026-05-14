@@ -1,9 +1,12 @@
 <?php
 
+use App\Services\Cache\FlashReplacer;
 use Spatie\ResponseCache\CacheProfiles\CacheAllSuccessfulGetRequests;
 use Spatie\ResponseCache\Hasher\DefaultHasher;
 use Spatie\ResponseCache\Replacers\CsrfTokenReplacer;
 use Spatie\ResponseCache\Serializers\JsonSerializer;
+
+$tag = config('app.tag', 'biospex');
 
 return [
     /*
@@ -32,7 +35,7 @@ return [
          *
          * You may use a string or an array here.
          */
-        'tag' => env('RESPONSE_CACHE_TAG', ''),
+        'tag' => env('RESPONSE_CACHE_TAGS_ENABLED', false) ? "{$tag}-tag" : '',
     ],
 
     'bypass' => [
@@ -72,7 +75,7 @@ return [
         /*
          * The header name for the cache age in seconds.
          */
-        'cache_age_header_name' => 'X-Cache-Age',
+        'cache_age_header_name' => "{$tag}-responsecache-age",
 
         /*
          * The header name used for the response cache key.
@@ -121,5 +124,6 @@ return [
      */
     'replacers' => [
         CsrfTokenReplacer::class,
+        FlashReplacer::class,
     ],
 ];

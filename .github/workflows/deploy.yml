@@ -80,7 +80,7 @@ jobs:
         run: |
           CURRENT="${{ steps.version_bump.outputs.current_version }}"
           BUMP_TYPE="${{ steps.version_bump.outputs.bump_type }}"
-          
+
           # Parse current version
           if [[ $CURRENT =~ ^([0-9]+)\.([0-9]+)\.([0-9]+) ]]; then
             MAJOR=${BASH_REMATCH[1]}
@@ -91,7 +91,7 @@ jobs:
             MINOR=0
             PATCH=0
           fi
-          
+
           # Increment based on bump type
           case $BUMP_TYPE in
             "major")
@@ -107,7 +107,7 @@ jobs:
               PATCH=$((PATCH + 1))
               ;;
           esac
-          
+
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "New version: $NEW_VERSION"
           echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
@@ -120,14 +120,17 @@ jobs:
     if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
       - uses: actions/checkout@v6
+
       - name: Get Runner IP
         id: ip
-        uses: haythem/public-ip@v1.3
+        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::147899039648:role/GitHubActionsDeployRole
           aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Whitelist Runner IP in AWS Security Group
         run: |
           aws ec2 authorize-security-group-ingress \
@@ -135,11 +138,13 @@ jobs:
             --protocol tcp \
             --port 22 \
             --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
           php-version: '8.3'
           extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
+
       - name: Cache Composer packages
         id: composer-cache
         uses: actions/cache@v5
@@ -148,15 +153,19 @@ jobs:
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-
+
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'yarn'
+
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile --ignore-engines
+
       - name: Build assets for Production
         run: npm run production
         env:
@@ -164,14 +173,15 @@ jobs:
           MIX_REVERB_HOST: ${{ vars.PROD_REVERB_HOST }}
           MIX_REVERB_PORT: ${{ vars.PROD_REVERB_PORT }}
           MIX_REVERB_SCHEME: ${{ vars.PROD_REVERB_SCHEME }}
+
       - name: Create deployment package
         run: |
           # Clean any prior
           rm -rf deployment-package || true
-          
+
           # Create isolated temp dir
           TEMP_DIR=$(mktemp -d)
-          
+
           # Sync repo files to temp (exclusions prevent bloat/self-ref)
           rsync -av \
             --exclude=node_modules \
@@ -181,18 +191,20 @@ jobs:
             --exclude=storage/logs \
             --exclude=vendor \
             . "$TEMP_DIR/"
-          
+
           # Copy assets into temp/public/ (these are already built via npm run production)
           cp -r public/css public/js public/fonts public/images public/svg public/mix-manifest.json "$TEMP_DIR/public/" || true
-          
+
           # Rename to package name
           mv "$TEMP_DIR" deployment-package
+
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v7
         with:
           name: biospex-${{ github.sha }}
           path: deployment-package/
           retention-days: 30
+
       - name: Deploy with Deployer
         uses: deployphp/action@v1
         with:
@@ -202,7 +214,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REPO: ${{ github.repository }}
-          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+
       - name: Revoke Runner IP from AWS Security Group
         if: always()
         run: |
@@ -258,14 +271,17 @@ jobs:
     if: "github.ref == 'refs/heads/development' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
       - uses: actions/checkout@v6
+
       - name: Get Runner IP
         id: ip
-        uses: haythem/public-ip@v1.3
+        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
         with:
           role-to-assume: arn:aws:iam::147899039648:role/GitHubActionsDeployRole
           aws-region: ${{ secrets.AWS_REGION }}
+
       - name: Whitelist Runner IP in AWS Security Group
         run: |
           aws ec2 authorize-security-group-ingress \
@@ -273,11 +289,13 @@ jobs:
             --protocol tcp \
             --port 22 \
             --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
+
       - name: Cache Composer packages
         id: composer-cache
         uses: actions/cache@v5
@@ -286,15 +304,19 @@ jobs:
           key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
           restore-keys: |
             ${{ runner.os }}-php-
+
       - name: Install Composer dependencies
         run: composer install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts
+
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '20'
+          node-version: '24'
           cache: 'yarn'
+
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile --ignore-engines
+
       - name: Build assets for Development
         run: npm run production
         env:
@@ -302,14 +324,15 @@ jobs:
           MIX_REVERB_HOST: ${{ vars.DEV_REVERB_HOST }}
           MIX_REVERB_PORT: ${{ vars.DEV_REVERB_PORT }}
           MIX_REVERB_SCHEME: ${{ vars.DEV_REVERB_SCHEME }}
+
       - name: Create deployment package
         run: |
           # Clean any prior
           rm -rf deployment-package || true
-          
+
           # Create isolated temp dir
           TEMP_DIR=$(mktemp -d)
-          
+
           # Sync repo files to temp (exclusions prevent bloat/self-ref)
           rsync -av \
             --exclude=node_modules \
@@ -319,18 +342,20 @@ jobs:
             --exclude=storage/logs \
             --exclude=vendor \
             . "$TEMP_DIR/"
-          
+
           # Copy assets into temp/public/ (these are already built via npm run production)
           cp -r public/css public/js public/fonts public/images public/svg public/mix-manifest.json "$TEMP_DIR/public/" || true
-          
+
           # Rename to package name
           mv "$TEMP_DIR" deployment-package
+
       - name: Upload deployment artifact
         uses: actions/upload-artifact@v7
         with:
           name: biospex-${{ github.sha }}
           path: deployment-package/
           retention-days: 30
+
       - name: Deploy with Deployer
         uses: deployphp/action@v1
         with:
@@ -340,7 +365,8 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REPO: ${{ github.repository }}
-          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+
       - name: Revoke Runner IP from AWS Security Group
         if: always()
         run: |

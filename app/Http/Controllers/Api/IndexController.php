@@ -28,28 +28,16 @@ use Illuminate\Http\Response;
  */
 class IndexController extends ApiController
 {
-    /**
-     * @return string
-     */
-    public function index()
+    public function index(): string
     {
         return \View::make('front.api-index');
     }
 
     /**
      * Reset OpCache
-     *
-     * @return Response
      */
-    public function resetOpcache(Request $request)
+    public function resetOpcache(Request $request): Response
     {
-        $token = $request->input('token');
-        $validToken = config('app.opcache_webhook_token', null);
-
-        if (empty($validToken) || $token !== $validToken) {
-            return $this->errorUnauthorized('Invalid reset token.');
-        }
-
         if (function_exists('opcache_reset')) {
             if (opcache_reset()) {
                 return $this->respondWithArray(['message' => 'OpCache reset successful']);

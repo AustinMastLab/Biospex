@@ -123,7 +123,7 @@ jobs:
 
       - name: Get Runner IP
         id: ip
-        uses: haythem/public-ip@v1.3
+        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
@@ -160,7 +160,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'yarn'
 
       - name: Install Yarn dependencies
@@ -274,7 +274,7 @@ jobs:
 
       - name: Get Runner IP
         id: ip
-        uses: haythem/public-ip@v1.3
+        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v6
@@ -311,7 +311,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v6
         with:
-          node-version: '22'
+          node-version: '24'
           cache: 'yarn'
 
       - name: Install Yarn dependencies

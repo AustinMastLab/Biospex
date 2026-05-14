@@ -20,6 +20,9 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
+use Illuminate\Http\Response;
+
 /**
  * Class IndexController
  */
@@ -36,9 +39,9 @@ class IndexController extends ApiController
     /**
      * Reset OpCache
      *
-     * @return \Illuminate\Http\Response
+     * @return Response
      */
-    public function resetOpcache(\Illuminate\Http\Request $request)
+    public function resetOpcache(Request $request)
     {
         $token = $request->input('token');
         $validToken = config('app.opcache_webhook_token', null);

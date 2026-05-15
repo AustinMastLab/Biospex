@@ -18,7 +18,7 @@
     "aws/aws-sdk-php": "^3.0",
     "filament/filament": "^5.0",
     "graham-campbell/markdown": "^16.0",
-    "intervention/image-laravel": "^1.5",
+    "intervention/image-laravel": "^4.0",
     "laracasts/utilities": "^3.2",
     "laravel/framework": "^13.0",
     "laravel/reverb": "^1.0",

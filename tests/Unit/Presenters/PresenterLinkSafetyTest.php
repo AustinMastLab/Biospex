@@ -201,7 +201,44 @@ it('generates unique aria labels for different groups', function (string $method
     // Group uses uuid OR id
     $expected = $group1->uuid ?: (string) $group1->id;
     expect($label1)->toContain($expected);
-})->with(CoveredPresenterAnchorMethods::forPresenter('GroupPresenter'));
+})->with(
+    collect(CoveredPresenterAnchorMethods::forPresenter('GroupPresenter'))
+        ->reject(fn (string $method) => $method === 'groupRemoveMemberIcon')
+        ->values()
+        ->all()
+);
+
+it('renders groupRemoveMemberIcon with required attributes and unique aria label', function () {
+    $group1 = Group::factory()->create(['title' => 'Group One']);
+    $group2 = Group::factory()->create(['title' => 'Group Two']);
+
+    $user1 = User::factory()->create(['email' => 'member1@example.com']);
+    $user2 = User::factory()->create(['email' => 'member2@example.com']);
+
+    $output1 = $group1->present()->groupRemoveMemberIcon($user1);
+    $output2 = $group2->present()->groupRemoveMemberIcon($user2);
+
+    $groupKey1 = $group1->uuid ?: (string) $group1->id;
+    $groupKey2 = $group2->uuid ?: (string) $group2->id;
+
+    $this->assertLinkRenderedAndSafe($output1, [$groupKey1]);
+    $this->assertLinkRenderedAndSafe($output2, [$groupKey2]);
+
+    $anchor1 = $this->extractFirstAnchor($output1);
+    $anchor2 = $this->extractFirstAnchor($output2);
+
+    $label1 = $this->getAttr($anchor1, 'aria-label');
+    $label2 = $this->getAttr($anchor2, 'aria-label');
+
+    expect($label1)->not->toBeEmpty();
+    expect($label2)->not->toBeEmpty();
+    expect($label1)->not->toBe($label2);
+    expect($label1)->toContain($groupKey1);
+    expect($label2)->toContain($groupKey2);
+
+    expect($this->getAttr($anchor1, 'data-method'))->toBe('delete');
+    expect($this->getAttr($anchor1, 'data-confirm'))->toBe('confirmation');
+});
 
 /*
 |--------------------------------------------------------------------------

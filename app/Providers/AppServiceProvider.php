@@ -26,7 +26,6 @@ use App\Models\Project;
 use App\Observers\EventPublicCacheObserver;
 use App\Observers\ExpeditionPublicCacheObserver;
 use App\Observers\ProjectPublicCacheObserver;
-use Barryvdh\LaravelIdeHelper\IdeHelperServiceProvider;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Redis;
@@ -70,10 +69,5 @@ class AppServiceProvider extends ServiceProvider
      * Registers IDE helper service provider in non-production environments
      * to provide enhanced IDE support and autocompletion.
      */
-    public function register(): void
-    {
-        if ($this->app->environment() !== 'production') {
-            $this->app->register(IdeHelperServiceProvider::class);
-        }
-    }
+    public function register(): void {}
 }

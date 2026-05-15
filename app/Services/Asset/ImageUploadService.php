@@ -103,7 +103,7 @@ class ImageUploadService
                 $variantPath = $baseStoragePath.'/'.$variant.'/'.$filename;
 
                 // Encode image and store
-                $imageData = $image->encode();
+                $imageData = (string) $image->encode();
                 Storage::disk($disk)->put($variantPath, $imageData);
 
             } catch (\Exception $e) {

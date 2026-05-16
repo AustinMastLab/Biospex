@@ -21,15 +21,14 @@ name: Build and Deploy
 on:
   push:
     branches:
-      - main        # Calculates version, deploys to production, then creates release
-      - development # Development environment
+      - main
+      - development
 
 permissions:
   id-token: write
   contents: read
 
 jobs:
-  # Calculate the next version number — deployment and release creation happen in subsequent jobs
   calculate-version:
     runs-on: ubuntu-latest
     if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
@@ -39,7 +38,7 @@ jobs:
     steps:
       - uses: actions/checkout@v6
         with:
-          fetch-depth: 0 # Fetch all history for proper versioning
+          fetch-depth: 0
 
       - name: Determine version bump
         id: version_bump
@@ -110,9 +109,8 @@ jobs:
 
           NEW_VERSION="$MAJOR.$MINOR.$PATCH"
           echo "New version: $NEW_VERSION"
-          echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+          echo "new_version=$NEW_VERSION" >> "$GITHUB_OUTPUT"
 
-  # Production deployment (runs after version is calculated)
   build-and-deploy-production:
     needs: calculate-version
     runs-on: ubuntu-latest
@@ -142,7 +140,7 @@ jobs:
       - name: Setup PHP
         uses: shivammathur/setup-php@v2
         with:
-          php-version: '8.3'
+          php-version: '8.5'
           extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
 
       - name: Cache Composer packages
@@ -154,8 +152,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts
+      - name: Install Composer dependencies for deployment runner
+        run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-scripts
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -205,16 +203,30 @@ jobs:
           path: deployment-package/
           retention-days: 30
 
-      - name: Deploy with Deployer
-        uses: deployphp/action@v1
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.1
         with:
-          private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-          dep: deploy production
+          ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+
+      - name: Configure SSH host key checking
+        run: |
+          mkdir -p ~/.ssh
+          cat > ~/.ssh/config <<'EOF'
+          Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile=/dev/null
+          EOF
+          chmod 700 ~/.ssh
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy with Deployer
+        run: vendor/bin/dep deploy production
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REPO: ${{ github.repository }}
           API_TOKEN: ${{ secrets.API_TOKEN }}
+          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
 
       - name: Revoke Runner IP from AWS Security Group
         if: always()
@@ -225,7 +237,6 @@ jobs:
             --port 22 \
             --cidr ${{ steps.ip.outputs.ipv4 }}/32
 
-  # Create release only after a successful production deployment
   create-release:
     needs: [calculate-version, build-and-deploy-production]
     runs-on: ubuntu-latest
@@ -267,7 +278,6 @@ jobs:
   build-and-deploy-development:
     runs-on: ubuntu-latest
     environment: development
-    # Skip deployment if commit message contains [skip deploy] or [no deploy]
     if: "github.ref == 'refs/heads/development' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
       - uses: actions/checkout@v6
@@ -305,8 +315,8 @@ jobs:
           restore-keys: |
             ${{ runner.os }}-php-
 
-      - name: Install Composer dependencies
-        run: composer install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts
+      - name: Install Composer dependencies for deployment runner
+        run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-scripts
 
       - name: Setup Node.js
         uses: actions/setup-node@v6
@@ -356,16 +366,30 @@ jobs:
           path: deployment-package/
           retention-days: 30
 
-      - name: Deploy with Deployer
-        uses: deployphp/action@v1
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.9.1
         with:
-          private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-          dep: deploy development
+          ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+
+      - name: Configure SSH host key checking
+        run: |
+          mkdir -p ~/.ssh
+          cat > ~/.ssh/config <<'EOF'
+          Host *
+            StrictHostKeyChecking no
+            UserKnownHostsFile=/dev/null
+          EOF
+          chmod 700 ~/.ssh
+          chmod 600 ~/.ssh/config
+
+      - name: Deploy with Deployer
+        run: vendor/bin/dep deploy development
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
           GITHUB_REPO: ${{ github.repository }}
           API_TOKEN: ${{ secrets.API_TOKEN }}
+          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
 
       - name: Revoke Runner IP from AWS Security Group
         if: always()

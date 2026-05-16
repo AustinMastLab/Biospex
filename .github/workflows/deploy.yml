@@ -204,7 +204,7 @@ jobs:
           retention-days: 30
 
       - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.9.1
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
 
@@ -367,7 +367,7 @@ jobs:
           retention-days: 30
 
       - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.9.1
+        uses: webfactory/ssh-agent@v0.10.0
         with:
           ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
 

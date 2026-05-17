@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,19 +18,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Http\Middleware;
+use App\Http\Controllers\Api\IndexController;
 
-use Illuminate\Foundation\Http\Middleware\VerifyCsrfToken as Middleware;
-
-class VerifyCsrfToken extends Middleware
-{
-    /**
-     * The URIs that should be excluded from CSRF verification.
-     *
-     * @var array
-     */
-    protected $except = [
-        //
-        'aws-sns-webhook/',
-    ];
-}
+Route::post('/opcache/reset', [IndexController::class, 'resetOpcache'])->name('api.v1.opcache.reset');

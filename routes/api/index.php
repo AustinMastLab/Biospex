@@ -21,4 +21,3 @@
 use App\Http\Controllers\Api\IndexController;
 
 Route::get('/', [IndexController::class, 'index'])->name('api.index.get');
-Route::post('/opcache/reset', [IndexController::class, 'resetOpcache'])->name('api.opcache.reset');

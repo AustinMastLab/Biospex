@@ -21,6 +21,8 @@
 namespace App\Services\Dashboard;
 
 use App\Services\Transcriptions\PusherTranscriptionService;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Class WeDigBioDashboardProcess
@@ -53,19 +55,11 @@ class WeDigBioDashboardProcess
     /**
      * Get dashboard items.
      *
-     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     * @return Builder[]|Collection
      */
     public function getItems(int $limit, int $offset)
     {
         return $this->pusherTranscriptionService->getWeDigBioDashboardItems($limit, $offset);
-    }
-
-    /**
-     * Set limit on rows returned.
-     */
-    public function setLimit(array $request): int
-    {
-        return (isset($request['rows']) && ((int) $request['rows'] <= 500)) ? (int) $request['rows'] : 500;
     }
 
     /**

@@ -8,6 +8,8 @@ return [
 
     'reverb_debug' => env('REVERB_DEBUG', 0),
 
+    'wedigbio_dashboard_rows' => env('WEDIGBIO_DASHBOARD_ROWS', 100),
+
     'panoptes_listener' => env('PANOPTES_LISTENER', 'prod-panoptes-pusher'),
     'panoptes_listener_enabled' => env('PANOPTES_LISTENER_ENABLED', 1),
 

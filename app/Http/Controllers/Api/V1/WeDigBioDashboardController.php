@@ -48,7 +48,6 @@ class WeDigBioDashboardController extends ApiController
      * @Parameters({
      *
      *     @Parameter("start", description="The start of the results to view.", default=0),
-     *     @Parameter("rows", description="The amount of rows to return.", default=200),
      *     @Parameter("date_start", description="Return results >= to UTC timestamp."),
      *     @Parameter("date_end", description="Return results <= to UTC timestamp."),
      *     @Parameter("project_uuid", description="Biospex Project ID resource belongs to."),
@@ -60,7 +59,7 @@ class WeDigBioDashboardController extends ApiController
         $request = \Request::all();
         $this->weDigBioDashboardProcess->setDashboardQuery($request);
         $numFound = $this->weDigBioDashboardProcess->getTotalCount();
-        $limit = $this->weDigBioDashboardProcess->setLimit($request);
+        $limit = (int) config('config.wedigbio_dashboard_rows', 100);
         $offset = $this->weDigBioDashboardProcess->setOffset($request);
 
         $items = $this->weDigBioDashboardProcess->getItems($limit, $offset);

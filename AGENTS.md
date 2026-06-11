@@ -25,7 +25,9 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 ## 1) Pick the correct execution surface
 
 - This is a Laravel application repository. Most changes belong in the Laravel app code.
-- If the request smells like OCR, SQS, image processing, exports, or “pipeline” work, verify what components/services/jobs are involved before coding, and identify any external dependencies.
+- If the request smells like OCR, SQS, image processing, exports, or "pipeline" work, verify what components/services/jobs are involved before coding, and identify any external dependencies.
+- This app has domain-specific subsystems: use `app/Services/{Domain}` for business logic, `app/Jobs` for async processing, `app/Filament/Resources` for admin interfaces, and `routes/api/v1` for versioned APIs.
+- For MongoDB data (Subjects, Occurrences, Reconciles), use `BaseMongoModel`. For MySQL data (Projects, Expeditions, Users), use `BaseEloquentModel`.
 
 ## 2) Prefer existing patterns, but allow small cleanups
 
@@ -46,8 +48,86 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 
 ## 4) Finish with a tight verification recipe
 
-- Rely on Boost’s existing expectations for formatting/testing/build steps.
+- Rely on Boost's existing expectations for formatting/testing/build steps.
 - End with 3 bullets: what changed, where, and the fastest way to verify.
+
+=== biospex architecture rules ===
+
+# BIOSPEX Architecture & Patterns
+
+## Data Modeling
+
+- MySQL data: Projects, Expeditions, Users, Teams, Downloads (extend `BaseEloquentModel`)
+- MongoDB data: Subjects, Occurrences, Reconciles (extend `BaseMongoModel`)
+- `BaseMongoModel` uses `mongodb` connection, non-incrementing ObjectId keys, and cache clearing on mutation
+- Cross-database queries possible: MongoDB models can reference MySQL models via relationships (e.g., `Reconcile::with('expedition')` joins MongoDB to MySQL)
+
+## Presenter Pattern
+
+- Use the `Presentable` trait + a dedicated `Presenter` class for view-related formatting
+- Define `protected $presenter = MyPresenter::class` on the model
+- Access via `$model->present()->propertyName()` or `$model->present()->methodName()`
+- Presenters inherit from `App\Presenters\Presenter` and define methods that transform model data
+- Example: `TeamPresenter::fullName()` combines `first_name` and `last_name` without logic in the model
+
+## Services & Domain Organization
+
+- Services are organized by domain: `app/Services/{Domain}/` (e.g., `Actor/`, `Event/`, `Group/`, `Subject/`, `Workflow/`)
+- Services contain business logic: database queries, external API calls, data transformations
+- Inject services via constructor property promotion: `public function __construct(protected EventService $eventService) {}`
+- Large services may spawn sub-services (e.g., `SqsListenerService` for queue message handling, `MongoDbService` for direct collection queries)
+
+## Actor System
+
+- Actors handle specialized processing workflows (OCR, GeoLocate, Zooniverse exports, etc.)
+- `ActorFactory::create(string $class)` dynamically instantiates actor classes from `app/Services/Actor/{ActorName}/`
+- Each actor may define its own build/export/result handling classes (e.g., `TesseractOcrBuild`, `TesseractOcrResultCsvService`)
+
+## Queue & SQS Integration
+
+- Queue jobs deploy to named queues via `->onQueue(config('config.queue.{queue_name}'))`
+- Multiple queue types: `export`, `ocr`, `reconcile`, `sernec_file`, `default`
+- Dispatch to AWS SQS via job `handle()` method; jobs send batches of messages using `SqsClient::sendMessageBatch()`
+- Listeners run via console commands (e.g., `SqsListenerExportUpdate`) that use `SqsListenerService` to poll and route messages
+- Message routing uses a callback pattern: `routeMessage($data)` dispatches jobs based on message function field
+- Use traits: `ShouldQueue`, `Dispatchable`, `Queueable`, `NotifyOnJobFailure` (sends email on job failure), `Batchable` (for batch-related jobs)
+
+## Filament Resource Conventions
+
+- Filament resources split form/table/infolist schemas into separate classes: `Schemas/{ResourceName}Form`, `Tables/{ResourceName}Table`, `Infos/{ResourceName}Infolist`
+- Call static methods: `ExpeditionForm::configure($schema)` inside the resource's `form()`/`table()`/`infolist()` methods
+- Eager load relationships in `getEloquentQuery()`: `parent::getEloquentQuery()->with(['owner.profile'])`
+- Override page classes for `Create`, `Edit`, `View`, `List` in `getPages()` to customize behavior (e.g., `EditSubject` implements cross-database data mutation before save)
+- Use `NavigationTrait` on resource classes to automatically manage navigation groups and sort order. The trait reads from `NavigationConfig` helper which organizes resources into "Primary" (core business entities with custom sort) and "Secondary" (all others, sorted alphabetically). Add resources to `NavigationConfig::$resourceConfig` to control their placement.
+
+## Custom Traits
+
+- `Presentable`: Provides `present()` method for accessing presenter logic
+- `UuidTrait`: Generates and manages UUID fields for models
+- `ClearsResponseCache`: Automatically clears response cache on model mutation (used on `BaseMongoModel` and `BaseEloquentModel`)
+- `NotifyOnJobFailure`: Sends email notification when a queue job fails
+- `HasGroup`: Adds group relationship and authorization checks to models
+- `SkipZooniverse`: Excludes data from Zooniverse workflows
+
+## Auto-Loaded Helpers
+
+- `app/Helpers/count_helper.php`: Counting utilities
+- `app/Helpers/date_helper.php`: Date/time formatting
+- `app/Helpers/general_helper.php`: General utilities
+- Defined in `composer.json` autoload.files section; available globally without import
+
+## API Versioning
+
+- API routes organized under `routes/api/v1/` with explicit resource naming
+- Use `apiResource()` to define REST endpoints with custom names: `Route::apiResource('/wedigbio-dashboard', WeDigBioDashboardController::class, ['names' => 'api.v1.wedigbio-dashboard'])`
+- Controllers return Eloquent API Resources (e.g., `ExpeditionResource`) or custom JSON responses
+- API responses use collections and include route names for hypermedia links
+
+## Configuration
+
+- `config/config.php` contains domain-specific settings: queue names, upload directories, Zooniverse integration, missing asset placeholders
+- Access via `config('config.queue.export')`, `config('config.uploads.project_logos')`, etc.
+- AWS S3 paths and queue URLs are configured via environment variables and resolved at runtime
 
 === foundation rules ===
 
@@ -181,6 +261,10 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ### Model Creation
 
 - When creating new models, create useful factories and seeders for them too. Ask the user if they need any other things, using `php artisan make:model --help` to check the available options.
+- Extend `BaseEloquentModel` for MySQL data or `BaseMongoModel` for MongoDB data
+- Always define `protected $table = 'table_name'` for collection/table mapping
+- Use constructor property promotion in factory `create()` methods
+- MongoDB models: Ensure `protected $connection = 'mongodb'` is inherited or explicitly set if needed
 
 ## APIs & Eloquent Resources
 
@@ -195,6 +279,8 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
 - Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
 - When creating tests, make use of `php artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
+- For MongoDB models, import from factories and test queries using the `mongodb` connection: e.g., `Subject::factory()->create()` stores to MongoDB collections
+- For cross-database test scenarios (e.g., Reconcile referencing Expedition), ensure both databases populate correctly and relationships resolve
 
 ## Vite Error
 
@@ -239,6 +325,31 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 ### Patterns
 
 Always use static `make()` methods to initialize components. Most configuration methods accept a `Closure` for dynamic values.
+
+**BIOSPEX convention**: Split resource form/table/infolist into separate schema classes (not inline in resource):
+
+<code-snippet name="BIOSPEX resource with separate schemas" lang="php">
+// app/Filament/Resources/Expeditions/ExpeditionResource.php
+use App\Filament\Resources\Expeditions\Schemas\ExpeditionForm;
+use App\Filament\Resources\Expeditions\Tables\ExpeditionsTable;
+
+public static function form(Schema $schema): Schema
+{
+    return ExpeditionForm::configure($schema);
+}
+
+public static function table(Table $table): Table
+{
+    return ExpeditionsTable::configure($table);
+}
+
+public static function getEloquentQuery(): Builder
+{
+    return parent::getEloquentQuery()
+        ->with(['owner.profile']); // Eager load relationships
+}
+
+</code-snippet>
 
 Use `Get $get` to read other form field values for conditional logic:
 
@@ -452,12 +563,14 @@ livewire(ListUsers::class)
 
 - **Never assume public file visibility.** File visibility is `private` by default. Always use `->visibility('public')` when public access is needed.
 - **Never assume full-width layout.** `Grid`, `Section`, `Fieldset`, and `Repeater` do not span all columns by default.
-- **Use `Select::make('author_id')->relationship('author', 'name')` for BelongsTo fields.** `BelongsToSelect` does not exist in v4.
+- **Use `Select::make('author_id')->relationship('author', 'name')` for BelongsTo fields.** Built-in select relationship handling is preferred.
 - **`Repeater` uses `->schema()`, not `->fields()`.**
 - **Never add `->dehydrated(false)` to fields that need to be saved.** It strips the value from form state before `->action()` or the save handler runs. Only use it for helper/UI-only fields.
 - **Use correct property types when overriding `Page`, `Resource`, and `Widget` properties.** These properties have union types or changed modifiers that must be preserved:
   - `$navigationIcon`: `protected static string | BackedEnum | null` (not `?string`)
   - `$navigationGroup`: `protected static string | UnitEnum | null` (not `?string`)
   - `$view`: `protected string` (not `protected static string`) on `Page` and `Widget` classes
+- **For MongoDB models in Filament resources**, ensure eager loading via `getEloquentQuery()` includes necessary relationships before rendering forms/tables
+- **For cross-database operations** (e.g., MongoDB Subject with MySQL Expedition relationship), verify both connections are active and test relationships in features tests
 
 </laravel-boost-guidelines>

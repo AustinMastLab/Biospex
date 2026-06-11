@@ -283,16 +283,27 @@ task('deploy:verify-structure', function () {
     writeln('✅ Deployment structure verified: flat and clean');
 });
 
-// Task: generate .env from SSM on the remote server
+/**
+ * Task: generate .env from AWS SSM Parameter Store during deployment
+ *
+ * WHERE IT'S USED:
+ * - Executes during every deployment via Deployer (after code is deployed)
+ * - Runs once per deployment on the remote server
+ *
+ * WHY IT'S USED:
+ * - Generates the .env file dynamically from AWS Systems Manager Parameter Store
+ * - Keeps sensitive environment variables out of the repository (security best practice)
+ * - Ensures each environment (production/development) gets the correct .env configuration
+ * - Separated script in home directory prevents accidental commits of secrets
+ */
 desc('Generate .env from AWS SSM Parameter Store');
 task('env:ssm', function () {
-    // app name for the SSM path and deploy_path
     $appName = 'biospex';
 
-    // environment is already set on the host ('production' or 'development')
+    // Target environment determined by the deployment host configuration
     $environment = currentHost()->get('environment') ?? 'development';
 
-    // we assume generate-env-params is in the home directory of the remote_user
+    // Locate and execute the generate-env script from remote user's home directory
     $remoteUser = get('remote_user');
     $homeDir = "/home/{$remoteUser}";
 

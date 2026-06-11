@@ -98,6 +98,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 - Call static methods: `ExpeditionForm::configure($schema)` inside the resource's `form()`/`table()`/`infolist()` methods
 - Eager load relationships in `getEloquentQuery()`: `parent::getEloquentQuery()->with(['owner.profile'])`
 - Override page classes for `Create`, `Edit`, `View`, `List` in `getPages()` to customize behavior (e.g., `EditSubject` implements cross-database data mutation before save)
+- Use `NavigationTrait` on resource classes to automatically manage navigation groups and sort order. The trait reads from `NavigationConfig` helper which organizes resources into "Primary" (core business entities with custom sort) and "Secondary" (all others, sorted alphabetically). Add resources to `NavigationConfig::$resourceConfig` to control their placement.
 
 ## Custom Traits
 

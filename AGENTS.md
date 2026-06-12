@@ -94,7 +94,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 
 ## Filament Resource Conventions
 
-- Filament resources split form/table/infolist schemas into separate classes: `Schemas/{ResourceName}Form`, `Tables/{ResourceName}Table`, `Infos/{ResourceName}Infolist`
+- Filament resources split form/table/infolist schemas into separate classes: `Schemas/{ResourceName}Form`, `Schemas/{ResourceName}Infolist`, `Tables/{ResourceName}Table`
 - Call static methods: `ExpeditionForm::configure($schema)` inside the resource's `form()`/`table()`/`infolist()` methods
 - Eager load relationships in `getEloquentQuery()`: `parent::getEloquentQuery()->with(['owner.profile'])`
 - Override page classes for `Create`, `Edit`, `View`, `List` in `getPages()` to customize behavior (e.g., `EditSubject` implements cross-database data mutation before save)
@@ -331,11 +331,17 @@ Always use static `make()` methods to initialize components. Most configuration 
 <code-snippet name="BIOSPEX resource with separate schemas" lang="php">
 // app/Filament/Resources/Expeditions/ExpeditionResource.php
 use App\Filament\Resources\Expeditions\Schemas\ExpeditionForm;
+use App\Filament\Resources\Expeditions\Schemas\ExpeditionInfolist;
 use App\Filament\Resources\Expeditions\Tables\ExpeditionsTable;
 
 public static function form(Schema $schema): Schema
 {
     return ExpeditionForm::configure($schema);
+}
+
+public static function infolist(Schema $schema): Schema
+{
+    return ExpeditionInfolist::configure($schema);
 }
 
 public static function table(Table $table): Table

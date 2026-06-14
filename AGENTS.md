@@ -86,7 +86,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 ## Queue & SQS Integration
 
 - Queue jobs deploy to named queues via `->onQueue(config('config.queue.{queue_name}'))`
-- Multiple queue types: `export`, `ocr`, `reconcile`, `sernec_file`, `default`
+- Queue names are defined in `config/config.php` under `queue` (for example: `default`, `export`, `ocr`, `reconcile`, `chart`, `classification`, `event`, `geolocate`, `import`, `workflow`, `sernec_file`, `sernec_row`, `biospex_event`, `wedigbio_event`, `pusher_handler`, `pusher_process`)
 - Dispatch to AWS SQS via job `handle()` method; jobs send batches of messages using `SqsClient::sendMessageBatch()`
 - Listeners run via console commands (e.g., `SqsListenerExportUpdate`) that use `SqsListenerService` to poll and route messages
 - Message routing uses a callback pattern: `routeMessage($data)` dispatches jobs based on message function field
@@ -94,7 +94,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 
 ## Filament Resource Conventions
 
-- Filament resources split form/table/infolist schemas into separate classes: `Schemas/{ResourceName}Form`, `Tables/{ResourceName}Table`, `Infos/{ResourceName}Infolist`
+- Filament resources split form/table/infolist schemas into separate classes: `Schemas/{ResourceName}Form`, `Schemas/{ResourceName}Infolist`, `Tables/{ResourceName}Table`
 - Call static methods: `ExpeditionForm::configure($schema)` inside the resource's `form()`/`table()`/`infolist()` methods
 - Eager load relationships in `getEloquentQuery()`: `parent::getEloquentQuery()->with(['owner.profile'])`
 - Override page classes for `Create`, `Edit`, `View`, `List` in `getPages()` to customize behavior (e.g., `EditSubject` implements cross-database data mutation before save)
@@ -178,7 +178,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Frontend Bundling
 
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `yarn run build`, `yarn run dev`, or `composer run dev`. Ask them.
+- Frontend assets are built with Laravel Mix (`webpack.mix.js`). If UI changes are missing, ask the user to run `npm run production` (or `yarn production`) for a full build, or `npm run dev` / `npm run watch` for local iteration.
 
 ## Documentation Files
 
@@ -241,7 +241,11 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # Deployment
 
-- Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
+- Deployments are CI/CD-driven via `.github/workflows/deploy.yml`:
+  - push to `main` deploys production,
+  - push to `development` deploys development,
+  - `[skip deploy]` / `[no deploy]` in commit messages skips deployment.
+- Manual deployments use Deployer: `vendor/bin/dep deploy production` or `vendor/bin/dep deploy development` (see `README.md` and `DEPLOYMENT_SETUP.md`).
 
 === tests rules ===
 
@@ -284,7 +288,7 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 ## Vite Error
 
-- If you receive an "Illuminate\Foundation\ViteException: Unable to locate file in Vite manifest" error, you can run `yarn run build` or ask the user to run `yarn run dev` or `composer run dev`.
+- This project uses Laravel Mix (not Vite). If you see missing asset errors such as "Unable to locate Mix file" or stale `public/mix-manifest.json`, run `npm run production` (or `yarn production`) and retry.
 
 === livewire/core rules ===
 
@@ -331,11 +335,17 @@ Always use static `make()` methods to initialize components. Most configuration 
 <code-snippet name="BIOSPEX resource with separate schemas" lang="php">
 // app/Filament/Resources/Expeditions/ExpeditionResource.php
 use App\Filament\Resources\Expeditions\Schemas\ExpeditionForm;
+use App\Filament\Resources\Expeditions\Schemas\ExpeditionInfolist;
 use App\Filament\Resources\Expeditions\Tables\ExpeditionsTable;
 
 public static function form(Schema $schema): Schema
 {
     return ExpeditionForm::configure($schema);
+}
+
+public static function infolist(Schema $schema): Schema
+{
+    return ExpeditionInfolist::configure($schema);
 }
 
 public static function table(Table $table): Table

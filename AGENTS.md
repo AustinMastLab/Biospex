@@ -27,6 +27,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 - This is a Laravel application repository. Most changes belong in the Laravel app code.
 - If the request smells like OCR, SQS, image processing, exports, or "pipeline" work, verify what components/services/jobs are involved before coding, and identify any external dependencies.
 - This app has domain-specific subsystems: use `app/Services/{Domain}` for business logic, `app/Jobs` for async processing, `app/Filament/Resources` for admin interfaces, and `routes/api/v1` for versioned APIs.
+- Routing is organized from `bootstrap/app.php`, not a single `routes/web.php` / `routes/api.php`: front-end pages live in `routes/front/*.php`, auth routes in `routes/front/appauth/*.php`, admin routes in `routes/admin/*.php`, and APIs in `routes/api/index.php` plus `routes/api/v1/*.php`.
 - For MongoDB data (Subjects, Occurrences, Reconciles), use `BaseMongoModel`. For MySQL data (Projects, Expeditions, Users), use `BaseEloquentModel`.
 
 ## 2) Prefer existing patterns, but allow small cleanups
@@ -119,6 +120,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 ## API Versioning
 
 - API routes organized under `routes/api/v1/` with explicit resource naming
+- `bootstrap/app.php` mounts the API domain from `config('config.api.domain')`, serves the public root from `routes/api/index.php`, and mounts `/v1` routes behind `auth:sanctum` plus ability checks (`panoptes-pusher:read`, `panoptes-pusher:create`, `wedigbio-dashboard:read`, `lambda:update`)
 - Use `apiResource()` to define REST endpoints with custom names: `Route::apiResource('/wedigbio-dashboard', WeDigBioDashboardController::class, ['names' => 'api.v1.wedigbio-dashboard'])`
 - Controllers return Eloquent API Resources (e.g., `ExpeditionResource`) or custom JSON responses
 - API responses use collections and include route names for hypermedia links
@@ -159,7 +161,7 @@ This application is a Laravel application and its main Laravel ecosystems packag
 
 ## Skills Activation
 
-This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
+No project-local `**/skills/**` directory is present in this repository right now; rely on the codebase patterns and the project-specific sections below instead.
 
 ## Conventions
 
@@ -245,6 +247,8 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
   - push to `main` deploys production,
   - push to `development` deploys development,
   - `[skip deploy]` / `[no deploy]` in commit messages skips deployment.
+- Production version bumps come from commit message markers in `.github/workflows/deploy.yml`: `[major]` / `[breaking]` for a major release, `[minor]` / `[feature]` for a minor release, otherwise patch.
+- CI builds frontend assets with `npm run production` before `vendor/bin/dep deploy ...`; do not assume the target server compiles assets.
 - Manual deployments use Deployer: `vendor/bin/dep deploy production` or `vendor/bin/dep deploy development` (see `README.md` and `DEPLOYMENT_SETUP.md`).
 
 === tests rules ===
@@ -283,6 +287,9 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - When creating models for tests, use the factories for the models. Check if the factory has custom states that can be used before manually setting up the model.
 - Faker: Use methods such as `$this->faker->word()` or `fake()->randomDigit()`. Follow existing conventions whether to use `$this->faker` or `fake()`.
 - When creating tests, make use of `php artisan make:test [options] {name}` to create a feature test, and pass `--unit` to create a unit test. Most tests should be feature tests.
+- `tests/Pest.php` applies `RefreshDatabase` and `withoutVite()` to all Feature tests, so new Feature tests should assume a clean database and no manifest dependency.
+- Existing Livewire component tests use `Livewire::test(...)` with Pest-style tests (see `tests/Feature/Admin/ProjectsIndexLivewireTest.php` and `tests/Feature/Admin/ExpeditionsIndexLivewireTest.php`) rather than Pest Livewire helpers.
+- `phpunit.xml` uses in-memory SQLite for the default connection and points MongoDB tests at `localhost` / `test_database`; Mongo-backed tests need that local test database available.
 - For MongoDB models, import from factories and test queries using the `mongodb` connection: e.g., `Subject::factory()->create()` stores to MongoDB collections
 - For cross-database test scenarios (e.g., Reconcile referencing Expedition), ensure both databases populate correctly and relationships resolve
 
@@ -480,7 +487,7 @@ Action::make('updateEmail')
 
 ### Testing
 
-Testing setup (requires `pestphp/pest-plugin-livewire` in `composer.json`):
+Filament page test examples below use Pest Livewire helpers; this repository does not currently declare `pestphp/pest-plugin-livewire` in `composer.json`, so verify plugin availability before copying this pattern directly.
 
 - Always call `$this->actingAs(User::factory()->create())` before testing panel functionality.
 - For edit pages, pass `['record' => $user->id]`, use `->call('save')` (not `->call('create')`), and do not assert `->assertRedirect()` (edit pages do not redirect after save).

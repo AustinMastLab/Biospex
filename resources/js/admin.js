@@ -302,7 +302,7 @@ $(function () {
 
         let $trigger = $(this);
         let url = $trigger.is("[data-href]") ? $trigger.data("href") : $trigger.attr('href')
-        let method = $trigger.data('method')
+        let method = (($trigger.data('method') || 'get') + '').toLowerCase();
 
         bootbox.confirm({
             title: $trigger.data('title'),
@@ -319,6 +319,13 @@ $(function () {
             },
             callback: function (result) {
                 if (!result) return;
+
+                // IMPORTANT: For GET actions, do not method-spoof through POST.
+                // Navigate directly so proxies/web servers don't reject POST first.
+                if (method === 'get') {
+                    window.location.assign(url);
+                    return;
+                }
 
                 $trigger.append(function () {
                     let methodForm = "\n"

@@ -38,4 +38,5 @@ Route::post('expeditions/{project}/store', [ExpeditionController::class, 'store'
 Route::get('expeditions/{expedition}/clone', ExpeditionCloneController::class)->name('admin.expeditions.clone');
 Route::get('expeditions/{expedition}/tools', ExpeditionToolController::class)->name('admin.expeditions.tools');
 
-Route::get('expeditions/{expedition}/export', ExpeditionExportController::class)->name('admin.expeditions.export');
+Route::match(['get', 'post'], 'expeditions/{expedition}/export', ExpeditionExportController::class)
+    ->name('admin.expeditions.export');

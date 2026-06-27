@@ -108,8 +108,8 @@ task('deploy', [
     'artisan:app:deploy-files', // Custom app deployment files
 
     // Phase 4: Database & Updates
-    // 'artisan:migrate',         // Run database migrations
-    // 'artisan:app:update-queries', // Run custom database updates
+    'artisan:migrate',         // Run database migrations
+    'artisan:app:update-queries', // Run custom database updates
 
     // Phase 5: Cache Optimization
     'artisan:optimize:clear',  // Clear all Laravel caches

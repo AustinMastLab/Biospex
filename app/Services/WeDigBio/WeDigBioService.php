@@ -85,7 +85,7 @@ class WeDigBioService
 
         $transcriptions = $this->weDigBioEventTranscription
             ->with(['project:id,title'])
-            ->where('event_id', $activeEvent->id)
+            ->where('external_event_id', $activeEvent->id)  // Updated: use external_event_id (transition phase)
             ->select('project_id')
             ->groupBy('project_id')
             ->get();
@@ -114,7 +114,7 @@ class WeDigBioService
         return Cache::tags($tags)->remember($key, 1800, function () use ($eventId, $startLoad, $endLoad) {
             return $this->weDigBioEventTranscription->with(['project:id,title'])
                 ->selectRaw('project_id, ADDTIME(FROM_UNIXTIME(FLOOR((UNIX_TIMESTAMP(created_at))/300)*300), "0:05:00") AS time, count(id) as count')
-                ->where('event_id', $eventId)
+                ->where('external_event_id', $eventId)  // Updated: use external_event_id (transition phase)
                 ->where('created_at', '>=', $startLoad->toDateTimeString())
                 ->where('created_at', '<', $endLoad->toDateTimeString())
                 ->groupBy('time', 'project_id')

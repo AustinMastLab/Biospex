@@ -59,10 +59,11 @@ class WeDigBioEvent extends BaseEloquentModel
 
     /**
      * Get the route key for the model.
+     * Changed from 'uuid' to 'slug' for Reports-backed event resolution.
      */
     public function getRouteKeyName(): string
     {
-        return 'uuid';
+        return 'slug';
     }
 
     /**

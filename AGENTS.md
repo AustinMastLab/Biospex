@@ -26,6 +26,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 
 - This is a Laravel application repository. Most changes belong in the Laravel app code.
 - If the request smells like OCR, SQS, image processing, exports, or "pipeline" work, verify what components/services/jobs are involved before coding, and identify any external dependencies.
+- OCR/image automation may also run through root Node scripts (`BiospexImageFetcher.mjs`, `BiospexOcrProcessor.mjs`); check these entry points before changing Laravel actors/jobs for OCR behavior.
 - This app has domain-specific subsystems: use `app/Services/{Domain}` for business logic, `app/Jobs` for async processing, `app/Filament/Resources` for admin interfaces, and `routes/api/v1` for versioned APIs.
 - Routing is organized from `bootstrap/app.php`, not a single `routes/web.php` / `routes/api.php`: front-end pages live in `routes/front/*.php`, auth routes in `routes/front/appauth/*.php`, admin routes in `routes/admin/*.php`, and APIs in `routes/api/index.php` plus `routes/api/v1/*.php`.
 - For MongoDB data (Subjects, Occurrences, Reconciles), use `BaseMongoModel`. For MySQL data (Projects, Expeditions, Users), use `BaseEloquentModel`.
@@ -88,9 +89,12 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 
 - Queue jobs deploy to named queues via `->onQueue(config('config.queue.{queue_name}'))`
 - Queue names are defined in `config/config.php` under `queue` (for example: `default`, `export`, `ocr`, `reconcile`, `chart`, `classification`, `event`, `geolocate`, `import`, `workflow`, `sernec_file`, `sernec_row`, `biospex_event`, `wedigbio_event`, `pusher_handler`, `pusher_process`)
+- AWS SQS queue names are environment-derived in `config/services.php` (`$queuePrefix` from `APP_ENV`) and accessed via `config('services.aws.sqs.{key}')` (for example: `export_update`, `image_trigger_dlq`)
 - Dispatch to AWS SQS via job `handle()` method; jobs send batches of messages using `SqsClient::sendMessageBatch()`
 - Listeners run via console commands (e.g., `SqsListenerExportUpdate`) that use `SqsListenerService` to poll and route messages
+- Use `php artisan sqs:control {queue_keys*} --action=start|stop|restart` (`app/Console/Commands/SqsControllerCommand.php`) to control SQS listener supervisor processes by AWS queue key
 - Message routing uses a callback pattern: `routeMessage($data)` dispatches jobs based on message function field
+- Zooniverse ZIP triggering is dual-path in `app/Services/Actor/Zooniverse/ZooniverseZipTriggerService.php`: jobs above `config('services.aws.zip_threshold')` call Step Functions (`SfnClient::startExecution`), otherwise they send directly to the `export_zip_trigger` SQS queue
 - Use traits: `ShouldQueue`, `Dispatchable`, `Queueable`, `NotifyOnJobFailure` (sends email on job failure), `Batchable` (for batch-related jobs)
 
 ## Filament Resource Conventions
@@ -129,6 +133,8 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 
 - `config/config.php` contains domain-specific settings: queue names, upload directories, Zooniverse integration, missing asset placeholders
 - Access via `config('config.queue.export')`, `config('config.uploads.project_logos')`, etc.
+- `config/services.php` contains AWS infrastructure settings used by runtime services: region/credentials, env-prefixed SQS names, idle grace values, `zip_threshold`, and Lambda concurrency keys
+- AWS SDK clients (`SqsClient`, `S3Client`, `SfnClient`, `LambdaClient`) are registered as container singletons in `app/Providers/InfrastructureServiceProvider.php`; inject these client types directly where needed
 - AWS S3 paths and queue URLs are configured via environment variables and resolved at runtime
 
 === foundation rules ===
@@ -181,6 +187,7 @@ No project-local `**/skills/**` directory is present in this repository right no
 ## Frontend Bundling
 
 - Frontend assets are built with Laravel Mix (`webpack.mix.js`). If UI changes are missing, ask the user to run `npm run production` (or `yarn production`) for a full build, or `npm run dev` / `npm run watch` for local iteration.
+- Accessibility checks are wired via npm scripts: `npm run pa11y` (front), `npm run pa11y:mobile`, plus JSON-report variants `npm run pa11y:json` and `npm run pa11y:admin:json`.
 
 ## Documentation Files
 

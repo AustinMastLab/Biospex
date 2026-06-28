@@ -29,9 +29,6 @@ set('ssh_multiplexing', true);
 set('writable_mode', 'chmod');
 set('keep_releases', 3);  // Keep only 3 recent releases
 
-// Phase-specific DB update operation for this branch.
-set('update_queries_operation', 'wedigbio-phase-6');
-
 // Use sudo for cleanup to prevent "Directory not empty" or permission errors
 set('cleanup_use_sudo', true);
 // Shared Files (persisted across deployments)
@@ -110,9 +107,8 @@ task('deploy', [
     'artisan:filament:assets',
     'artisan:app:deploy-files', // Custom app deployment files
 
-    // Phase 4: Database & Updates
+    // Phase 4: Database
     'artisan:migrate',         // Run database migrations
-    'artisan:app:update-queries', // Run custom database updates
 
     // Phase 5: Cache Optimization
     'artisan:optimize:clear',  // Clear all Laravel caches

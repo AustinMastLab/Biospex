@@ -29,6 +29,9 @@ set('ssh_multiplexing', true);
 set('writable_mode', 'chmod');
 set('keep_releases', 3);  // Keep only 3 recent releases
 
+// Keep post-cutover validation in normal deploy flow.
+set('update_queries_operation', 'wedigbio-phase-8');
+
 // Use sudo for cleanup to prevent "Directory not empty" or permission errors
 set('cleanup_use_sudo', true);
 // Shared Files (persisted across deployments)
@@ -109,6 +112,7 @@ task('deploy', [
 
     // Phase 4: Database
     'artisan:migrate',         // Run database migrations
+    'artisan:app:update-queries', // Run custom database updates/validations
 
     // Phase 5: Cache Optimization
     'artisan:optimize:clear',  // Clear all Laravel caches

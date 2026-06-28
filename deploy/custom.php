@@ -74,14 +74,9 @@ desc('Running custom database update queries');
 task('artisan:app:update-queries', function () {
     cd('{{release_or_current_path}}');
 
-    $operation = trim((string) get('update_queries_operation', ''));
-
-    // Keep task available for ad-hoc runs; only execute when operation is provided.
+    $operation = (string) get('update_queries_operation', '');
     if ($operation === '') {
-        writeln('⚠️  Skipping app:update-queries: update_queries_operation is not configured.');
-        writeln('   Set it in deploy.php or pass it at runtime for manual task execution.');
-
-        return;
+        throw new \RuntimeException('update_queries_operation is not configured for this branch/deploy file.');
     }
 
     run("php artisan app:update-queries {$operation}");

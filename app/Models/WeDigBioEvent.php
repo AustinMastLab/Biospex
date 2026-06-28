@@ -33,7 +33,7 @@ class WeDigBioEvent extends BaseEloquentModel
 {
     use HasFactory, Presentable, UuidTrait;
 
-    protected $table = 'wedigbio_events_release_a_v';
+    protected $table = 'wedigbio_events';
 
     protected $fillable = [
         'start_date',

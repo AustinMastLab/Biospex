@@ -31,7 +31,6 @@ class WeDigBioEventTranscription extends BaseEloquentModel
         'classification_id',
         'project_id',
         'event_id',
-        'external_event_id',
         'created_at',
         'updated_at',
     ];
@@ -45,7 +44,6 @@ class WeDigBioEventTranscription extends BaseEloquentModel
             'classification_id' => 'int',
             'project_id' => 'int',
             'event_id' => 'int',
-            'external_event_id' => 'int',
         ];
     }
 
@@ -70,7 +68,7 @@ class WeDigBioEventTranscription extends BaseEloquentModel
      */
     public function date(): BelongsTo
     {
-        return $this->belongsTo(WeDigBioEvent::class, 'external_event_id', 'id');
+        return $this->belongsTo(WeDigBioEvent::class, 'event_id', 'id');
     }
 
     /**

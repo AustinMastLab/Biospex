@@ -513,51 +513,105 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 5: Final cutover of event_id...');
         $this->warn('⚠️  This is a destructive operation. Ensure backup is taken and app is in maintenance mode.');
 
-        // Confirmation guard
-        if (! $this->confirm('Continue with Phase 5 cutover?', false)) {
+        // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
+        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 5 cutover?', false)) {
             $this->info('Phase 5 cancelled.');
 
             return self::FAILURE;
         }
 
         try {
-            // Pre-flight checks
-            $this->line('  - Running pre-flight validation...');
-            $unmappedResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_event_transcriptions WHERE external_event_id IS NULL');
-            $unmappedCount = $unmappedResult?->cnt ?? 0;
-            if ($unmappedCount > 0) {
-                $this->error("❌ Found {$unmappedCount} transcriptions with null external_event_id. Cannot proceed.");
-
-                return self::FAILURE;
-            } else {
-                $this->line('    ✓ All transcriptions mapped via external_event_id');
-            }
-
-            // Step 1: Drop old FK
-            $this->line('  - Dropping old foreign key constraint');
-            try {
-                DB::statement('ALTER TABLE wedigbio_event_transcriptions DROP FOREIGN KEY wedigbio_event_transcriptions_date_id_foreign');
-            } catch (Throwable $e) {
-                $this->warn("    Note: FK constraint not found or already dropped: {$e->getMessage()}");
-            }
-
-            // Step 2: Drop old event_id column
-            $this->line('  - Dropping old event_id column');
-            DB::statement('ALTER TABLE wedigbio_event_transcriptions DROP COLUMN event_id');
-
-            // Step 3: Rename external_event_id to event_id
-            $this->line('  - Renaming external_event_id to event_id');
-            DB::statement('ALTER TABLE wedigbio_event_transcriptions CHANGE COLUMN external_event_id event_id BIGINT UNSIGNED NOT NULL');
-
-            // Step 4: Create index
-            $this->line('  - Creating index on event_id');
-            $this->ensureIndexExists(
-                'wedigbio_event_transcriptions',
-                'idx_wet_event_id',
-                'CREATE INDEX idx_wet_event_id ON wedigbio_event_transcriptions (event_id)'
+            $columns = DB::select(
+                'SELECT column_name AS col_name
+                 FROM information_schema.columns
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?',
+                ['wedigbio_event_transcriptions']
             );
+            $columnNames = collect($columns)->pluck('col_name')->all();
+            $hasLegacyEventId = in_array('event_id', $columnNames, true);
+            $hasExternalEventId = in_array('external_event_id', $columnNames, true);
 
-            // Step 5: Attempt cross-db FK (optional, may fail)
+            // Already cut over: event_id exists and external_event_id is gone.
+            if ($hasLegacyEventId && ! $hasExternalEventId) {
+                $this->line('  - Phase 5 appears already applied (event_id present, external_event_id absent).');
+            } else {
+                // Pre-flight checks while external_event_id still exists.
+                $this->line('  - Running pre-flight validation...');
+                $unmappedResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_event_transcriptions WHERE external_event_id IS NULL');
+                $unmappedCount = $unmappedResult?->cnt ?? 0;
+                if ($unmappedCount > 0) {
+                    $this->error("❌ Found {$unmappedCount} transcriptions with null external_event_id. Cannot proceed.");
+
+                    return self::FAILURE;
+                }
+                $this->line('    ✓ All transcriptions mapped via external_event_id');
+
+                // Drop any FK that still ties event_id to legacy biospex.wedigbio_events.
+                $this->line('  - Dropping legacy foreign key constraints on event_id (if present)');
+                $legacyFks = DB::select(
+                    'SELECT constraint_name AS fk_name
+                     FROM information_schema.key_column_usage
+                     WHERE table_schema = DATABASE()
+                       AND table_name = ?
+                       AND column_name = ?
+                       AND referenced_table_name = ?',
+                    ['wedigbio_event_transcriptions', 'event_id', 'wedigbio_events']
+                );
+                foreach ($legacyFks as $fk) {
+                    DB::statement("ALTER TABLE wedigbio_event_transcriptions DROP FOREIGN KEY {$fk->fk_name}");
+                    $this->line("    - Dropped FK {$fk->fk_name}");
+                }
+
+                // Drop legacy event_id, then rename external_event_id -> event_id.
+                if ($hasLegacyEventId) {
+                    $this->line('  - Dropping legacy event_id column');
+                    DB::statement('ALTER TABLE wedigbio_event_transcriptions DROP COLUMN event_id');
+                }
+
+                $this->line('  - Renaming external_event_id to event_id');
+                DB::statement('ALTER TABLE wedigbio_event_transcriptions CHANGE COLUMN external_event_id event_id BIGINT UNSIGNED NOT NULL');
+
+                $this->line('  - Rebuilding event_id index');
+                DB::statement('DROP INDEX idx_wet_external_event_id ON wedigbio_event_transcriptions');
+                $this->ensureIndexExists(
+                    'wedigbio_event_transcriptions',
+                    'idx_wet_event_id',
+                    'CREATE INDEX idx_wet_event_id ON wedigbio_event_transcriptions (event_id)'
+                );
+            }
+
+            // Keep Release A view valid after cutover (it must reference wet.event_id now).
+            $this->line('  - Rebuilding view wedigbio_events_release_a_v for post-cutover schema');
+            $releaseAViewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+            SELECT
+              re.id,
+              re.slug,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.starts_at AS start_date,
+              re.ends_at AS end_date,
+              re.is_live AS active,
+              re.is_public,
+              re.is_archived,
+              re.display_alias,
+              re.year,
+              re.season,
+              re.created_at,
+              re.updated_at,
+              we.id AS legacy_event_id,
+              COALESCE(we.uuid, re.slug) AS channel_key,
+              EXISTS (
+                SELECT 1
+                FROM wedigbio_event_transcriptions wet
+                WHERE wet.event_id = re.id
+              ) AS has_transcriptions
+            FROM wedigbio_report.events re
+            LEFT JOIN biospex.wedigbio_events we ON we.external_event_id = re.id
+            SQL;
+            DB::statement($releaseAViewSql);
+
+            // Optional cross-db FK.
             $this->line('  - Attempting to add cross-database foreign key (optional)...');
             try {
                 DB::statement(
@@ -569,11 +623,10 @@ class AppUpdateQueriesCommand extends Command
                 );
                 $this->line('    ✓ Cross-database FK added successfully');
             } catch (Throwable $e) {
-                $this->warn("    ⚠️  Cross-db FK not supported: {$e->getMessage()}");
-                $this->line('       App must enforce integrity via validation');
+                $this->warn("    ⚠️  Cross-db FK not supported or already present: {$e->getMessage()}");
             }
 
-            // Post-cutover validation
+            // Post-cutover validation.
             $this->info('Running post-cutover validation...');
             $orphanResult = DB::selectOne(
                 'SELECT COUNT(*) AS cnt
@@ -586,10 +639,9 @@ class AppUpdateQueriesCommand extends Command
                 $this->error("❌ Found {$orphanCount} orphaned transcriptions");
 
                 return self::FAILURE;
-            } else {
-                $this->line('  ✓ No orphaned transcriptions');
             }
 
+            $this->line('  ✓ No orphaned transcriptions');
             $this->info('✅ Phase 5 completed successfully');
 
             return self::SUCCESS;

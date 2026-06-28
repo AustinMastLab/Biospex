@@ -55,17 +55,10 @@ class WeDigBioTranscriptionService
             return;
         }
 
-        // During Release A we still persist legacy event_id while reads use Reports IDs.
-        $legacyEventId = $event->legacy_event_id ?? null;
-        if ($legacyEventId === null) {
-            return;
-        }
-
         $attributes = [
             'classification_id' => $classification_id,
             'project_id' => $projectId,
-            'event_id' => $legacyEventId,
-            'external_event_id' => $event->id,
+            'event_id' => $event->id,
         ];
 
         if ($this->validateClassification($attributes)) {
@@ -90,7 +83,7 @@ class WeDigBioTranscriptionService
                 return $query
                     ->where('classification_id', $attributes['classification_id'])
                     ->where('project_id', $attributes['project_id'])
-                    ->where('external_event_id', $attributes['external_event_id']);
+                    ->where('event_id', $attributes['event_id']);
             }),
         ]);
 

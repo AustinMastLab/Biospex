@@ -30,7 +30,7 @@ set('writable_mode', 'chmod');
 set('keep_releases', 3);  // Keep only 3 recent releases
 
 // Phase-specific DB update operation for this branch.
-set('update_queries_operation', 'wedigbio-phase-3');
+set('update_queries_operation', 'wedigbio-phase-4');
 
 // Use sudo for cleanup to prevent "Directory not empty" or permission errors
 set('cleanup_use_sudo', true);

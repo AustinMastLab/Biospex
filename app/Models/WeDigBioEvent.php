@@ -33,7 +33,7 @@ class WeDigBioEvent extends BaseEloquentModel
 {
     use HasFactory, Presentable, UuidTrait;
 
-    protected $table = 'wedigbio_events';
+    protected $table = 'wedigbio_events_release_a_v';
 
     protected $fillable = [
         'start_date',
@@ -62,7 +62,7 @@ class WeDigBioEvent extends BaseEloquentModel
      */
     public function getRouteKeyName(): string
     {
-        return 'uuid';
+        return 'slug';
     }
 
     /**
@@ -70,7 +70,7 @@ class WeDigBioEvent extends BaseEloquentModel
      */
     public function transcriptions(): HasMany
     {
-        return $this->hasMany(WeDigBioEventTranscription::class, 'event_id', 'id');
+        return $this->hasMany(WeDigBioEventTranscription::class, 'external_event_id', 'id');
     }
 
     /**

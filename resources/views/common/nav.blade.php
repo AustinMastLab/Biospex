@@ -53,14 +53,14 @@
                        data-toggle="modal"
                        data-target="#wedigbio-progress-modal"
                        data-href="{{ route('front.wedigbio-progress', [$event]) }}"
-                       data-channel="{{ config('config.poll_wedigbio_progress_channel') . '.' . $event->uuid }}"
-                       data-uuid="{{ $event->uuid }}">{{ t('Progress') }}</a>
+                       data-channel="{{ config('config.poll_wedigbio_progress_channel') . '.' . $event->channel_key }}"
+                       data-uuid="{{ $event->channel_key }}">{{ t('Progress') }}</a>
 
                     <a class="dropdown-item text-uppercase" href="#"
                        data-toggle="modal"
                        data-target="#wedigbio-rate-modal"
                        data-projects="{{ route('front.get.wedigbio-projects', [$event]) }}"
-                       data-uuid="{{ $event->uuid }}"
+                       data-uuid="{{ $event->channel_key }}"
                        data-href="{{ route('front.get.wedigbio-rate', [$event]) }}">{{ t('Rates') }}</a>
                 @endisset
 

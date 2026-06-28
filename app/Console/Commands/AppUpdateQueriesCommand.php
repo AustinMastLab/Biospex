@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6)}';
 
     /**
      * The console command description.
@@ -74,6 +74,10 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase3();
         }
 
+        if ($operation === 'wedigbio-phase-4') {
+            return $this->wedigbioPhase4();
+        }
+
         if ($operation === 'wedigbio-phase-5') {
             return $this->wedigbioPhase5();
         }
@@ -82,7 +86,7 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase6();
         }
 
-        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6');
+        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6');
 
         return self::FAILURE;
     }
@@ -410,6 +414,89 @@ class AppUpdateQueriesCommand extends Command
             return self::SUCCESS;
         } catch (Throwable $e) {
             $this->error('❌ Phase 3 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Phase 4: Create Release A read view consumed by Biospex code.
+     *
+     * Keeps legacy table for writes, while read-paths switch to Reports IDs/slugs.
+     */
+    private function wedigbioPhase4(): int
+    {
+        $this->info('Starting WeDigBio Phase 4: Create Release A read view...');
+
+        try {
+            $this->line('  - Creating or replacing view wedigbio_events_release_a_v');
+            $viewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+            SELECT
+              re.id,
+              re.slug,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.starts_at AS start_date,
+              re.ends_at AS end_date,
+              re.is_live AS active,
+              re.is_public,
+              re.is_archived,
+              re.display_alias,
+              re.year,
+              re.season,
+              re.created_at,
+              re.updated_at,
+              we.id AS legacy_event_id,
+              COALESCE(we.uuid, re.slug) AS channel_key,
+              EXISTS (
+                SELECT 1
+                FROM wedigbio_event_transcriptions wet
+                WHERE wet.external_event_id = re.id
+              ) AS has_transcriptions
+            FROM wedigbio_report.events re
+            LEFT JOIN biospex.wedigbio_events we ON we.external_event_id = re.id
+            SQL;
+
+            DB::statement($viewSql);
+
+            $this->info('Running validation checks...');
+
+            $viewExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events_release_a_v']
+            );
+
+            if (! $viewExists) {
+                $this->error('❌ View wedigbio_events_release_a_v was not created.');
+
+                return self::FAILURE;
+            }
+
+            $counts = DB::selectOne(
+                'SELECT
+                   (SELECT COUNT(*) FROM wedigbio_report.events) AS reports_cnt,
+                   (SELECT COUNT(*) FROM wedigbio_events_release_a_v) AS view_cnt'
+            );
+
+            $reportsCount = $counts?->reports_cnt ?? 0;
+            $viewCount = $counts?->view_cnt ?? 0;
+
+            if ((int) $reportsCount !== (int) $viewCount) {
+                $this->error("❌ View row count mismatch. reports={$reportsCount}, view={$viewCount}");
+
+                return self::FAILURE;
+            }
+
+            $this->line("  ✓ View exists and mirrors {$viewCount} Reports events");
+            $this->info('✅ Phase 4 completed successfully');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('❌ Phase 4 failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

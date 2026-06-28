@@ -776,6 +776,90 @@ class AppUpdateQueriesCommand extends Command
 
             DB::statement($viewSql);
 
+            // Keep auxiliary compatibility views queryable after Phase 6.
+            $this->line('  - Refreshing helper views wedigbio_events_reports_v and wedigbio_events_release_a_v');
+
+            $reportsViewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_reports_v AS
+            SELECT
+              re.id AS reports_event_id,
+              re.slug,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.starts_at AS start_date,
+              re.ends_at AS end_date,
+              re.is_live AS active,
+              re.is_public,
+              re.is_archived,
+              re.display_alias,
+              re.year,
+              re.season,
+              re.created_at,
+              re.updated_at,
+              EXISTS (
+                SELECT 1
+                FROM wedigbio_event_transcriptions wet
+                WHERE wet.event_id = re.id
+              ) AS has_transcriptions
+            FROM wedigbio_report.events re
+            SQL;
+            DB::statement($reportsViewSql);
+
+            if ($legacyExists) {
+                $releaseAViewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  wel.id AS legacy_event_id,
+                  COALESCE(wel.uuid, re.slug) AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                LEFT JOIN biospex.wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                SQL;
+            } else {
+                $releaseAViewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  NULL AS legacy_event_id,
+                  re.slug AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                SQL;
+            }
+            DB::statement($releaseAViewSql);
+
             // Post-replacement validation
             $this->info('Running post-replacement validation...');
             $viewExists = DB::selectOne(

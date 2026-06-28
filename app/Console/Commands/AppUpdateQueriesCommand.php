@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-5, wedigbio-phase-6)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6)}';
 
     /**
      * The console command description.
@@ -70,6 +70,10 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase2();
         }
 
+        if ($operation === 'wedigbio-phase-3') {
+            return $this->wedigbioPhase3();
+        }
+
         if ($operation === 'wedigbio-phase-5') {
             return $this->wedigbioPhase5();
         }
@@ -78,7 +82,7 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase6();
         }
 
-        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-5, wedigbio-phase-6');
+        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6');
 
         return self::FAILURE;
     }
@@ -337,6 +341,75 @@ class AppUpdateQueriesCommand extends Command
             return self::SUCCESS;
         } catch (Throwable $e) {
             $this->error('❌ Phase 2 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Phase 3: Create Reports-backed compatibility view.
+     *
+     * Creates a read-only compatibility view with event fields needed for
+     * upcoming code cutover while preserving the physical wedigbio_events table.
+     */
+    private function wedigbioPhase3(): int
+    {
+        $this->info('Starting WeDigBio Phase 3: Create Reports-backed compatibility view...');
+
+        try {
+            $this->line('  - Creating or replacing view wedigbio_events_reports_v');
+            $viewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_reports_v AS
+            SELECT
+              re.id AS reports_event_id,
+              re.slug,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.starts_at AS start_date,
+              re.ends_at AS end_date,
+              re.is_live AS active,
+              re.is_public,
+              re.is_archived,
+              re.display_alias,
+              re.year,
+              re.season,
+              re.created_at,
+              re.updated_at,
+              EXISTS (
+                SELECT 1
+                FROM wedigbio_event_transcriptions wet
+                WHERE wet.external_event_id = re.id
+              ) AS has_transcriptions
+            FROM wedigbio_report.events re
+            SQL;
+
+            DB::statement($viewSql);
+
+            $this->info('Running validation checks...');
+
+            $viewExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events_reports_v']
+            );
+
+            if (! $viewExists) {
+                $this->error('❌ View wedigbio_events_reports_v was not created.');
+
+                return self::FAILURE;
+            }
+
+            $viewCountResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_reports_v');
+            $viewCount = $viewCountResult?->cnt ?? 0;
+            $this->line("  ✓ View exists and returns {$viewCount} rows");
+
+            $this->info('✅ Phase 3 completed successfully');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('❌ Phase 3 failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

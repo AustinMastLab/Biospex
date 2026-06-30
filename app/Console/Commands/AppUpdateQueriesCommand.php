@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6)}';
 
     /**
      * The console command description.
@@ -66,6 +66,10 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase3();
         }
 
+        if ($operation === 'wedigbio-phase-4') {
+            return $this->wedigbioPhase4();
+        }
+
         if ($operation === 'wedigbio-phase-5') {
             return $this->wedigbioPhase5();
         }
@@ -74,7 +78,7 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase6();
         }
 
-        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6');
+        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6');
 
         return self::FAILURE;
     }
@@ -357,6 +361,94 @@ class AppUpdateQueriesCommand extends Command
             return self::SUCCESS;
         } catch (Throwable $e) {
             $this->error('❌ Phase 3 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Phase 4: Create Release A compatibility view for Biospex reads
+     *
+     * Narrows the reports mirror to events that are currently live or have
+     * transcriptions, matching the Release A application behavior.
+     */
+    private function wedigbioPhase4(): int
+    {
+        $this->info('Starting WeDigBio Phase 4: Create Release A compatibility view...');
+
+        try {
+            $reportsViewExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE() AND table_name = ?',
+                ['wedigbio_events_reports_v']
+            );
+
+            if (! $reportsViewExists) {
+                $this->error('❌ Missing prerequisite view wedigbio_events_reports_v. Run wedigbio-phase-3 first.');
+
+                return self::FAILURE;
+            }
+
+            $this->line('  - Creating or replacing view wedigbio_events_release_a_v');
+            $viewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+            SELECT
+              rv.id,
+              rv.slug,
+              rv.name,
+              rv.start_date,
+              rv.end_date,
+              rv.is_live,
+              rv.active,
+              rv.is_public,
+              rv.is_archived,
+              rv.display_alias,
+              rv.year,
+              rv.season,
+              rv.created_at,
+              rv.updated_at,
+              rv.has_transcriptions
+            FROM wedigbio_events_reports_v rv
+            WHERE rv.is_live = 1
+               OR rv.has_transcriptions = 1
+            SQL;
+            DB::statement($viewSql);
+
+            $this->info('Running validation checks...');
+
+            $releaseAExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE() AND table_name = ?',
+                ['wedigbio_events_release_a_v']
+            );
+
+            if (! $releaseAExists) {
+                $this->error('❌ View wedigbio_events_release_a_v was not created');
+
+                return self::FAILURE;
+            }
+            $this->line('  ✓ View exists');
+
+            $nullSlugResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_release_a_v WHERE slug IS NULL OR slug = ""');
+            $nullSlugCount = $nullSlugResult?->cnt ?? 0;
+            if ($nullSlugCount > 0) {
+                $this->error("❌ Found {$nullSlugCount} rows without slug in wedigbio_events_release_a_v");
+
+                return self::FAILURE;
+            }
+            $this->line('  ✓ All rows have slug values');
+
+            $countResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_release_a_v');
+            $count = $countResult?->cnt ?? 0;
+            $this->line("  ✓ View returns {$count} events");
+
+            $this->info('✅ Phase 4 completed successfully');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('❌ Phase 4 failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

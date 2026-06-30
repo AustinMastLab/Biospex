@@ -26,14 +26,16 @@ set('base_path', '/data/web');
 set('remote_user', 'ubuntu');
 set('php_fpm_version', '8.3');
 set('ssh_multiplexing', true);
-set('writable_mode', 'chmod');
+set('http_group', 'www-data');
+set('writable_use_sudo', false);
+set('writable_mode', 'chmod'); // or 'acl' if you prefer ACLs
 set('keep_releases', 3);  // Keep only 3 recent releases
 
 // Phase-specific DB update operation for this branch.
 set('update_queries_operation', 'wedigbio-phase-1');
 
 // Use sudo for cleanup to prevent "Directory not empty" or permission errors
-set('cleanup_use_sudo', true);
+set('cleanup_use_sudo', false);
 // Shared Files (persisted across deployments)
 set('shared_files', [
     '.env',                        // Environment configuration
@@ -129,7 +131,7 @@ task('deploy', [
     'artisan:queue:restart',
 
     // Phase 8: Finalization
-    'set:permissions',
+    'logs:truncate',
     'deploy:clear_paths',      // Remove unnecessary files/directories
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
 

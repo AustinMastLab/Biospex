@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7)}';
 
     /**
      * The console command description.
@@ -78,7 +78,11 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase6();
         }
 
-        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6');
+        if ($operation === 'wedigbio-phase-7') {
+            return $this->wedigbioPhase7();
+        }
+
+        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7');
 
         return self::FAILURE;
     }
@@ -615,36 +619,128 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 6: Replace table with Reports-backed view...');
         $this->warn('⚠️  This operation replaces the physical table with a view.');
 
-        // Confirmation guard
-        if (! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
+        // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
+        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
             $this->info('Phase 6 cancelled.');
 
             return self::FAILURE;
         }
 
         try {
-            // Step 1: Check if legacy table already exists
+            $currentObject = DB::selectOne(
+                'SELECT table_type AS obj_type
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events']
+            );
+
             $legacyExists = DB::selectOne(
-                'SELECT 1 AS exists_flag FROM information_schema.tables
-                 WHERE table_schema = DATABASE() AND table_name = ?',
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
                 ['wedigbio_events_legacy']
             );
 
-            if ($legacyExists) {
-                $this->warn('  - wedigbio_events_legacy already exists (table may have been previously replaced)');
-            } else {
+            if ($currentObject && $currentObject->obj_type === 'BASE TABLE') {
+                if ($legacyExists) {
+                    $this->error('❌ Cannot rename wedigbio_events because wedigbio_events_legacy already exists.');
+
+                    return self::FAILURE;
+                }
+
                 $this->line('  - Renaming physical table to wedigbio_events_legacy');
                 DB::statement('RENAME TABLE wedigbio_events TO wedigbio_events_legacy');
+                $legacyExists = (object) ['exists_flag' => 1];
+            } elseif ($currentObject && $currentObject->obj_type === 'VIEW') {
+                $this->line('  - wedigbio_events is already a view; refreshing definition');
+            } else {
+                $this->warn('  - wedigbio_events object not found; creating view from scratch');
             }
 
-            // Step 2: Create the view
+            // Build final view SQL; if legacy table exists, preserve uuid-derived channel_key continuity.
             $this->line('  - Creating view biospex.wedigbio_events from Reports');
-            $viewSql = <<<'SQL'
-            CREATE OR REPLACE VIEW wedigbio_events AS
+            if ($legacyExists) {
+                $viewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  wel.id AS legacy_event_id,
+                  COALESCE(wel.uuid, re.slug) AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                LEFT JOIN wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                WHERE re.is_live = 1
+                   OR EXISTS (
+                     SELECT 1
+                     FROM wedigbio_event_transcriptions wet
+                     WHERE wet.event_id = re.id
+                   )
+                SQL;
+            } else {
+                $viewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  NULL AS legacy_event_id,
+                  re.slug AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                WHERE re.is_live = 1
+                   OR EXISTS (
+                     SELECT 1
+                     FROM wedigbio_event_transcriptions wet
+                     WHERE wet.event_id = re.id
+                   )
+                SQL;
+            }
+
+            DB::statement($viewSql);
+
+            // Keep auxiliary compatibility views queryable after Phase 6.
+            $this->line('  - Refreshing helper views wedigbio_events_reports_v and wedigbio_events_release_a_v');
+
+            $reportsViewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_reports_v AS
             SELECT
-              re.id,
+              re.id AS reports_event_id,
               re.slug,
-              re.name,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
               re.starts_at AS start_date,
               re.ends_at AS end_date,
               re.is_live AS active,
@@ -661,42 +757,190 @@ class AppUpdateQueriesCommand extends Command
                 WHERE wet.event_id = re.id
               ) AS has_transcriptions
             FROM wedigbio_report.events re
-            WHERE re.is_live = 1
-               OR EXISTS (
-                 SELECT 1
-                 FROM wedigbio_event_transcriptions wet
-                 WHERE wet.event_id = re.id
-               )
             SQL;
+            DB::statement($reportsViewSql);
 
-            DB::statement($viewSql);
+            if ($legacyExists) {
+                $releaseAViewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  wel.id AS legacy_event_id,
+                  COALESCE(wel.uuid, re.slug) AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                LEFT JOIN wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                SQL;
+            } else {
+                $releaseAViewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  NULL AS legacy_event_id,
+                  re.slug AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                SQL;
+            }
+            DB::statement($releaseAViewSql);
 
             // Post-replacement validation
             $this->info('Running post-replacement validation...');
             $viewExists = DB::selectOne(
-                'SELECT 1 AS exists_flag FROM information_schema.views
-                 WHERE table_schema = DATABASE() AND table_name = ?',
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
                 ['wedigbio_events']
             );
             if (! $viewExists) {
                 $this->error('❌ View was not created successfully');
 
                 return self::FAILURE;
-            } else {
-                $this->line('  ✓ View created successfully');
             }
 
-            // Check view returns data
             $viewResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events');
             $viewCount = $viewResult?->cnt ?? 0;
-            $this->line("  ✓ View returns {$viewCount} events");
+            $this->line("  ✓ View created successfully and returns {$viewCount} events");
 
             $this->info('✅ Phase 6 completed successfully');
-            $this->info('Legacy table archived as wedigbio_events_legacy for rollback safety.');
+            $this->info('Legacy table archived as wedigbio_events_legacy for rollback safety (if present).');
 
             return self::SUCCESS;
         } catch (Throwable $e) {
             $this->error('❌ Phase 6 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Phase 7: Cleanup transitional WeDigBio objects after cutover
+     *
+     * Removes helper views and the legacy table once rollback window has closed.
+     */
+    private function wedigbioPhase7(): int
+    {
+        $this->info('Starting WeDigBio Phase 7: Cleanup transitional objects...');
+        $this->warn('⚠️  Ensure rollback window is closed before dropping legacy objects.');
+
+        if (! $this->confirm('Continue with Phase 7 cleanup?', false)) {
+            $this->info('Phase 7 cancelled.');
+
+            return self::FAILURE;
+        }
+
+        try {
+            // Keep canonical cutover view; remove only transitional helper views.
+            $this->line('  - Dropping helper view wedigbio_events_release_a_v (if exists)');
+            DB::statement('DROP VIEW IF EXISTS wedigbio_events_release_a_v');
+
+            $this->line('  - Dropping helper view wedigbio_events_reports_v (if exists)');
+            DB::statement('DROP VIEW IF EXISTS wedigbio_events_reports_v');
+
+            // Legacy table may be absent if Phase 6 was previously rerun from view state.
+            $legacyTable = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                   AND table_type = ?
+                 LIMIT 1',
+                ['wedigbio_events_legacy', 'BASE TABLE']
+            );
+
+            if ($legacyTable) {
+                $this->line('  - Dropping table wedigbio_events_legacy');
+                DB::statement('DROP TABLE wedigbio_events_legacy');
+            } else {
+                $this->line('  - Legacy table wedigbio_events_legacy not present');
+            }
+
+            $this->info('Running post-cleanup validation...');
+
+            $remainingHelperViews = DB::selectOne(
+                'SELECT COUNT(*) AS cnt
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name IN (?, ?)',
+                ['wedigbio_events_release_a_v', 'wedigbio_events_reports_v']
+            );
+            $remainingViewsCount = $remainingHelperViews?->cnt ?? 0;
+            if ($remainingViewsCount > 0) {
+                $this->error('❌ One or more helper views still exist after cleanup');
+
+                return self::FAILURE;
+            }
+
+            $legacyStillExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events_legacy']
+            );
+            if ($legacyStillExists) {
+                $this->error('❌ Legacy object wedigbio_events_legacy still exists after cleanup');
+
+                return self::FAILURE;
+            }
+
+            $canonicalViewExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events']
+            );
+            if (! $canonicalViewExists) {
+                $this->error('❌ Canonical view wedigbio_events is missing after cleanup');
+
+                return self::FAILURE;
+            }
+
+            $this->line('  ✓ Helper views removed');
+            $this->line('  ✓ Legacy table removed');
+            $this->line('  ✓ Canonical view wedigbio_events remains');
+            $this->info('✅ Phase 7 completed successfully');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('❌ Phase 7 failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

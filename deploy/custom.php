@@ -31,6 +31,11 @@
 
 namespace Deployer;
 
+function withUmask(string $command): string
+{
+    return "umask 002 && $command";
+}
+
 /*
  * =============================================================================
  * COMPOSER DEPENDENCY MANAGEMENT - SAFE INSTALLATION
@@ -48,11 +53,11 @@ task('deploy:vendors', function () {
 
     if ($isDevelopment) {
         // Install with dev dependencies for development environment
-        run('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-scripts');
+        run(withUmask('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-scripts'));
         writeln('✅ Composer dependencies installed with dev packages (development environment)');
     } else {
         // Install without dev dependencies for production
-        run('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts');
+        run(withUmask('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts'));
         writeln('✅ Composer dependencies installed safely (production environment - without dev packages)');
     }
 });
@@ -60,7 +65,7 @@ task('deploy:vendors', function () {
 desc('Run Laravel package discovery after environment is ready');
 task('artisan:package:discover', function () {
     cd('{{release_or_current_path}}');
-    run('php artisan package:discover --ansi');
+    run(withUmask('php artisan package:discover --ansi'));
     writeln('✅ Laravel package discovery completed');
 });
 
@@ -78,14 +83,14 @@ task('artisan:app:update-queries', function () {
         throw new \RuntimeException('update_queries_operation is not configured for this branch/deploy file.');
     }
 
-    run("php artisan app:update-queries {$operation}");
+    run(withUmask("php artisan app:update-queries {$operation}"));
     writeln("✅ app:update-queries completed for operation: {$operation}");
 });
 
 desc('Deploying application-specific files and configurations');
 task('artisan:app:deploy-files', function () {
     cd('{{release_or_current_path}}');
-    run('php artisan app:deploy-files');    // Custom command for file deployments
+    run(withUmask('php artisan app:deploy-files'));    // Custom command for file deployments
 });
 
 /**
@@ -94,14 +99,14 @@ task('artisan:app:deploy-files', function () {
 desc('Publish Filament assets');
 task('artisan:filament:assets', function () {
     cd('{{release_or_current_path}}');
-    run('php artisan filament:assets');
+    run(withUmask('php artisan filament:assets'));
     writeln('✅ Filament assets published');
 });
 
 desc('Optimize Filament resources and assets');
 task('artisan:filament:optimize', function () {
     cd('{{release_or_current_path}}');
-    run('php artisan filament:optimize --ansi');
+    run(withUmask('php artisan filament:optimize --ansi'));
     writeln('✅ Filament optimization completed');
 });
 
@@ -111,34 +116,12 @@ task('artisan:filament:optimize', function () {
  * =============================================================================
  */
 
-desc('Setting proper file permissions and clearing logs');
-task('set:permissions', function () {
-    // Set ownership: ubuntu user, www-data group for web server access
-    run('sudo chown -R ubuntu.www-data {{deploy_path}}');
-
-    // Clear all log files to prevent disk space issues
-    run('sudo truncate -s 0 {{release_or_current_path}}/storage/logs/*.log');
+desc('Clear application logs');
+task('logs:truncate', function () {
+    // Only truncate logs; directory permissions are managed outside deploy.
+    run(withUmask('truncate -s 0 {{release_or_current_path}}/storage/logs/*.log'));
 });
 
-desc('Ensure Supervisor log directory exists');
-task('supervisor:ensure-log-dir', function () {
-    $logDir = '/var/log/supervisor';
-    $appTag = get('app_tag', 'app');        // fallback if not set
-
-    // Create main log dir if missing
-    run("sudo mkdir -p {$logDir}");
-
-    // Create app-specific log dir (e.g. /var/log/supervisor/digacad)
-    $appLogDir = "{$logDir}/{$appTag}";
-    run("sudo mkdir -p {$appLogDir}");
-
-    // Optional: set sane permissions
-    run("sudo chown root:root {$logDir}");
-    run("sudo chmod 755 {$logDir}");
-    run("sudo chmod 755 {$appLogDir}");
-
-    writeln("Supervisor log directory ready: {$appLogDir}");
-});
 
 /*
  * =============================================================================
@@ -148,8 +131,8 @@ task('supervisor:ensure-log-dir', function () {
 
 desc('Reload Supervisor configuration (config-only update)');
 task('supervisor:reload', function () {
-    run('sudo supervisorctl reread');
-    run('sudo supervisorctl update');
+    run(withUmask('sudo supervisorctl reread'));
+    run(withUmask('sudo supervisorctl update'));
 });
 
 /*
@@ -208,25 +191,25 @@ task('deploy:ci-artifacts', function () {
     cd('{{release_or_current_path}}');
 
     // Step 2: Download, extract, and deploy CI-built assets
-    run("curl -L -H 'Authorization: Bearer {$githubToken}' -H 'Accept: application/vnd.github.v3+json' '{$downloadUrl}' -o artifact.zip");
-    run('unzip -o -q artifact.zip');       // Extract artifact quietly, overwrite existing files
+    run(withUmask("curl -L -H 'Authorization: Bearer {$githubToken}' -H 'Accept: application/vnd.github.v3+json' '{$downloadUrl}' -o artifact.zip"));
+    run(withUmask('unzip -o -q artifact.zip'));       // Extract artifact quietly, overwrite existing files
 
     // Find the deepest 'deployment-package' and rsync its contents to flatten
-    $nestLevelCmd = run('find . -type d -name "deployment-package" -printf "%p\\n" | wc -l');
+    $nestLevelCmd = run(withUmask('find . -type d -name "deployment-package" -printf "%p\\n" | wc -l'));
     $nests = (int) trim($nestLevelCmd);
 
     if ($nests > 0) {
         // Find innermost (or only) and rsync up (silent flatten)
-        $innermost = run('find . -type d -name "deployment-package" | sort -r | head -1');
+        $innermost = run(withUmask('find . -type d -name "deployment-package" | sort -r | head -1'));
         $innermost = trim($innermost);
         if (! empty($innermost)) {
-            run("rsync -av '{$innermost}/' ./");  // Copy contents to root
+            run(withUmask("rsync -av '{$innermost}/' ./"));  // Copy contents to root
             // Clean all deployment-package dirs
-            run('find . -type d -name "deployment-package" -exec rm -rf {} +');
+            run(withUmask('find . -type d -name "deployment-package" -exec rm -rf {} +'));
         }
     }
 
-    run('rm -f artifact.zip'); // Cleanup artifact file
+    run(withUmask('rm -f artifact.zip')); // Cleanup artifact file
 
     writeln('✅ CI artifacts deployed successfully - No server-side building required!');
 });
@@ -254,14 +237,14 @@ task('opcache:reset', function () {
     try {
         writeln("Triggering OpCache reset via API: {$url}");
 
-        $response = run(
+        $response = run(withUmask(
             'curl -sS -k -X POST '.
             '--connect-timeout 10 --max-time 30 '.
             "-H 'Authorization: Bearer {$token}' ".
             "-H 'Accept: application/json' ".
             "-w '\nHTTP_STATUS=%{http_code}\n' ".
             "'{$url}'"
-        );
+        ));
 
         if (str_contains($response, 'successful')) {
             writeln('✅ OpCache reset successful');
@@ -283,7 +266,7 @@ task('opcache:reset', function () {
 
 desc('Verify flat deployment structure');
 task('deploy:verify-structure', function () {
-    $nestCheck = run('find {{release_path}} -type d -name "deployment-package" | wc -l');
+    $nestCheck = run(withUmask('find {{release_path}} -type d -name "deployment-package" | wc -l'));
     if ((int) trim($nestCheck) > 0) {
         throw new \Exception("Nesting detected post-deploy: {$nestCheck} dirs. Check CI artifact.");
     }
@@ -317,5 +300,5 @@ task('env:ssm', function () {
     $cmd = "cd {$homeDir} && ./generate-env {$appName} {$environment}";
 
     writeln("Running: {$cmd}");
-    run($cmd);
+    run(withUmask($cmd));
 })->once(); // only once per deploy

@@ -112,19 +112,6 @@ task('artisan:filament:optimize', function () {
 
 /*
  * =============================================================================
- * FILE SYSTEM & PERMISSIONS MANAGEMENT
- * =============================================================================
- */
-
-desc('Clear application logs');
-task('logs:truncate', function () {
-    // Only truncate logs; directory permissions are managed outside deploy.
-    run(withUmask('truncate -s 0 {{release_or_current_path}}/storage/logs/*.log'));
-});
-
-
-/*
- * =============================================================================
  * SUPERVISOR PROCESS MANAGEMENT
  * =============================================================================
  */

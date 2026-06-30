@@ -126,14 +126,13 @@ task('deploy', [
     'artisan:optimize',        // Run Laravel optimization
     'artisan:filament:optimize',   // Optimize Filament resources and assets
 
-    // Phase 7: Domain-Specific Supervisor Management
-    'supervisor:reload', // Update configs only
-    'artisan:queue:restart',
-
     // Phase 8: Finalization
-    'logs:truncate',
     'deploy:clear_paths',      // Remove unnecessary files/directories
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
+
+    // Phase 7: Domain-Specific Supervisor Management (new current release)
+    'supervisor:reload', // Update configs only
+    'artisan:queue:restart',
 
     // Phase 6: OpCache Management (Now moved after publish)
     'opcache:reset',           // <--- NOW IT WILL FIND THE ROUTE

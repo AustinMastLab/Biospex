@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7)}';
 
     /**
      * The console command description.
@@ -66,6 +66,10 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase3();
         }
 
+        if ($operation === 'wedigbio-phase-4') {
+            return $this->wedigbioPhase4();
+        }
+
         if ($operation === 'wedigbio-phase-5') {
             return $this->wedigbioPhase5();
         }
@@ -74,7 +78,11 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase6();
         }
 
-        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-5, wedigbio-phase-6');
+        if ($operation === 'wedigbio-phase-7') {
+            return $this->wedigbioPhase7();
+        }
+
+        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7');
 
         return self::FAILURE;
     }
@@ -363,6 +371,94 @@ class AppUpdateQueriesCommand extends Command
     }
 
     /**
+     * Phase 4: Create Release A compatibility view for Biospex reads
+     *
+     * Narrows the reports mirror to events that are currently live or have
+     * transcriptions, matching the Release A application behavior.
+     */
+    private function wedigbioPhase4(): int
+    {
+        $this->info('Starting WeDigBio Phase 4: Create Release A compatibility view...');
+
+        try {
+            $reportsViewExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE() AND table_name = ?',
+                ['wedigbio_events_reports_v']
+            );
+
+            if (! $reportsViewExists) {
+                $this->error('❌ Missing prerequisite view wedigbio_events_reports_v. Run wedigbio-phase-3 first.');
+
+                return self::FAILURE;
+            }
+
+            $this->line('  - Creating or replacing view wedigbio_events_release_a_v');
+            $viewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+            SELECT
+              rv.id,
+              rv.slug,
+              rv.name,
+              rv.start_date,
+              rv.end_date,
+              rv.is_live,
+              rv.active,
+              rv.is_public,
+              rv.is_archived,
+              rv.display_alias,
+              rv.year,
+              rv.season,
+              rv.created_at,
+              rv.updated_at,
+              rv.has_transcriptions
+            FROM wedigbio_events_reports_v rv
+            WHERE rv.is_live = 1
+               OR rv.has_transcriptions = 1
+            SQL;
+            DB::statement($viewSql);
+
+            $this->info('Running validation checks...');
+
+            $releaseAExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE() AND table_name = ?',
+                ['wedigbio_events_release_a_v']
+            );
+
+            if (! $releaseAExists) {
+                $this->error('❌ View wedigbio_events_release_a_v was not created');
+
+                return self::FAILURE;
+            }
+            $this->line('  ✓ View exists');
+
+            $nullSlugResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_release_a_v WHERE slug IS NULL OR slug = ""');
+            $nullSlugCount = $nullSlugResult?->cnt ?? 0;
+            if ($nullSlugCount > 0) {
+                $this->error("❌ Found {$nullSlugCount} rows without slug in wedigbio_events_release_a_v");
+
+                return self::FAILURE;
+            }
+            $this->line('  ✓ All rows have slug values');
+
+            $countResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_release_a_v');
+            $count = $countResult?->cnt ?? 0;
+            $this->line("  ✓ View returns {$count} events");
+
+            $this->info('✅ Phase 4 completed successfully');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('❌ Phase 4 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
      * Phase 5: Final cutover - move from external_event_id to Reports-backed event_id
      *
      * Destructive operation (run in maintenance window).
@@ -373,51 +469,105 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 5: Final cutover of event_id...');
         $this->warn('⚠️  This is a destructive operation. Ensure backup is taken and app is in maintenance mode.');
 
-        // Confirmation guard
-        if (! $this->confirm('Continue with Phase 5 cutover?', false)) {
+        // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
+        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 5 cutover?', false)) {
             $this->info('Phase 5 cancelled.');
 
             return self::FAILURE;
         }
 
         try {
-            // Pre-flight checks
-            $this->line('  - Running pre-flight validation...');
-            $unmappedResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_event_transcriptions WHERE external_event_id IS NULL');
-            $unmappedCount = $unmappedResult?->cnt ?? 0;
-            if ($unmappedCount > 0) {
-                $this->error("❌ Found {$unmappedCount} transcriptions with null external_event_id. Cannot proceed.");
-
-                return self::FAILURE;
-            } else {
-                $this->line('    ✓ All transcriptions mapped via external_event_id');
-            }
-
-            // Step 1: Drop old FK
-            $this->line('  - Dropping old foreign key constraint');
-            try {
-                DB::statement('ALTER TABLE wedigbio_event_transcriptions DROP FOREIGN KEY wedigbio_event_transcriptions_date_id_foreign');
-            } catch (Throwable $e) {
-                $this->warn("    Note: FK constraint not found or already dropped: {$e->getMessage()}");
-            }
-
-            // Step 2: Drop old event_id column
-            $this->line('  - Dropping old event_id column');
-            DB::statement('ALTER TABLE wedigbio_event_transcriptions DROP COLUMN event_id');
-
-            // Step 3: Rename external_event_id to event_id
-            $this->line('  - Renaming external_event_id to event_id');
-            DB::statement('ALTER TABLE wedigbio_event_transcriptions CHANGE COLUMN external_event_id event_id BIGINT UNSIGNED NOT NULL');
-
-            // Step 4: Create index
-            $this->line('  - Creating index on event_id');
-            $this->ensureIndexExists(
-                'wedigbio_event_transcriptions',
-                'idx_wet_event_id',
-                'CREATE INDEX idx_wet_event_id ON wedigbio_event_transcriptions (event_id)'
+            $columns = DB::select(
+                'SELECT column_name AS col_name
+                 FROM information_schema.columns
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?',
+                ['wedigbio_event_transcriptions']
             );
+            $columnNames = collect($columns)->pluck('col_name')->all();
+            $hasLegacyEventId = in_array('event_id', $columnNames, true);
+            $hasExternalEventId = in_array('external_event_id', $columnNames, true);
 
-            // Step 5: Attempt cross-db FK (optional, may fail)
+            // Already cut over: event_id exists and external_event_id is gone.
+            if ($hasLegacyEventId && ! $hasExternalEventId) {
+                $this->line('  - Phase 5 appears already applied (event_id present, external_event_id absent).');
+            } else {
+                // Pre-flight checks while external_event_id still exists.
+                $this->line('  - Running pre-flight validation...');
+                $unmappedResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_event_transcriptions WHERE external_event_id IS NULL');
+                $unmappedCount = $unmappedResult?->cnt ?? 0;
+                if ($unmappedCount > 0) {
+                    $this->error("❌ Found {$unmappedCount} transcriptions with null external_event_id. Cannot proceed.");
+
+                    return self::FAILURE;
+                }
+                $this->line('    ✓ All transcriptions mapped via external_event_id');
+
+                // Drop any FK that still ties event_id to legacy biospex.wedigbio_events.
+                $this->line('  - Dropping legacy foreign key constraints on event_id (if present)');
+                $legacyFks = DB::select(
+                    'SELECT constraint_name AS fk_name
+                     FROM information_schema.key_column_usage
+                     WHERE table_schema = DATABASE()
+                       AND table_name = ?
+                       AND column_name = ?
+                       AND referenced_table_name = ?',
+                    ['wedigbio_event_transcriptions', 'event_id', 'wedigbio_events']
+                );
+                foreach ($legacyFks as $fk) {
+                    DB::statement("ALTER TABLE wedigbio_event_transcriptions DROP FOREIGN KEY {$fk->fk_name}");
+                    $this->line("    - Dropped FK {$fk->fk_name}");
+                }
+
+                // Drop legacy event_id, then rename external_event_id -> event_id.
+                if ($hasLegacyEventId) {
+                    $this->line('  - Dropping legacy event_id column');
+                    DB::statement('ALTER TABLE wedigbio_event_transcriptions DROP COLUMN event_id');
+                }
+
+                $this->line('  - Renaming external_event_id to event_id');
+                DB::statement('ALTER TABLE wedigbio_event_transcriptions CHANGE COLUMN external_event_id event_id BIGINT UNSIGNED NOT NULL');
+
+                $this->line('  - Rebuilding event_id index');
+                DB::statement('DROP INDEX idx_wet_external_event_id ON wedigbio_event_transcriptions');
+                $this->ensureIndexExists(
+                    'wedigbio_event_transcriptions',
+                    'idx_wet_event_id',
+                    'CREATE INDEX idx_wet_event_id ON wedigbio_event_transcriptions (event_id)'
+                );
+            }
+
+            // Keep Release A view valid after cutover (it must reference wet.event_id now).
+            $this->line('  - Rebuilding view wedigbio_events_release_a_v for post-cutover schema');
+            $releaseAViewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+            SELECT
+              re.id,
+              re.slug,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.starts_at AS start_date,
+              re.ends_at AS end_date,
+              re.is_live AS active,
+              re.is_public,
+              re.is_archived,
+              re.display_alias,
+              re.year,
+              re.season,
+              re.created_at,
+              re.updated_at,
+              we.id AS legacy_event_id,
+              COALESCE(we.uuid, re.slug) AS channel_key,
+              EXISTS (
+                SELECT 1
+                FROM wedigbio_event_transcriptions wet
+                WHERE wet.event_id = re.id
+              ) AS has_transcriptions
+            FROM wedigbio_report.events re
+            LEFT JOIN wedigbio_events we ON we.external_event_id = re.id
+            SQL;
+            DB::statement($releaseAViewSql);
+
+            // Optional cross-db FK.
             $this->line('  - Attempting to add cross-database foreign key (optional)...');
             try {
                 DB::statement(
@@ -429,11 +579,10 @@ class AppUpdateQueriesCommand extends Command
                 );
                 $this->line('    ✓ Cross-database FK added successfully');
             } catch (Throwable $e) {
-                $this->warn("    ⚠️  Cross-db FK not supported: {$e->getMessage()}");
-                $this->line('       App must enforce integrity via validation');
+                $this->warn("    ⚠️  Cross-db FK not supported or already present: {$e->getMessage()}");
             }
 
-            // Post-cutover validation
+            // Post-cutover validation.
             $this->info('Running post-cutover validation...');
             $orphanResult = DB::selectOne(
                 'SELECT COUNT(*) AS cnt
@@ -446,10 +595,9 @@ class AppUpdateQueriesCommand extends Command
                 $this->error("❌ Found {$orphanCount} orphaned transcriptions");
 
                 return self::FAILURE;
-            } else {
-                $this->line('  ✓ No orphaned transcriptions');
             }
 
+            $this->line('  ✓ No orphaned transcriptions');
             $this->info('✅ Phase 5 completed successfully');
 
             return self::SUCCESS;
@@ -471,36 +619,128 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 6: Replace table with Reports-backed view...');
         $this->warn('⚠️  This operation replaces the physical table with a view.');
 
-        // Confirmation guard
-        if (! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
+        // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
+        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
             $this->info('Phase 6 cancelled.');
 
             return self::FAILURE;
         }
 
         try {
-            // Step 1: Check if legacy table already exists
+            $currentObject = DB::selectOne(
+                'SELECT table_type AS obj_type
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events']
+            );
+
             $legacyExists = DB::selectOne(
-                'SELECT 1 AS exists_flag FROM information_schema.tables
-                 WHERE table_schema = DATABASE() AND table_name = ?',
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
                 ['wedigbio_events_legacy']
             );
 
-            if ($legacyExists) {
-                $this->warn('  - wedigbio_events_legacy already exists (table may have been previously replaced)');
-            } else {
+            if ($currentObject && $currentObject->obj_type === 'BASE TABLE') {
+                if ($legacyExists) {
+                    $this->error('❌ Cannot rename wedigbio_events because wedigbio_events_legacy already exists.');
+
+                    return self::FAILURE;
+                }
+
                 $this->line('  - Renaming physical table to wedigbio_events_legacy');
                 DB::statement('RENAME TABLE wedigbio_events TO wedigbio_events_legacy');
+                $legacyExists = (object) ['exists_flag' => 1];
+            } elseif ($currentObject && $currentObject->obj_type === 'VIEW') {
+                $this->line('  - wedigbio_events is already a view; refreshing definition');
+            } else {
+                $this->warn('  - wedigbio_events object not found; creating view from scratch');
             }
 
-            // Step 2: Create the view
+            // Build final view SQL; if legacy table exists, preserve uuid-derived channel_key continuity.
             $this->line('  - Creating view biospex.wedigbio_events from Reports');
-            $viewSql = <<<'SQL'
-            CREATE OR REPLACE VIEW wedigbio_events AS
+            if ($legacyExists) {
+                $viewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  wel.id AS legacy_event_id,
+                  COALESCE(wel.uuid, re.slug) AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                LEFT JOIN wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                WHERE re.is_live = 1
+                   OR EXISTS (
+                     SELECT 1
+                     FROM wedigbio_event_transcriptions wet
+                     WHERE wet.event_id = re.id
+                   )
+                SQL;
+            } else {
+                $viewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  NULL AS legacy_event_id,
+                  re.slug AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                WHERE re.is_live = 1
+                   OR EXISTS (
+                     SELECT 1
+                     FROM wedigbio_event_transcriptions wet
+                     WHERE wet.event_id = re.id
+                   )
+                SQL;
+            }
+
+            DB::statement($viewSql);
+
+            // Keep auxiliary compatibility views queryable after Phase 6.
+            $this->line('  - Refreshing helper views wedigbio_events_reports_v and wedigbio_events_release_a_v');
+
+            $reportsViewSql = <<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events_reports_v AS
             SELECT
-              re.id,
+              re.id AS reports_event_id,
               re.slug,
-              re.name,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
               re.starts_at AS start_date,
               re.ends_at AS end_date,
               re.is_live AS active,
@@ -517,42 +757,190 @@ class AppUpdateQueriesCommand extends Command
                 WHERE wet.event_id = re.id
               ) AS has_transcriptions
             FROM wedigbio_report.events re
-            WHERE re.is_live = 1
-               OR EXISTS (
-                 SELECT 1
-                 FROM wedigbio_event_transcriptions wet
-                 WHERE wet.event_id = re.id
-               )
             SQL;
+            DB::statement($reportsViewSql);
 
-            DB::statement($viewSql);
+            if ($legacyExists) {
+                $releaseAViewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  wel.id AS legacy_event_id,
+                  COALESCE(wel.uuid, re.slug) AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                LEFT JOIN wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                SQL;
+            } else {
+                $releaseAViewSql = <<<'SQL'
+                CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
+                SELECT
+                  re.id,
+                  re.slug,
+                  COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+                  re.starts_at AS start_date,
+                  re.ends_at AS end_date,
+                  re.is_live AS active,
+                  re.is_public,
+                  re.is_archived,
+                  re.display_alias,
+                  re.year,
+                  re.season,
+                  re.created_at,
+                  re.updated_at,
+                  NULL AS legacy_event_id,
+                  re.slug AS channel_key,
+                  EXISTS (
+                    SELECT 1
+                    FROM wedigbio_event_transcriptions wet
+                    WHERE wet.event_id = re.id
+                  ) AS has_transcriptions
+                FROM wedigbio_report.events re
+                SQL;
+            }
+            DB::statement($releaseAViewSql);
 
             // Post-replacement validation
             $this->info('Running post-replacement validation...');
             $viewExists = DB::selectOne(
-                'SELECT 1 AS exists_flag FROM information_schema.views
-                 WHERE table_schema = DATABASE() AND table_name = ?',
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
                 ['wedigbio_events']
             );
             if (! $viewExists) {
                 $this->error('❌ View was not created successfully');
 
                 return self::FAILURE;
-            } else {
-                $this->line('  ✓ View created successfully');
             }
 
-            // Check view returns data
             $viewResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events');
             $viewCount = $viewResult?->cnt ?? 0;
-            $this->line("  ✓ View returns {$viewCount} events");
+            $this->line("  ✓ View created successfully and returns {$viewCount} events");
 
             $this->info('✅ Phase 6 completed successfully');
-            $this->info('Legacy table archived as wedigbio_events_legacy for rollback safety.');
+            $this->info('Legacy table archived as wedigbio_events_legacy for rollback safety (if present).');
 
             return self::SUCCESS;
         } catch (Throwable $e) {
             $this->error('❌ Phase 6 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Phase 7: Cleanup transitional WeDigBio objects after cutover
+     *
+     * Removes helper views and the legacy table once rollback window has closed.
+     */
+    private function wedigbioPhase7(): int
+    {
+        $this->info('Starting WeDigBio Phase 7: Cleanup transitional objects...');
+        $this->warn('⚠️  Ensure rollback window is closed before dropping legacy objects.');
+
+        if (! $this->confirm('Continue with Phase 7 cleanup?', false)) {
+            $this->info('Phase 7 cancelled.');
+
+            return self::FAILURE;
+        }
+
+        try {
+            // Keep canonical cutover view; remove only transitional helper views.
+            $this->line('  - Dropping helper view wedigbio_events_release_a_v (if exists)');
+            DB::statement('DROP VIEW IF EXISTS wedigbio_events_release_a_v');
+
+            $this->line('  - Dropping helper view wedigbio_events_reports_v (if exists)');
+            DB::statement('DROP VIEW IF EXISTS wedigbio_events_reports_v');
+
+            // Legacy table may be absent if Phase 6 was previously rerun from view state.
+            $legacyTable = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                   AND table_type = ?
+                 LIMIT 1',
+                ['wedigbio_events_legacy', 'BASE TABLE']
+            );
+
+            if ($legacyTable) {
+                $this->line('  - Dropping table wedigbio_events_legacy');
+                DB::statement('DROP TABLE wedigbio_events_legacy');
+            } else {
+                $this->line('  - Legacy table wedigbio_events_legacy not present');
+            }
+
+            $this->info('Running post-cleanup validation...');
+
+            $remainingHelperViews = DB::selectOne(
+                'SELECT COUNT(*) AS cnt
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name IN (?, ?)',
+                ['wedigbio_events_release_a_v', 'wedigbio_events_reports_v']
+            );
+            $remainingViewsCount = $remainingHelperViews?->cnt ?? 0;
+            if ($remainingViewsCount > 0) {
+                $this->error('❌ One or more helper views still exist after cleanup');
+
+                return self::FAILURE;
+            }
+
+            $legacyStillExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events_legacy']
+            );
+            if ($legacyStillExists) {
+                $this->error('❌ Legacy object wedigbio_events_legacy still exists after cleanup');
+
+                return self::FAILURE;
+            }
+
+            $canonicalViewExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events']
+            );
+            if (! $canonicalViewExists) {
+                $this->error('❌ Canonical view wedigbio_events is missing after cleanup');
+
+                return self::FAILURE;
+            }
+
+            $this->line('  ✓ Helper views removed');
+            $this->line('  ✓ Legacy table removed');
+            $this->line('  ✓ Canonical view wedigbio_events remains');
+            $this->info('✅ Phase 7 completed successfully');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('❌ Phase 7 failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

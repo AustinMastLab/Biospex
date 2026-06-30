@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-5, wedigbio-phase-6)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-5, wedigbio-phase-6)}';
 
     /**
      * The console command description.
@@ -54,14 +54,6 @@ class AppUpdateQueriesCommand extends Command
     {
         $operation = $this->argument('operation') ?? '';
 
-        if ($operation === 'add-project-indexes') {
-            return $this->addProjectIndexes();
-        }
-
-        if ($operation === 'add-expedition-indexes') {
-            return $this->addExpeditionIndexes();
-        }
-
         if ($operation === 'wedigbio-phase-1') {
             return $this->wedigbioPhase1();
         }
@@ -78,60 +70,9 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase6();
         }
 
-        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-5, wedigbio-phase-6');
+        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-5, wedigbio-phase-6');
 
         return self::FAILURE;
-    }
-
-    private function addExpeditionIndexes(): int
-    {
-        $this->info('Adding missing indexes for expeditions sorting...');
-
-        try {
-            // Must-have (sorting)
-            $this->ensureIndexExists('expeditions', 'expeditions_title_index', 'CREATE INDEX expeditions_title_index ON expeditions (title)');
-            $this->ensureIndexExists('expeditions', 'expeditions_created_at_index', 'CREATE INDEX expeditions_created_at_index ON expeditions (created_at)');
-
-            // Nice-to-have for project-scoped lists
-            $this->ensureIndexExists('expeditions', 'expeditions_project_id_created_at_index', 'CREATE INDEX expeditions_project_id_created_at_index ON expeditions (project_id, created_at)');
-            $this->ensureIndexExists('expeditions', 'expeditions_project_id_title_index', 'CREATE INDEX expeditions_project_id_title_index ON expeditions (project_id, title)');
-
-            // Pivot: enforce uniqueness + speed up "has Zooniverse actor" checks
-            $this->ensureIndexExists(
-                'actor_expedition',
-                'actor_expedition_expedition_id_actor_id_unique',
-                'CREATE UNIQUE INDEX actor_expedition_expedition_id_actor_id_unique ON actor_expedition (expedition_id, actor_id)'
-            );
-
-            $this->info('Done.');
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
-    }
-
-    private function addProjectIndexes(): int
-    {
-        $this->info('Adding missing indexes for projects sorting...');
-
-        try {
-            $this->ensureIndexExists('projects', 'projects_title_index', 'CREATE INDEX projects_title_index ON projects (title)');
-            $this->ensureIndexExists('projects', 'projects_created_at_index', 'CREATE INDEX projects_created_at_index ON projects (created_at)');
-
-            // Optional: only if you decide you want it
-            // $this->ensureIndexExists('projects', 'projects_group_id_title_index', 'CREATE INDEX projects_group_id_title_index ON projects (group_id, title)');
-
-            $this->info('Done.');
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
     }
 
     private function ensureIndexExists(string $table, string $indexName, string $createSql): void
@@ -230,7 +171,7 @@ class AppUpdateQueriesCommand extends Command
             // Check 3: All mapped IDs exist in Reports events
             $orphanResult = DB::selectOne(
                 'SELECT COUNT(*) AS cnt
-                 FROM biospex.wedigbio_events we
+                 FROM wedigbio_events we
                  LEFT JOIN wedigbio_report.events re ON re.id = we.external_event_id
                  WHERE we.external_event_id IS NOT NULL AND re.id IS NULL'
             );

@@ -26,18 +26,10 @@ set('base_path', '/data/web');
 set('remote_user', 'ubuntu');
 set('php_fpm_version', '8.3');
 set('ssh_multiplexing', true);
-set('http_group', 'www-data');
-set('writable_use_sudo', false);
-set('writable_mode', 'chmod'); // or 'acl' if you prefer ACLs
-set('writable_dirs', [
-    'bootstrap/cache',
-]);
+set('writable_mode', 'chmod');
 set('keep_releases', 3);  // Keep only 3 recent releases
 
-// Phase-specific DB update operation for this branch.
-set('update_queries_operation', 'wedigbio-phase-7');
-
-// Use sudo for cleanup so old releases with root-owned files can be removed.
+// Use sudo for cleanup to prevent "Directory not empty" or permission errors
 set('cleanup_use_sudo', true);
 // Shared Files (persisted across deployments)
 set('shared_files', [
@@ -128,13 +120,14 @@ task('deploy', [
     'artisan:optimize',        // Run Laravel optimization
     'artisan:filament:optimize',   // Optimize Filament resources and assets
 
-    // Phase 8: Finalization
-    'deploy:clear_paths',      // Remove unnecessary files/directories
-    'deploy:publish',          // <--- SYMLINK SWITCHES HERE
-
-    // Phase 7: Domain-Specific Supervisor Management (new current release)
+    // Phase 7: Domain-Specific Supervisor Management
     'supervisor:reload', // Update configs only
     'artisan:queue:restart',
+
+    // Phase 8: Finalization
+    'set:permissions',
+    'deploy:clear_paths',      // Remove unnecessary files/directories
+    'deploy:publish',          // <--- SYMLINK SWITCHES HERE
 
     // Phase 6: OpCache Management (Now moved after publish)
     'opcache:reset',           // <--- NOW IT WILL FIND THE ROUTE
@@ -144,8 +137,3 @@ task('deploy', [
 
 // Hooks
 after('deploy:failed', 'deploy:unlock');
-
-
-
-
-

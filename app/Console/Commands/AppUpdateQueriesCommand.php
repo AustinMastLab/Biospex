@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6)}';
 
     /**
      * The console command description.
@@ -53,14 +53,6 @@ class AppUpdateQueriesCommand extends Command
     public function handle(): int
     {
         $operation = $this->argument('operation') ?? '';
-
-        if ($operation === 'add-project-indexes') {
-            return $this->addProjectIndexes();
-        }
-
-        if ($operation === 'add-expedition-indexes') {
-            return $this->addExpeditionIndexes();
-        }
 
         if ($operation === 'wedigbio-phase-1') {
             return $this->wedigbioPhase1();
@@ -86,60 +78,9 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase6();
         }
 
-        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes, wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6');
+        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6');
 
         return self::FAILURE;
-    }
-
-    private function addExpeditionIndexes(): int
-    {
-        $this->info('Adding missing indexes for expeditions sorting...');
-
-        try {
-            // Must-have (sorting)
-            $this->ensureIndexExists('expeditions', 'expeditions_title_index', 'CREATE INDEX expeditions_title_index ON expeditions (title)');
-            $this->ensureIndexExists('expeditions', 'expeditions_created_at_index', 'CREATE INDEX expeditions_created_at_index ON expeditions (created_at)');
-
-            // Nice-to-have for project-scoped lists
-            $this->ensureIndexExists('expeditions', 'expeditions_project_id_created_at_index', 'CREATE INDEX expeditions_project_id_created_at_index ON expeditions (project_id, created_at)');
-            $this->ensureIndexExists('expeditions', 'expeditions_project_id_title_index', 'CREATE INDEX expeditions_project_id_title_index ON expeditions (project_id, title)');
-
-            // Pivot: enforce uniqueness + speed up "has Zooniverse actor" checks
-            $this->ensureIndexExists(
-                'actor_expedition',
-                'actor_expedition_expedition_id_actor_id_unique',
-                'CREATE UNIQUE INDEX actor_expedition_expedition_id_actor_id_unique ON actor_expedition (expedition_id, actor_id)'
-            );
-
-            $this->info('Done.');
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
-    }
-
-    private function addProjectIndexes(): int
-    {
-        $this->info('Adding missing indexes for projects sorting...');
-
-        try {
-            $this->ensureIndexExists('projects', 'projects_title_index', 'CREATE INDEX projects_title_index ON projects (title)');
-            $this->ensureIndexExists('projects', 'projects_created_at_index', 'CREATE INDEX projects_created_at_index ON projects (created_at)');
-
-            // Optional: only if you decide you want it
-            // $this->ensureIndexExists('projects', 'projects_group_id_title_index', 'CREATE INDEX projects_group_id_title_index ON projects (group_id, title)');
-
-            $this->info('Done.');
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
     }
 
     private function ensureIndexExists(string $table, string $indexName, string $createSql): void
@@ -238,7 +179,7 @@ class AppUpdateQueriesCommand extends Command
             // Check 3: All mapped IDs exist in Reports events
             $orphanResult = DB::selectOne(
                 'SELECT COUNT(*) AS cnt
-                 FROM biospex.wedigbio_events we
+                 FROM wedigbio_events we
                  LEFT JOIN wedigbio_report.events re ON re.id = we.external_event_id
                  WHERE we.external_event_id IS NOT NULL AND re.id IS NULL'
             );
@@ -351,25 +292,26 @@ class AppUpdateQueriesCommand extends Command
     }
 
     /**
-     * Phase 3: Create Reports-backed compatibility view.
+     * Phase 3: Create Reports mirror view for Biospex event reads
      *
-     * Creates a read-only compatibility view with event fields needed for
-     * upcoming code cutover while preserving the physical wedigbio_events table.
+     * Creates a non-destructive staging view that mirrors Reports events and
+     * includes a transcription presence flag using external_event_id mapping.
      */
     private function wedigbioPhase3(): int
     {
-        $this->info('Starting WeDigBio Phase 3: Create Reports-backed compatibility view...');
+        $this->info('Starting WeDigBio Phase 3: Create Reports mirror view...');
 
         try {
             $this->line('  - Creating or replacing view wedigbio_events_reports_v');
             $viewSql = <<<'SQL'
             CREATE OR REPLACE VIEW wedigbio_events_reports_v AS
             SELECT
-              re.id AS reports_event_id,
+              re.id,
               re.slug,
-              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.name,
               re.starts_at AS start_date,
               re.ends_at AS end_date,
+              re.is_live,
               re.is_live AS active,
               re.is_public,
               re.is_archived,
@@ -385,7 +327,6 @@ class AppUpdateQueriesCommand extends Command
               ) AS has_transcriptions
             FROM wedigbio_report.events re
             SQL;
-
             DB::statement($viewSql);
 
             $this->info('Running validation checks...');
@@ -393,21 +334,27 @@ class AppUpdateQueriesCommand extends Command
             $viewExists = DB::selectOne(
                 'SELECT 1 AS exists_flag
                  FROM information_schema.views
-                 WHERE table_schema = DATABASE()
-                   AND table_name = ?
-                 LIMIT 1',
+                 WHERE table_schema = DATABASE() AND table_name = ?',
                 ['wedigbio_events_reports_v']
             );
 
             if (! $viewExists) {
-                $this->error('❌ View wedigbio_events_reports_v was not created.');
+                $this->error('❌ View wedigbio_events_reports_v was not created');
 
                 return self::FAILURE;
             }
+            $this->line('  ✓ View exists');
 
             $viewCountResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_reports_v');
+            $reportsCountResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_report.events');
             $viewCount = $viewCountResult?->cnt ?? 0;
-            $this->line("  ✓ View exists and returns {$viewCount} rows");
+            $reportsCount = $reportsCountResult?->cnt ?? 0;
+
+            if ((int) $viewCount !== (int) $reportsCount) {
+                $this->warn("⚠️  View row count ({$viewCount}) differs from Reports events ({$reportsCount})");
+            } else {
+                $this->line("  ✓ View row count matches Reports events ({$viewCount})");
+            }
 
             $this->info('✅ Phase 3 completed successfully');
 
@@ -420,78 +367,83 @@ class AppUpdateQueriesCommand extends Command
     }
 
     /**
-     * Phase 4: Create Release A read view consumed by Biospex code.
+     * Phase 4: Create Release A compatibility view for Biospex reads
      *
-     * Keeps legacy table for writes, while read-paths switch to Reports IDs/slugs.
+     * Narrows the reports mirror to events that are currently live or have
+     * transcriptions, matching the Release A application behavior.
      */
     private function wedigbioPhase4(): int
     {
-        $this->info('Starting WeDigBio Phase 4: Create Release A read view...');
+        $this->info('Starting WeDigBio Phase 4: Create Release A compatibility view...');
 
         try {
+            $reportsViewExists = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE() AND table_name = ?',
+                ['wedigbio_events_reports_v']
+            );
+
+            if (! $reportsViewExists) {
+                $this->error('❌ Missing prerequisite view wedigbio_events_reports_v. Run wedigbio-phase-3 first.');
+
+                return self::FAILURE;
+            }
+
             $this->line('  - Creating or replacing view wedigbio_events_release_a_v');
             $viewSql = <<<'SQL'
             CREATE OR REPLACE VIEW wedigbio_events_release_a_v AS
             SELECT
-              re.id,
-              re.slug,
-              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
-              re.starts_at AS start_date,
-              re.ends_at AS end_date,
-              re.is_live AS active,
-              re.is_public,
-              re.is_archived,
-              re.display_alias,
-              re.year,
-              re.season,
-              re.created_at,
-              re.updated_at,
-              we.id AS legacy_event_id,
-              COALESCE(we.uuid, re.slug) AS channel_key,
-              EXISTS (
-                SELECT 1
-                FROM wedigbio_event_transcriptions wet
-                WHERE wet.external_event_id = re.id
-              ) AS has_transcriptions
-            FROM wedigbio_report.events re
-            LEFT JOIN biospex.wedigbio_events we ON we.external_event_id = re.id
+              rv.id,
+              rv.slug,
+              rv.name,
+              rv.start_date,
+              rv.end_date,
+              rv.is_live,
+              rv.active,
+              rv.is_public,
+              rv.is_archived,
+              rv.display_alias,
+              rv.year,
+              rv.season,
+              rv.created_at,
+              rv.updated_at,
+              rv.has_transcriptions
+            FROM wedigbio_events_reports_v rv
+            WHERE rv.is_live = 1
+               OR rv.has_transcriptions = 1
             SQL;
-
             DB::statement($viewSql);
 
             $this->info('Running validation checks...');
 
-            $viewExists = DB::selectOne(
+            $releaseAExists = DB::selectOne(
                 'SELECT 1 AS exists_flag
                  FROM information_schema.views
-                 WHERE table_schema = DATABASE()
-                   AND table_name = ?
-                 LIMIT 1',
+                 WHERE table_schema = DATABASE() AND table_name = ?',
                 ['wedigbio_events_release_a_v']
             );
 
-            if (! $viewExists) {
-                $this->error('❌ View wedigbio_events_release_a_v was not created.');
+            if (! $releaseAExists) {
+                $this->error('❌ View wedigbio_events_release_a_v was not created');
 
                 return self::FAILURE;
             }
+            $this->line('  ✓ View exists');
 
-            $counts = DB::selectOne(
-                'SELECT
-                   (SELECT COUNT(*) FROM wedigbio_report.events) AS reports_cnt,
-                   (SELECT COUNT(*) FROM wedigbio_events_release_a_v) AS view_cnt'
-            );
-
-            $reportsCount = $counts?->reports_cnt ?? 0;
-            $viewCount = $counts?->view_cnt ?? 0;
-
-            if ((int) $reportsCount !== (int) $viewCount) {
-                $this->error("❌ View row count mismatch. reports={$reportsCount}, view={$viewCount}");
+            $nullSlugResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_release_a_v WHERE slug IS NULL OR slug = ""');
+            $nullSlugCount = $nullSlugResult?->cnt ?? 0;
+            if ($nullSlugCount > 0) {
+                $this->error("❌ Found {$nullSlugCount} rows without slug in wedigbio_events_release_a_v");
 
                 return self::FAILURE;
             }
+            $this->line('  ✓ All rows have slug values');
 
-            $this->line("  ✓ View exists and mirrors {$viewCount} Reports events");
+            $countResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events_release_a_v');
+            $count = $countResult?->cnt ?? 0;
+            $this->line("  ✓ View returns {$count} events");
+
             $this->info('✅ Phase 4 completed successfully');
 
             return self::SUCCESS;

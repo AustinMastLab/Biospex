@@ -29,6 +29,9 @@ set('ssh_multiplexing', true);
 set('http_group', 'www-data');
 set('writable_use_sudo', false);
 set('writable_mode', 'chmod'); // or 'acl' if you prefer ACLs
+set('writable_dirs', [
+    'bootstrap/cache',
+]);
 set('keep_releases', 3);  // Keep only 3 recent releases
 
 // Phase-specific DB update operation for this branch.

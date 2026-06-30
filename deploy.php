@@ -37,8 +37,8 @@ set('keep_releases', 3);  // Keep only 3 recent releases
 // Phase-specific DB update operation for this branch.
 set('update_queries_operation', 'wedigbio-phase-1');
 
-// Use sudo for cleanup to prevent "Directory not empty" or permission errors
-set('cleanup_use_sudo', false);
+// Use sudo for cleanup so old releases with root-owned files can be removed.
+set('cleanup_use_sudo', true);
 // Shared Files (persisted across deployments)
 set('shared_files', [
     '.env',                        // Environment configuration

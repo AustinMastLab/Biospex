@@ -684,7 +684,7 @@ class AppUpdateQueriesCommand extends Command
                     WHERE wet.event_id = re.id
                   ) AS has_transcriptions
                 FROM wedigbio_report.events re
-                LEFT JOIN biospex.wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                LEFT JOIN wedigbio_events_legacy wel ON wel.external_event_id = re.id
                 WHERE re.is_live = 1
                    OR EXISTS (
                      SELECT 1
@@ -781,7 +781,7 @@ class AppUpdateQueriesCommand extends Command
                     WHERE wet.event_id = re.id
                   ) AS has_transcriptions
                 FROM wedigbio_report.events re
-                LEFT JOIN biospex.wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                LEFT JOIN wedigbio_events_legacy wel ON wel.external_event_id = re.id
                 SQL;
             } else {
                 $releaseAViewSql = <<<'SQL'

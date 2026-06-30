@@ -559,7 +559,7 @@ class AppUpdateQueriesCommand extends Command
                 WHERE wet.event_id = re.id
               ) AS has_transcriptions
             FROM wedigbio_report.events re
-            LEFT JOIN biospex.wedigbio_events we ON we.external_event_id = re.id
+            LEFT JOIN wedigbio_events we ON we.external_event_id = re.id
             SQL;
             DB::statement($releaseAViewSql);
 

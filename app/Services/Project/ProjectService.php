@@ -25,14 +25,11 @@ use App\Models\ProjectAsset;
 use App\Models\User;
 use App\Services\Helpers\CountService;
 use App\Services\Helpers\DateService;
-use App\Services\Trait\EventPartitionTrait;
-use App\Services\Trait\ExpeditionPartitionTrait;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class ProjectService
 {
-    use EventPartitionTrait, ExpeditionPartitionTrait;
 
     /**
      * ProjectService constructor.
@@ -276,18 +273,10 @@ class ProjectService
             ->load([
                 'group',
                 'ocrQueue',
-                'expeditions' => function ($q) {
-                    $q->with(['stat', 'zooniverseExport', 'panoptesProject', 'workflowManager']);
-                },
             ]);
-
-        [$expeditions, $expeditionsCompleted] = $this->partitionExpeditions($project->expeditions);
 
         return [
             'project' => $project,
-            'group' => $project->group,
-            'expeditions' => $expeditions,
-            'expeditionsCompleted' => $expeditionsCompleted,
         ];
     }
 

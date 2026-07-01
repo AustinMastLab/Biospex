@@ -32,10 +32,16 @@ class ExpeditionsIndex extends Component
 
     public string $order = 'asc';
 
-    public function mount(?string $type = null): void
+    public ?int $projectId = null;
+
+    public function mount(?string $type = null, ?int $projectId = null): void
     {
         if ($type !== null) {
             $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
+        }
+
+        if ($projectId !== null) {
+            $this->projectId = $projectId;
         }
     }
 
@@ -54,6 +60,7 @@ class ExpeditionsIndex extends Component
         [$active, $completed] = $expeditionService->getAdminIndex(Auth::user(), [
             'sort' => $this->sort,
             'order' => $this->order,
+            'projectId' => $this->projectId,
         ]);
 
         $expeditions = $this->type === 'completed' ? $completed : $active;

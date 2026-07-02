@@ -220,7 +220,7 @@ jobs:
           chmod 600 ~/.ssh/config
 
       - name: Deploy with Deployer
-        run: vendor/bin/dep deploy production
+        run: vendor/bin/dep deploy production -o release_name=${{ github.run_number }}-${{ github.run_attempt }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}
@@ -383,7 +383,7 @@ jobs:
           chmod 600 ~/.ssh/config
 
       - name: Deploy with Deployer
-        run: vendor/bin/dep deploy development
+        run: vendor/bin/dep deploy development -o release_name=${{ github.run_number }}-${{ github.run_attempt }}
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           GITHUB_SHA: ${{ github.sha }}

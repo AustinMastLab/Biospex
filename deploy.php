@@ -54,6 +54,9 @@ set('clear_paths', [
     'deployment-package', // Remove any residual nesting dirs
 ]);
 
+// Phase-specific DB update operation for this branch.
+set('update_queries_operation', 'wedigbio-phase-8');
+
 // Determine if the local identity file exists (for manual deployments)
 $localKey = '/home/ubuntu/.ssh/biospexaws.pem';
 $hasLocalKey = file_exists($localKey);

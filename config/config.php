@@ -144,8 +144,6 @@ return [
         'pusher_process' => 'pusher-process',
         'reconcile' => 'reconcile',
         'workflow' => 'workflow',
-        'sernec_file' => 'sernec-file',
-        'sernec_row' => 'sernec-row',
     ],
 
     /* Images */
@@ -229,8 +227,6 @@ return [
         'QUEUE_BIOSPEX_EVENT',
         'QUEUE_PUSHER_HANDLER',
         'QUEUE_WEDIGBIO_EVENT',
-        'QUEUE_SERNEC_FILE',
-        'QUEUE_SERNEC_ROW',
         'REVERB_DEBUG',
     ],
 ];

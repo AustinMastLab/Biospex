@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7, wedigbio-phase-8)}';
 
     /**
      * The console command description.
@@ -82,7 +82,11 @@ class AppUpdateQueriesCommand extends Command
             return $this->wedigbioPhase7();
         }
 
-        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7');
+        if ($operation === 'wedigbio-phase-8') {
+            return $this->wedigbioPhase8();
+        }
+
+        $this->error('Unknown operation. Try: wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7, wedigbio-phase-8');
 
         return self::FAILURE;
     }
@@ -689,6 +693,12 @@ class AppUpdateQueriesCommand extends Command
                   ) AS has_transcriptions
                 FROM wedigbio_report.events re
                 LEFT JOIN wedigbio_events_legacy wel ON wel.external_event_id = re.id
+                WHERE re.is_live = 1
+                   OR EXISTS (
+                     SELECT 1
+                     FROM wedigbio_event_transcriptions wet
+                     WHERE wet.event_id = re.id
+                   )
                 SQL;
             } else {
                 $viewSql = <<<'SQL'
@@ -715,6 +725,12 @@ class AppUpdateQueriesCommand extends Command
                     WHERE wet.event_id = re.id
                   ) AS has_transcriptions
                 FROM wedigbio_report.events re
+                WHERE re.is_live = 1
+                   OR EXISTS (
+                     SELECT 1
+                     FROM wedigbio_event_transcriptions wet
+                     WHERE wet.event_id = re.id
+                   )
                 SQL;
             }
 
@@ -929,6 +945,82 @@ class AppUpdateQueriesCommand extends Command
             return self::SUCCESS;
         } catch (Throwable $e) {
             $this->error('❌ Phase 7 failed: '.$e->getMessage());
+
+            return self::FAILURE;
+        }
+    }
+
+    /**
+     * Phase 8: Validate steady-state WeDigBio objects after cutover
+     *
+     * Verifies the canonical view remains present and transitional objects are gone.
+     */
+    private function wedigbioPhase8(): int
+    {
+        $this->info('Starting WeDigBio Phase 8: Validate steady-state objects...');
+
+        try {
+            $canonicalView = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                 LIMIT 1',
+                ['wedigbio_events']
+            );
+
+            if (! $canonicalView) {
+                $this->error('❌ Canonical view wedigbio_events is missing');
+
+                return self::FAILURE;
+            }
+            $this->line('  ✓ Canonical view exists');
+
+            $legacyTable = DB::selectOne(
+                'SELECT 1 AS exists_flag
+                 FROM information_schema.tables
+                 WHERE table_schema = DATABASE()
+                   AND table_name = ?
+                   AND table_type = ?
+                 LIMIT 1',
+                ['wedigbio_events_legacy', 'BASE TABLE']
+            );
+            if ($legacyTable) {
+                $this->error('❌ Legacy table wedigbio_events_legacy still exists');
+
+                return self::FAILURE;
+            }
+            $this->line('  ✓ Legacy table is absent');
+
+            $remainingHelperViews = DB::selectOne(
+                'SELECT COUNT(*) AS cnt
+                 FROM information_schema.views
+                 WHERE table_schema = DATABASE()
+                   AND table_name IN (?, ?)',
+                ['wedigbio_events_release_a_v', 'wedigbio_events_reports_v']
+            );
+            $remainingHelperViewsCount = $remainingHelperViews?->cnt ?? 0;
+            if ($remainingHelperViewsCount > 0) {
+                $this->error("❌ Found {$remainingHelperViewsCount} transitional helper views");
+
+                return self::FAILURE;
+            }
+            $this->line('  ✓ Transitional helper views are absent');
+
+            $viewCountResult = DB::selectOne('SELECT COUNT(*) AS cnt FROM wedigbio_events');
+            $viewCount = (int) ($viewCountResult?->cnt ?? 0);
+            if ($viewCount <= 0) {
+                $this->error('❌ Canonical view wedigbio_events returned no rows');
+
+                return self::FAILURE;
+            }
+            $this->line("  ✓ Canonical view returns {$viewCount} rows");
+
+            $this->info('✅ Phase 8 completed successfully');
+
+            return self::SUCCESS;
+        } catch (Throwable $e) {
+            $this->error('❌ Phase 8 failed: '.$e->getMessage());
 
             return self::FAILURE;
         }

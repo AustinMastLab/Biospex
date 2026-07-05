@@ -416,7 +416,8 @@ class AppUpdateQueriesCommand extends Command
               rv.season,
               rv.created_at,
               rv.updated_at,
-              rv.has_transcriptions
+              rv.has_transcriptions,
+              rv.slug AS channel_key
             FROM wedigbio_events_reports_v rv
             WHERE rv.is_live = 1
                OR rv.has_transcriptions = 1
@@ -1026,3 +1027,4 @@ class AppUpdateQueriesCommand extends Command
         }
     }
 }
+

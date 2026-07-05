@@ -70,7 +70,7 @@ class WeDigBioEvent extends BaseEloquentModel
      */
     public function transcriptions(): HasMany
     {
-        return $this->hasMany(WeDigBioEventTranscription::class, 'event_id', 'id');
+        return $this->hasMany(WeDigBioEventTranscription::class, 'event_id', 'external_event_id');
     }
 
     /**

@@ -56,7 +56,7 @@ class WeDigBioService
             return null;
         }
 
-        $key = "wedigbio_event_transcriptions:{$activeEvent->id}";
+        $key = "wedigbio_event_transcriptions:{$activeEvent->external_event_id}";
         $tags = ['wedigbio_events', 'transcriptions', 'projects'];
 
         return Cache::tags($tags)->remember($key, 3600, function () use ($activeEvent) {
@@ -85,7 +85,7 @@ class WeDigBioService
 
         $transcriptions = $this->weDigBioEventTranscription
             ->with(['project:id,title'])
-            ->where('event_id', $activeEvent->id)
+            ->where('event_id', $activeEvent->external_event_id)
             ->select('project_id')
             ->groupBy('project_id')
             ->get();

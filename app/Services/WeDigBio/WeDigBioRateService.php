@@ -59,7 +59,7 @@ class WeDigBioRateService
 
         $intervals = $this->setTimeIntervals($startLoad, $endLoad, $timestamp);
 
-        $transcriptions = $this->weDigBioService->getWeDigBioRateChartTranscriptions($weDigBioDate->external_event_id, $startLoad,
+        $transcriptions = $this->weDigBioService->getWeDigBioRateChartTranscriptions($weDigBioDate->id, $startLoad,
             $endLoad);
 
         $projects = $transcriptions->map(function ($transcription) {

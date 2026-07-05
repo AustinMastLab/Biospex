@@ -59,9 +59,9 @@ class ProjectService
     /**
      * Override create in base repository.
      *
-     * @return \App\Models\Project|\Illuminate\Database\Eloquent\Model|true
+     * @return Project|Model|true
      */
-    public function create(array $data): \Illuminate\Database\Eloquent\Model|bool|Project
+    public function create(array $data): Model|bool|Project
     {
         // Handle logo upload for new projects
         $this->handleLogoUploadForCreate($data);

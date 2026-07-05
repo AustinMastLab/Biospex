@@ -54,6 +54,7 @@ class WeDigBioEvent extends BaseEloquentModel
             'start_date' => 'datetime',
             'end_date' => 'datetime',
             'active' => 'int',
+            'channel_key' => 'string',
         ];
     }
 
@@ -81,3 +82,4 @@ class WeDigBioEvent extends BaseEloquentModel
         return $query->where('active', 1);
     }
 }
+

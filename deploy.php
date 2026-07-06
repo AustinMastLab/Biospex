@@ -128,7 +128,7 @@ task('deploy', [
     'artisan:queue:restart',
 
     // Phase 8: Finalization
-    'set:permissions',
+    'truncate:logs',           // Truncate shared logs before publish
     'deploy:clear_paths',      // Remove unnecessary files/directories
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
 

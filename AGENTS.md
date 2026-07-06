@@ -87,7 +87,7 @@ These rules exist to prevent “wrong place / wrong assumptions” work. They in
 ## Queue & SQS Integration
 
 - Queue jobs deploy to named queues via `->onQueue(config('config.queue.{queue_name}'))`
-- Queue names are defined in `config/config.php` under `queue` (for example: `default`, `export`, `ocr`, `reconcile`, `chart`, `classification`, `event`, `geolocate`, `import`, `workflow`, `sernec_file`, `sernec_row`, `biospex_event`, `wedigbio_event`, `pusher_handler`, `pusher_process`)
+- Queue names are defined in `config/config.php` under `queue` (for example: `default`, `export`, `ocr`, `reconcile`, `chart`, `classification`, `event`, `geolocate`, `import`, `workflow`, `biospex_event`, `wedigbio_event`, `pusher_handler`, `pusher_process`)
 - Dispatch to AWS SQS via job `handle()` method; jobs send batches of messages using `SqsClient::sendMessageBatch()`
 - Listeners run via console commands (e.g., `SqsListenerExportUpdate`) that use `SqsListenerService` to poll and route messages
 - Message routing uses a callback pattern: `routeMessage($data)` dispatches jobs based on message function field

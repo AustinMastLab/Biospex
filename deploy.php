@@ -130,6 +130,7 @@ task('deploy', [
     'artisan:filament:optimize',   // Optimize Filament resources and assets
 
     // Phase 8: Finalization
+    'truncate:logs',           // Truncate shared logs before publish
     'deploy:clear_paths',      // Remove unnecessary files/directories
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
 

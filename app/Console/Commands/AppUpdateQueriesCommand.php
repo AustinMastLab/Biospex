@@ -869,6 +869,40 @@ class AppUpdateQueriesCommand extends Command
         }
 
         try {
+            $this->line('  - Rebuilding canonical view wedigbio_events without legacy-table dependency');
+            DB::statement(<<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events AS
+            SELECT
+              re.id,
+              re.slug,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.starts_at AS start_date,
+              re.ends_at AS end_date,
+              re.is_live AS active,
+              re.is_public,
+              re.is_archived,
+              re.display_alias,
+              re.year,
+              re.season,
+              re.created_at,
+              re.updated_at,
+              NULL AS legacy_event_id,
+              NULL AS uuid,
+              re.slug AS channel_key,
+              EXISTS (
+                SELECT 1
+                FROM wedigbio_event_transcriptions wet
+                WHERE wet.event_id = re.id
+              ) AS has_transcriptions
+            FROM wedigbio_report.events re
+            WHERE re.is_live = 1
+               OR EXISTS (
+                 SELECT 1
+                 FROM wedigbio_event_transcriptions wet
+                 WHERE wet.event_id = re.id
+               )
+            SQL);
+
             // Keep canonical cutover view; remove only transitional helper views.
             $this->line('  - Dropping helper view wedigbio_events_release_a_v (if exists)');
             DB::statement('DROP VIEW IF EXISTS wedigbio_events_release_a_v');
@@ -1027,4 +1061,3 @@ class AppUpdateQueriesCommand extends Command
         }
     }
 }
-

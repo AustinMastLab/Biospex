@@ -112,6 +112,17 @@ task('artisan:filament:optimize', function () {
 
 /*
  * =============================================================================
+ * FILE SYSTEM & LOG MANAGEMENT
+ * =============================================================================
+ */
+
+desc('Truncate shared Laravel log files');
+task('truncate:logs', function () {
+    run(withUmask("find {{deploy_path}}/shared/storage/logs -type f -name '*.log' -exec truncate -s 0 {} +"));
+});
+
+/*
+ * =============================================================================
  * SUPERVISOR PROCESS MANAGEMENT
  * =============================================================================
  */

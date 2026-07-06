@@ -111,7 +111,7 @@ task('artisan:filament:optimize', function () {
 
 desc('Truncate shared Laravel log files');
 task('truncate:logs', function () {
-    run(withUmask("sudo find {{deploy_path}}/shared/storage/logs -type f -name '*.log' -exec truncate -s 0 {} +"));
+    run(withUmask("find {{deploy_path}}/shared/storage/logs -type f -name '*.log' -exec truncate -s 0 {} +"));
 });
 
 /*

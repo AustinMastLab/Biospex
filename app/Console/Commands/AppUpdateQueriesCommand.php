@@ -21,8 +21,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\DB;
-use Throwable;
+
 
 /**
  * Class UpdateQueries
@@ -50,93 +49,5 @@ class AppUpdateQueriesCommand extends Command
     /**
      * Fire command
      */
-    public function handle(): int
-    {
-        $operation = $this->argument('operation') ?? '';
-
-        if ($operation === 'add-project-indexes') {
-            return $this->addProjectIndexes();
-        }
-
-        if ($operation === 'add-expedition-indexes') {
-            return $this->addExpeditionIndexes();
-        }
-
-        $this->error('Unknown operation. Try: add-project-indexes, add-expedition-indexes');
-
-        return self::FAILURE;
-    }
-
-    private function addExpeditionIndexes(): int
-    {
-        $this->info('Adding missing indexes for expeditions sorting...');
-
-        try {
-            // Must-have (sorting)
-            $this->ensureIndexExists('expeditions', 'expeditions_title_index', 'CREATE INDEX expeditions_title_index ON expeditions (title)');
-            $this->ensureIndexExists('expeditions', 'expeditions_created_at_index', 'CREATE INDEX expeditions_created_at_index ON expeditions (created_at)');
-
-            // Nice-to-have for project-scoped lists
-            $this->ensureIndexExists('expeditions', 'expeditions_project_id_created_at_index', 'CREATE INDEX expeditions_project_id_created_at_index ON expeditions (project_id, created_at)');
-            $this->ensureIndexExists('expeditions', 'expeditions_project_id_title_index', 'CREATE INDEX expeditions_project_id_title_index ON expeditions (project_id, title)');
-
-            // Pivot: enforce uniqueness + speed up "has Zooniverse actor" checks
-            $this->ensureIndexExists(
-                'actor_expedition',
-                'actor_expedition_expedition_id_actor_id_unique',
-                'CREATE UNIQUE INDEX actor_expedition_expedition_id_actor_id_unique ON actor_expedition (expedition_id, actor_id)'
-            );
-
-            $this->info('Done.');
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
-    }
-
-    private function addProjectIndexes(): int
-    {
-        $this->info('Adding missing indexes for projects sorting...');
-
-        try {
-            $this->ensureIndexExists('projects', 'projects_title_index', 'CREATE INDEX projects_title_index ON projects (title)');
-            $this->ensureIndexExists('projects', 'projects_created_at_index', 'CREATE INDEX projects_created_at_index ON projects (created_at)');
-
-            // Optional: only if you decide you want it
-            // $this->ensureIndexExists('projects', 'projects_group_id_title_index', 'CREATE INDEX projects_group_id_title_index ON projects (group_id, title)');
-
-            $this->info('Done.');
-
-            return self::SUCCESS;
-        } catch (Throwable $e) {
-            $this->error('Failed: '.$e->getMessage());
-
-            return self::FAILURE;
-        }
-    }
-
-    private function ensureIndexExists(string $table, string $indexName, string $createSql): void
-    {
-        $exists = DB::selectOne(
-            'SELECT 1 AS exists_flag
-             FROM information_schema.statistics
-             WHERE table_schema = DATABASE()
-               AND table_name = ?
-               AND index_name = ?
-             LIMIT 1',
-            [$table, $indexName]
-        );
-
-        if ($exists) {
-            $this->line("  - {$indexName} already exists on {$table}");
-
-            return;
-        }
-
-        $this->line("  - creating {$indexName} on {$table}");
-        DB::statement($createSql);
-    }
+    public function handle()  {}
 }

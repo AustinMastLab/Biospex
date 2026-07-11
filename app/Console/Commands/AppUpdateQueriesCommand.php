@@ -862,7 +862,7 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 7: Cleanup transitional objects...');
         $this->warn('⚠️  Ensure rollback window is closed before dropping legacy objects.');
 
-        if (! $this->confirm('Continue with Phase 7 cleanup?', false)) {
+        if (! $this->option('force') && $this->input->isInteractive() && ! $this->confirm('Continue with Phase 7 cleanup?', false)) {
             $this->info('Phase 7 cancelled.');
 
             return self::FAILURE;
@@ -1061,3 +1061,4 @@ class AppUpdateQueriesCommand extends Command
         }
     }
 }
+

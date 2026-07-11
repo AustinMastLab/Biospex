@@ -316,7 +316,7 @@ class AppUpdateQueriesCommand extends Command
             SELECT
               re.id,
               re.slug,
-              re.name,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
               re.starts_at AS start_date,
               re.ends_at AS end_date,
               re.is_live,
@@ -1026,3 +1026,4 @@ class AppUpdateQueriesCommand extends Command
         }
     }
 }
+

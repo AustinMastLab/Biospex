@@ -77,7 +77,14 @@ task('artisan:package:discover', function () {
 desc('Running custom database update queries');
 task('artisan:app:update-queries', function () {
     cd('{{release_or_current_path}}');
-    run(withUmask('php artisan app:update-queries'));  // Custom command for database schema updates
+
+    $operation = (string) get('update_queries_operation', '');
+    if ($operation === '') {
+        throw new \RuntimeException('update_queries_operation is not configured for this branch/deploy file.');
+    }
+
+    run(withUmask("php artisan app:update-queries {$operation}"));
+    writeln("✅ app:update-queries completed for operation: {$operation}");
 });
 
 desc('Deploying application-specific files and configurations');

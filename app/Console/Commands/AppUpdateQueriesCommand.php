@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7, wedigbio-phase-8)} {--force : Skip confirmation prompts (for CI/CD deployments)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7, wedigbio-phase-8)}';
 
     /**
      * The console command description.
@@ -416,7 +416,8 @@ class AppUpdateQueriesCommand extends Command
               rv.season,
               rv.created_at,
               rv.updated_at,
-              rv.has_transcriptions
+              rv.has_transcriptions,
+              rv.slug AS channel_key
             FROM wedigbio_events_reports_v rv
             WHERE rv.is_live = 1
                OR rv.has_transcriptions = 1
@@ -473,8 +474,8 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 5: Final cutover of event_id...');
         $this->warn('⚠️  This is a destructive operation. Ensure backup is taken and app is in maintenance mode.');
 
-        // In interactive runs ask for confirmation; in deploy (non-interactive or --force) continue.
-        if (! $this->option('force') && $this->input->isInteractive() && ! $this->confirm('Continue with Phase 5 cutover?', false)) {
+        // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
+        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 5 cutover?', false)) {
             $this->info('Phase 5 cancelled.');
 
             return self::FAILURE;
@@ -624,7 +625,7 @@ class AppUpdateQueriesCommand extends Command
         $this->warn('⚠️  This operation replaces the physical table with a view.');
 
         // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
-        if (! $this->option('force') && $this->input->isInteractive() && ! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
+        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
             $this->info('Phase 6 cancelled.');
 
             return self::FAILURE;
@@ -685,7 +686,6 @@ class AppUpdateQueriesCommand extends Command
                   re.created_at,
                   re.updated_at,
                   wel.id AS legacy_event_id,
-                  wel.uuid,
                   COALESCE(wel.uuid, re.slug) AS channel_key,
                   EXISTS (
                     SELECT 1
@@ -719,7 +719,6 @@ class AppUpdateQueriesCommand extends Command
                   re.created_at,
                   re.updated_at,
                   NULL AS legacy_event_id,
-                  NULL AS uuid,
                   re.slug AS channel_key,
                   EXISTS (
                     SELECT 1
@@ -870,6 +869,40 @@ class AppUpdateQueriesCommand extends Command
         }
 
         try {
+            $this->line('  - Rebuilding canonical view wedigbio_events without legacy-table dependency');
+            DB::statement(<<<'SQL'
+            CREATE OR REPLACE VIEW wedigbio_events AS
+            SELECT
+              re.id,
+              re.slug,
+              COALESCE(re.display_alias, CONCAT(re.year, ' ', re.season)) AS name,
+              re.starts_at AS start_date,
+              re.ends_at AS end_date,
+              re.is_live AS active,
+              re.is_public,
+              re.is_archived,
+              re.display_alias,
+              re.year,
+              re.season,
+              re.created_at,
+              re.updated_at,
+              NULL AS legacy_event_id,
+              NULL AS uuid,
+              re.slug AS channel_key,
+              EXISTS (
+                SELECT 1
+                FROM wedigbio_event_transcriptions wet
+                WHERE wet.event_id = re.id
+              ) AS has_transcriptions
+            FROM wedigbio_report.events re
+            WHERE re.is_live = 1
+               OR EXISTS (
+                 SELECT 1
+                 FROM wedigbio_event_transcriptions wet
+                 WHERE wet.event_id = re.id
+               )
+            SQL);
+
             // Keep canonical cutover view; remove only transitional helper views.
             $this->line('  - Dropping helper view wedigbio_events_release_a_v (if exists)');
             DB::statement('DROP VIEW IF EXISTS wedigbio_events_release_a_v');
@@ -1028,11 +1061,4 @@ class AppUpdateQueriesCommand extends Command
         }
     }
 }
-
-
-
-
-
-
-
 

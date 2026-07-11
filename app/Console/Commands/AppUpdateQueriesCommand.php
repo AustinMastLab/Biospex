@@ -32,7 +32,7 @@ class AppUpdateQueriesCommand extends Command
     /**
      * The console command name.
      */
-    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7, wedigbio-phase-8)}';
+    protected $signature = 'app:update-queries {operation? : The operation to run (wedigbio-phase-1, wedigbio-phase-2, wedigbio-phase-3, wedigbio-phase-4, wedigbio-phase-5, wedigbio-phase-6, wedigbio-phase-7, wedigbio-phase-8)} {--force : Skip confirmation prompts (for CI/CD deployments)}';
 
     /**
      * The console command description.
@@ -473,8 +473,8 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 5: Final cutover of event_id...');
         $this->warn('⚠️  This is a destructive operation. Ensure backup is taken and app is in maintenance mode.');
 
-        // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
-        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 5 cutover?', false)) {
+        // In interactive runs ask for confirmation; in deploy (non-interactive or --force) continue.
+        if (! $this->option('force') && $this->input->isInteractive() && ! $this->confirm('Continue with Phase 5 cutover?', false)) {
             $this->info('Phase 5 cancelled.');
 
             return self::FAILURE;
@@ -624,7 +624,7 @@ class AppUpdateQueriesCommand extends Command
         $this->warn('⚠️  This operation replaces the physical table with a view.');
 
         // In interactive runs ask for confirmation; in deploy (non-interactive) continue.
-        if ($this->input->isInteractive() && ! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
+        if (! $this->option('force') && $this->input->isInteractive() && ! $this->confirm('Continue with Phase 6 (table → view replacement)?', false)) {
             $this->info('Phase 6 cancelled.');
 
             return self::FAILURE;
@@ -863,7 +863,7 @@ class AppUpdateQueriesCommand extends Command
         $this->info('Starting WeDigBio Phase 7: Cleanup transitional objects...');
         $this->warn('⚠️  Ensure rollback window is closed before dropping legacy objects.');
 
-        if (! $this->confirm('Continue with Phase 7 cleanup?', false)) {
+        if (! $this->option('force') && $this->input->isInteractive() && ! $this->confirm('Continue with Phase 7 cleanup?', false)) {
             $this->info('Phase 7 cancelled.');
 
             return self::FAILURE;
@@ -1028,4 +1028,11 @@ class AppUpdateQueriesCommand extends Command
         }
     }
 }
+
+
+
+
+
+
+
 

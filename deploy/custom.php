@@ -83,7 +83,7 @@ task('artisan:app:update-queries', function () {
         throw new \RuntimeException('update_queries_operation is not configured for this branch/deploy file.');
     }
 
-    run(withUmask("php artisan app:update-queries {$operation}"));
+    run(withUmask("php artisan app:update-queries {$operation} --force"));
     writeln("✅ app:update-queries completed for operation: {$operation}");
 });
 
@@ -300,3 +300,4 @@ task('env:ssm', function () {
     writeln("Running: {$cmd}");
     run(withUmask($cmd));
 })->once(); // only once per deploy
+

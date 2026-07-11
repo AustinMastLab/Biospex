@@ -68,7 +68,7 @@ class WeDigBioEventTranscription extends BaseEloquentModel
      */
     public function date(): BelongsTo
     {
-        return $this->belongsTo(WeDigBioEvent::class);
+        return $this->belongsTo(WeDigBioEvent::class, 'event_id', 'id');
     }
 
     /**

@@ -68,7 +68,3 @@ laradumps.yaml
 /.pa11yci.front.mobile.json
 /.mcp.json
 /.claude/
-/BiospexImageFetcher.mjs
-/BiospexOcrProcessor.mjs
-/LAMBDA_FIX.md
-/WEDIGBIO_MIGRATION_RUNBOOK.md

@@ -36,7 +36,7 @@ class WeDigBioTranscriptionService
      */
     public function __construct(
         protected WeDigBioService $weDigBioService,
-        protected \Carbon\Carbon $carbon
+        protected Carbon $carbon
     ) {}
 
     /**

@@ -42,7 +42,13 @@ class WeDigBioService
      */
     public function getWeDigBioPage(): Collection
     {
-        return $this->weDigBioEvent->all()->sortByDesc('created_at');
+        return $this->weDigBioEvent
+            ->where(function ($query) {
+                $query->where('active', 1)
+                    ->orWhere('has_transcriptions', 1);
+            })
+            ->get()
+            ->sortByDesc('start_date');
     }
 
     /**

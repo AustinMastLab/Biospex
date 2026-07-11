@@ -20,8 +20,8 @@
                         data-remote="false"
                         data-target="#wedigbio-progress-modal"
                         data-href="{{ route('front.wedigbio-progress', [$event]) }}"
-                        data-channel="{{ config('config.poll_wedigbio_progress_channel') . '.' . $event->uuid }}"
-                        data-uuid="{{ $event->uuid }}">{{ t('Progress') }}
+                        data-channel="{{ config('config.poll_wedigbio_progress_channel') . '.' . $event->channel_key }}"
+                        data-uuid="{{ $event->channel_key }}">{{ t('Progress') }}
                 </button>
 
                 <button class="btn btn-primary mb-4 text-uppercase"
@@ -29,7 +29,7 @@
                         data-remote="false"
                         data-target="#wedigbio-rate-modal"
                         data-projects="{{ route('front.get.wedigbio-projects', [$event]) }}"
-                        data-uuid="{{ $event->uuid }}"
+                        data-uuid="{{ $event->channel_key }}"
                         data-href="{{ route('front.get.wedigbio-rate', [$event]) }}">{{ t('Rates') }}
                 </button>
             </div>

@@ -685,6 +685,7 @@ class AppUpdateQueriesCommand extends Command
                   re.created_at,
                   re.updated_at,
                   wel.id AS legacy_event_id,
+                  wel.uuid,
                   COALESCE(wel.uuid, re.slug) AS channel_key,
                   EXISTS (
                     SELECT 1
@@ -718,6 +719,7 @@ class AppUpdateQueriesCommand extends Command
                   re.created_at,
                   re.updated_at,
                   NULL AS legacy_event_id,
+                  NULL AS uuid,
                   re.slug AS channel_key,
                   EXISTS (
                     SELECT 1

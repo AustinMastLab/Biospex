@@ -130,7 +130,7 @@ class ZooniverseExportProcessImagesJob implements ShouldQueue
         // Check if all messages were sent successfully
         if ($sentCount !== $totalFiles) {
             \Artisan::queue('app:lambda-control', [
-                'lambda' => 'BiospexImageProcess',
+                'lambda' => config('services.aws.lambdas.BiospexImageFetcher'),
                 'action' => 'stop',
             ])->onQueue(config('config.queue.default'));
             throw new \Exception("SQS send incomplete: {$sentCount}/{$totalFiles} messages sent");

@@ -134,7 +134,7 @@ class TesseractOcrProcessJob implements ShouldQueue
 
         if ($sentCount !== $totalFiles) {
             \Artisan::queue('app:lambda-control', [
-                'lambda' => 'BiospexTesseractOcr',
+                'lambda' => config('services.aws.lambdas.BiospexImageFetcher'),
                 'action' => 'stop',
             ])->onQueue(config('config.queue.default'));
             throw new \Exception("SQS send incomplete: {$sentCount}/{$totalFiles} messages sent");

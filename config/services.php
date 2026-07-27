@@ -64,6 +64,7 @@ return [
             'batch_update' => "{$queuePrefix}-batch-update",
             'image_trigger' => "{$queuePrefix}-image-trigger",
             'image_trigger_dlq' => "{$queuePrefix}-image-trigger-dlq",
+            'ia_image_trigger' => "{$queuePrefix}-ia-image-trigger",
             'export_update' => "{$queuePrefix}-export-update",
             'export_zip_trigger' => "{$queuePrefix}-export-zip-trigger",
             'reconcile_trigger' => "{$queuePrefix}-reconcile-trigger",
@@ -79,13 +80,12 @@ return [
 
         'lambdas' => [
             'BiospexZipMerger' => 1,
-            'BiospexImageProcess' => 100,
-            'BiospexTesseractOcr' => 100,
             'BiospexLabelReconcile' => 8,
             'BiospexBatchCreator' => 1,
             'BiospexZipCreator' => 10,
-            'BiospexImageFetcher' => 100, // Your new universal downloader
-            'BiospexOcrProcessor' => 100, // Your new OCR engine
+            'BiospexImageFetcher' => 100,
+            'BiospexOcrProcessor' => 100,
+            'InternetArchiveImageFetcher' => 5
         ],
     ],
 ];

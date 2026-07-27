@@ -108,6 +108,10 @@ class SqsListenerExportUpdate extends Command
         }
 
         $function = $data['function'];
+        $status   = $data['status'] ?? 'unknown';
+        $id       = $data['fileId'] ?? $data['subjectId'] ?? $data['queueId'] ?? '?';
+
+        $this->info("[export:listen] Received: function={$function} status={$status} id={$id}");
 
         try {
             match ($function) {
@@ -141,13 +145,17 @@ class SqsListenerExportUpdate extends Command
             throw new \InvalidArgumentException('Missing both fileId and subjectId');
         }
 
+        $id = $data['fileId'] ?? $data['subjectId'];
+
         // Dispatch the job for BOTH success and failure
         ZooniverseExportImageUpdateJob::dispatch($data);
 
         if ($status === 'failed') {
             $error = $data['error'] ?? 'Unknown error';
-            $id = $data['fileId'] ?? $data['subjectId'];
+            $this->error("[export:listen] Image FAILED #{$id}: {$error}");
             Log::error("Image processing failed for image #{$id}: {$error}", $data);
+        } else {
+            $this->line("[export:listen] Image OK #{$id} → dispatched ZooniverseExportImageUpdateJob");
         }
     }
 

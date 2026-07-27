@@ -23,6 +23,7 @@ namespace App\Jobs;
 use App\Models\OcrQueue;
 use App\Models\User;
 use App\Notifications\Generic;
+use App\Traits\ResolvesImageQueue;
 use Aws\Sqs\SqsClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -37,7 +38,7 @@ use Throwable;
  */
 class TesseractOcrProcessJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, Queueable, ResolvesImageQueue, SerializesModels;
 
     public int $timeout = 1800;
 
@@ -76,11 +77,6 @@ class TesseractOcrProcessJob implements ShouldQueue
 
         $sentCount = 0;
 
-        // Correct Queue URLs for OCR
-        $queueUrl = $sqs->getQueueUrl([
-            'QueueName' => config('services.aws.sqs.image_trigger'),
-        ])['QueueUrl'];
-
         $updatesQueueUrl = $sqs->getQueueUrl([
             'QueueName' => config('services.aws.sqs.ocr_update'),
         ])['QueueUrl'];
@@ -88,47 +84,52 @@ class TesseractOcrProcessJob implements ShouldQueue
         $ocrDir = config('zooniverse.directory.lambda-ocr-wip');
         $s3Bucket = config('filesystems.disks.s3.bucket');
 
+        // Cache resolved queue URLs per host to avoid repeated SQS API calls
+        $queueUrlCache = [];
+
         // Use chunking to save memory and by id to lock rows
         $this->ocrQueue->files()
             ->where('processed', 0)
             ->orderBy('id')
-            ->chunkById(1000, function ($files) use ($sqs, $queueUrl, $updatesQueueUrl, $ocrDir, $s3Bucket, &$sentCount) {
-                $batch = [];
+            ->chunkById(1000, function ($files) use ($sqs, $updatesQueueUrl, $ocrDir, $s3Bucket, &$sentCount, &$queueUrlCache) {
+                // Group messages by destination queue URL (archive.org vs standard)
+                $batches = [];
+
                 foreach ($files as $file) {
+                    $host = parse_url($file->access_uri, PHP_URL_HOST) ?? '';
+
+                    if (! isset($queueUrlCache[$host])) {
+                        $queueUrlCache[$host] = $this->resolveImageQueueUrl($sqs, $file->access_uri);
+                    }
+
                     $s3Path = "{$ocrDir}/{$this->ocrQueue->id}/{$file->subject_id}.jpg";
 
-                    $batch[] = [
+                    $batches[$queueUrlCache[$host]][] = [
                         'Id' => (string) $file->id,
                         'MessageBody' => json_encode([
-                            'taskType' => 'ocr',
-                            'queueId' => $this->ocrQueue->id, // Parent batch ID
-                            'fileId' => $file->id,           // Specific file ID
-                            'subjectId' => $file->subject_id,
-                            'accessURI' => $file->access_uri,
-                            's3Bucket' => $s3Bucket,
-                            's3Path' => $s3Path,
+                            'taskType'        => 'ocr',
+                            'queueId'         => $this->ocrQueue->id,
+                            'fileId'          => $file->id,
+                            'subjectId'       => $file->subject_id,
+                            'accessURI'       => $file->access_uri,
+                            's3Bucket'        => $s3Bucket,
+                            's3Path'          => $s3Path,
                             'updatesQueueUrl' => $updatesQueueUrl,
-                            'maxWidth' => 2500,
-                            'maxHeight' => 2500,
+                            'maxWidth'        => 2500,
+                            'maxHeight'       => 2500,
                         ]),
                     ];
-
-                    if (count($batch) === 10) {
-                        $sqs->sendMessageBatch([
-                            'QueueUrl' => $queueUrl,
-                            'Entries' => $batch,
-                        ]);
-                        $sentCount += 10;
-                        $batch = [];
-                    }
                 }
 
-                if (! empty($batch)) {
-                    $sqs->sendMessageBatch([
-                        'QueueUrl' => $queueUrl,
-                        'Entries' => $batch,
-                    ]);
-                    $sentCount += count($batch);
+                // Send in chunks of 10 per queue (SQS batch limit)
+                foreach ($batches as $queueUrl => $messages) {
+                    foreach (array_chunk($messages, 10) as $chunk) {
+                        $sqs->sendMessageBatch([
+                            'QueueUrl' => $queueUrl,
+                            'Entries'  => $chunk,
+                        ]);
+                        $sentCount += count($chunk);
+                    }
                 }
             }, 'id');
 

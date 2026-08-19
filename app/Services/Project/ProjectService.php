@@ -25,12 +25,14 @@ use App\Models\ProjectAsset;
 use App\Models\User;
 use App\Services\Helpers\CountService;
 use App\Services\Helpers\DateService;
+use App\Services\Trait\EventPartitionTrait;
 use App\Services\Trait\ExpeditionPartitionTrait;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class ProjectService
 {
+    use EventPartitionTrait;
     use ExpeditionPartitionTrait;
 
     /**

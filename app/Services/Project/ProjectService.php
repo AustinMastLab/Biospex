@@ -25,11 +25,13 @@ use App\Models\ProjectAsset;
 use App\Models\User;
 use App\Services\Helpers\CountService;
 use App\Services\Helpers\DateService;
+use App\Services\Trait\ExpeditionPartitionTrait;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class ProjectService
 {
+    use ExpeditionPartitionTrait;
 
     /**
      * ProjectService constructor.
@@ -59,9 +61,9 @@ class ProjectService
     /**
      * Override create in base repository.
      *
-     * @return Project|Model|true
+     * @return Project|true
      */
-    public function create(array $data): Model|bool|Project
+    public function create(array $data): bool|Project
     {
         // Handle logo upload for new projects
         $this->handleLogoUploadForCreate($data);

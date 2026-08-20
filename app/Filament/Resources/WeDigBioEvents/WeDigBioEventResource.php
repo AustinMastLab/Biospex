@@ -2,11 +2,8 @@
 
 namespace App\Filament\Resources\WeDigBioEvents;
 
-use App\Filament\Resources\WeDigBioEvents\Pages\CreateWeDigBioEvent;
-use App\Filament\Resources\WeDigBioEvents\Pages\EditWeDigBioEvent;
 use App\Filament\Resources\WeDigBioEvents\Pages\ListWeDigBioEvents;
 use App\Filament\Resources\WeDigBioEvents\Pages\ViewWeDigBioEvent;
-use App\Filament\Resources\WeDigBioEvents\Schemas\WeDigBioEventForm;
 use App\Filament\Resources\WeDigBioEvents\Schemas\WeDigBioEventInfolist;
 use App\Filament\Resources\WeDigBioEvents\Tables\WeDigBioEventsTable;
 use App\Filament\Traits\NavigationTrait;
@@ -29,7 +26,7 @@ class WeDigBioEventResource extends Resource
 
     public static function form(Schema $schema): Schema
     {
-        return WeDigBioEventForm::configure($schema);
+        return WeDigBioEventInfolist::configure($schema);
     }
 
     public static function infolist(Schema $schema): Schema
@@ -40,6 +37,26 @@ class WeDigBioEventResource extends Resource
     public static function table(Table $table): Table
     {
         return WeDigBioEventsTable::configure($table);
+    }
+
+    public static function canCreate(): bool
+    {
+        return false;
+    }
+
+    public static function canEdit(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDelete(\Illuminate\Database\Eloquent\Model $record): bool
+    {
+        return false;
+    }
+
+    public static function canDeleteAny(): bool
+    {
+        return false;
     }
 
     public static function getRelations(): array
@@ -53,9 +70,7 @@ class WeDigBioEventResource extends Resource
     {
         return [
             'index' => ListWeDigBioEvents::route('/'),
-            'create' => CreateWeDigBioEvent::route('/create'),
             'view' => ViewWeDigBioEvent::route('/{record}'),
-            'edit' => EditWeDigBioEvent::route('/{record}/edit'),
         ];
     }
 }

@@ -3,7 +3,6 @@
 namespace App\Filament\Resources\WeDigBioEvents\Pages;
 
 use App\Filament\Resources\WeDigBioEvents\WeDigBioEventResource;
-use Filament\Actions\CreateAction;
 use Filament\Resources\Pages\ListRecords;
 
 class ListWeDigBioEvents extends ListRecords
@@ -12,8 +11,6 @@ class ListWeDigBioEvents extends ListRecords
 
     protected function getHeaderActions(): array
     {
-        return [
-            CreateAction::make(),
-        ];
+        return [];
     }
 }

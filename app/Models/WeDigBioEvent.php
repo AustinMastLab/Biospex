@@ -36,9 +36,13 @@ class WeDigBioEvent extends BaseEloquentModel
     protected $table = 'wedigbio_events';
 
     protected $fillable = [
+        'name',
+        'slug',
         'start_date',
         'end_date',
         'active',
+        'is_public',
+        'is_archived',
     ];
 
     protected string $presenter = WeDigBioDatePresenter::class;
@@ -53,13 +57,15 @@ class WeDigBioEvent extends BaseEloquentModel
         return [
             'start_date' => 'datetime',
             'end_date' => 'datetime',
-            'active' => 'int',
-            'channel_key' => 'string',
+            'active' => 'boolean',
+            'is_public' => 'boolean',
+            'is_archived' => 'boolean',
         ];
     }
 
     /**
      * Get the route key for the model.
+     * Changed from 'uuid' to 'slug' for Reports-backed event resolution.
      */
     public function getRouteKeyName(): string
     {
@@ -82,4 +88,3 @@ class WeDigBioEvent extends BaseEloquentModel
         return $query->where('active', 1);
     }
 }
-

@@ -11,6 +11,27 @@
 ## Where to Work
 
 - For web app logic, controllers, services, Eloquent models, etc., look in `biospex/app/`.
+- Route files are split by context: `routes/front/`, `routes/admin/`, `routes/api/` (versioned: `routes/api/v1/`), `routes/broadcast/`.
+- Pipeline actor services live in `app/Services/Actor/` — three actors: `TesseractOcr/`, `Zooniverse/`, `GeoLocate/`. Instantiate via `ActorFactory::create('TesseractOcr\TesseractOcrBuild')`.
+- Lambda Node.js scripts at project root: `BiospexImageFetcher.mjs` (fetches images → S3 → SQS trigger) and `BiospexOcrProcessor.mjs` (S3 image → Tesseract.js → SQS result).
+
+## Model Conventions
+
+- MySQL/Eloquent models extend `App\Models\BaseEloquentModel` (includes `ClearsResponseCache` trait).
+- MongoDB models extend `App\Models\BaseMongoModel` (extends `MongoDB\Laravel\Eloquent\Model`). MongoDB models include: `Subject`, `Occurrence`, `PanoptesTranscription`, `Reconcile`, `PusherTranscription`, `WeDigBioEventTranscription`.
+
+## Queue Architecture
+
+- **Beanstalkd** (`pda/pheanstalk`): used for standard web-initiated background jobs (DwcImport, ExportQueue, Zooniverse CSV, etc.).
+- **AWS SQS**: used for Lambda ↔ PHP pipeline communication. Queue names are environment-prefixed from `APP_ENV`: `loc-`, `dev-`, or `prod-` (e.g., `prod-batch-trigger`, `prod-ocr-update`). All SQS queue keys defined in `config/services.php` under `aws.sqs`.
+- SQS listener Artisan commands (each polls a dedicated queue): `SqsListenerBatchUpdate`, `SqsListenerExportUpdate`, `SqsListenerOcrUpdate`, `SqsListenerReconcileUpdate`, `SqsListenerImageDlq`.
+- Lambda functions invoked: `BiospexImageProcess` (image download), `BiospexTesseractOcr` (OCR), `BiospexZipMerger` (export zip).
+
+## Frontend Bundling
+
+- This project uses **Laravel Mix** (webpack), **not Vite**. Ignore any Vite-specific guidance from foundation rules.
+- Build commands: `npm run production` (minified build), `npm run development` (unminified), `npm run watch` (file watcher).
+- Frontend entry points: `resources/js/front-app.js` → `public/js/front.js`; `resources/js/admin-app.js` → `public/js/admin.js`.
 
 ## Running Commands
 

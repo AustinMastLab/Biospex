@@ -250,6 +250,13 @@ jobs:
 
       - name: Create Release
         run: |
+          VERSION="${{ needs.calculate-version.outputs.new_version }}"
+
+          if gh release view "$VERSION" >/dev/null 2>&1; then
+            echo "Release $VERSION already exists; skipping creation."
+            exit 0
+          fi
+
           NOTES_FILE="$(mktemp)"
 
           cat > "$NOTES_FILE" <<'EOF'
@@ -268,8 +275,8 @@ jobs:
           # Replace placeholder with the commit message safely (no shell expansion)
           perl -0777 -pe 's/__COMMITS_HERE__/\Q$ENV{COMMIT_MESSAGE}\E/g' -i "$NOTES_FILE"
 
-          gh release create "${{ needs.calculate-version.outputs.new_version }}" \
-            --title "Release ${{ needs.calculate-version.outputs.new_version }}" \
+          gh release create "$VERSION" \
+            --title "Release $VERSION" \
             --notes-file "$NOTES_FILE"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}

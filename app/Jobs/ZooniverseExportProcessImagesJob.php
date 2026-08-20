@@ -22,6 +22,7 @@ namespace App\Jobs;
 
 use App\Models\ExportQueue;
 use App\Traits\NotifyOnJobFailure;
+use App\Traits\ResolvesImageQueue;
 use Aws\Sqs\SqsClient;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -35,7 +36,7 @@ use Throwable;
  */
 class ZooniverseExportProcessImagesJob implements ShouldQueue
 {
-    use Dispatchable, InteractsWithQueue, NotifyOnJobFailure, Queueable, SerializesModels;
+    use Dispatchable, InteractsWithQueue, NotifyOnJobFailure, Queueable, ResolvesImageQueue, SerializesModels;
 
     public int $timeout = 1800;
 
@@ -72,11 +73,6 @@ class ZooniverseExportProcessImagesJob implements ShouldQueue
 
         $sentCount = 0;
 
-        // Retrieve Queue URLs needed for the payload
-        $queueUrl = $sqs->getQueueUrl([
-            'QueueName' => config('services.aws.sqs.image_trigger'),
-        ])['QueueUrl'];
-
         $updatesQueueUrl = $sqs->getQueueUrl([
             'QueueName' => config('services.aws.sqs.export_update'),
         ])['QueueUrl'];
@@ -84,53 +80,57 @@ class ZooniverseExportProcessImagesJob implements ShouldQueue
         $processDir = "{$this->exportQueue->id}-".config('zooniverse.actor_id')."-{$this->exportQueue->expedition->uuid}";
         $s3Bucket = config('filesystems.disks.s3.bucket');
 
+        // Cache resolved queue URLs per host to avoid repeated SQS API calls
+        $queueUrlCache = [];
+
         // Use chunking to save memory and by id to lock rows
-        // ADDED $totalFiles to the use() block below
         $this->exportQueue->files()
             ->where('processed', 0)
             ->orderBy('id')
-            ->chunkById(1000, function ($files) use ($sqs, $queueUrl, $updatesQueueUrl, $processDir, $s3Bucket, &$sentCount) {
-                $batch = [];
-                foreach ($files as $index => $file) {
-                    $batch[] = [
+            ->chunkById(1000, function ($files) use ($sqs, $updatesQueueUrl, $processDir, $s3Bucket, &$sentCount, &$queueUrlCache) {
+                // Group messages by destination queue URL (archive.org vs standard)
+                $batches = [];
+
+                foreach ($files as $file) {
+                    $host = parse_url($file->access_uri, PHP_URL_HOST) ?? '';
+
+                    if (! isset($queueUrlCache[$host])) {
+                        $queueUrlCache[$host] = $this->resolveImageQueueUrl($sqs, $file->access_uri);
+                    }
+
+                    $batches[$queueUrlCache[$host]][] = [
                         'Id' => (string) $file->id,
                         'MessageBody' => json_encode([
-                            'taskType' => 'export',
-                            'queueId' => $this->exportQueue->id,
-                            'fileId' => $file->id,
-                            'subjectId' => $file->subject_id,
-                            'accessURI' => $file->access_uri,
-                            's3Bucket' => $s3Bucket,
-                            's3Path' => "scratch/{$processDir}/{$file->subject_id}.jpg",
+                            'taskType'        => 'export',
+                            'queueId'         => $this->exportQueue->id,
+                            'fileId'          => $file->id,
+                            'subjectId'       => $file->subject_id,
+                            'accessURI'       => $file->access_uri,
+                            's3Bucket'        => $s3Bucket,
+                            's3Path'          => "scratch/{$processDir}/{$file->subject_id}.jpg",
                             'updatesQueueUrl' => $updatesQueueUrl,
-                            'maxWidth' => 1500,
-                            'maxHeight' => 1500,
+                            'maxWidth'        => 1500,
+                            'maxHeight'       => 1500,
                         ]),
                     ];
-
-                    if (count($batch) === 10) {
-                        $sqs->sendMessageBatch([
-                            'QueueUrl' => $queueUrl,
-                            'Entries' => $batch,
-                        ]);
-                        $sentCount += 10;
-                        $batch = [];
-                    }
                 }
 
-                if (! empty($batch)) {
-                    $sqs->sendMessageBatch([
-                        'QueueUrl' => $queueUrl,
-                        'Entries' => $batch,
-                    ]);
-                    $sentCount += count($batch);
+                // Send in chunks of 10 per queue (SQS batch limit)
+                foreach ($batches as $queueUrl => $messages) {
+                    foreach (array_chunk($messages, 10) as $chunk) {
+                        $sqs->sendMessageBatch([
+                            'QueueUrl' => $queueUrl,
+                            'Entries'  => $chunk,
+                        ]);
+                        $sentCount += count($chunk);
+                    }
                 }
             }, 'id');
 
         // Check if all messages were sent successfully
         if ($sentCount !== $totalFiles) {
             \Artisan::queue('app:lambda-control', [
-                'lambda' => 'BiospexImageProcess',
+                'lambda' => config('services.aws.lambdas.BiospexImageFetcher'),
                 'action' => 'stop',
             ])->onQueue(config('config.queue.default'));
             throw new \Exception("SQS send incomplete: {$sentCount}/{$totalFiles} messages sent");

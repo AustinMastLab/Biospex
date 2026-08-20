@@ -36,9 +36,13 @@ class WeDigBioEvent extends BaseEloquentModel
     protected $table = 'wedigbio_events';
 
     protected $fillable = [
+        'name',
+        'slug',
         'start_date',
         'end_date',
         'active',
+        'is_public',
+        'is_archived',
     ];
 
     protected string $presenter = WeDigBioDatePresenter::class;
@@ -53,7 +57,9 @@ class WeDigBioEvent extends BaseEloquentModel
         return [
             'start_date' => 'datetime',
             'end_date' => 'datetime',
-            'active' => 'int',
+            'active' => 'boolean',
+            'is_public' => 'boolean',
+            'is_archived' => 'boolean',
         ];
     }
 

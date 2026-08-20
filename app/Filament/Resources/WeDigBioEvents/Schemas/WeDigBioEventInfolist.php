@@ -12,18 +12,23 @@ class WeDigBioEventInfolist
     {
         return $schema
             ->components([
+                TextEntry::make('name')
+                    ->label('Name'),
+                TextEntry::make('slug'),
                 TextEntry::make('start_date')
+                    ->label('Start Date')
                     ->dateTime(),
                 TextEntry::make('end_date')
+                    ->label('End Date')
                     ->dateTime(),
                 IconEntry::make('active')
                     ->boolean(),
-                TextEntry::make('created_at')
-                    ->dateTime()
-                    ->placeholder('-'),
-                TextEntry::make('updated_at')
-                    ->dateTime()
-                    ->placeholder('-'),
+                IconEntry::make('is_public')
+                    ->label('Public')
+                    ->boolean(),
+                IconEntry::make('is_archived')
+                    ->label('Archived')
+                    ->boolean(),
             ]);
     }
 }

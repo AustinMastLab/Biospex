@@ -20,11 +20,11 @@
 
 namespace App\Console\Commands;
 
+use App\Listeners\LabelReconciliationListener;
 use App\Services\Expedition\ExpeditionService;
+use App\Services\Reconcile\ReconcileService;
 use App\Traits\SkipZooniverse;
-use Artisan;
 use Illuminate\Console\Command;
-use Storage;
 
 /**
  * Class ZooniverseReconcileChainedCommand
@@ -56,16 +56,18 @@ class ZooniverseReconcileChainedCommand extends Command
      *
      * @return void
      */
-    public function __construct(protected ExpeditionService $expeditionService)
-    {
+    public function __construct(
+        protected ExpeditionService $expeditionService,
+        protected ReconcileService $reconcileService
+    ) {
         parent::__construct();
     }
 
     /**
      * Execute the console command.
-     * Copies classification csv to lambda-reconciliation on S3 and triggers lambda labelReconciliation function.
+     * Triggers standard reconciliation without explanations.
      *
-     * @see \App\Listeners\LabelReconciliationListener for result processing.
+     * @see LabelReconciliationListener for result processing.
      */
     public function handle(): void
     {
@@ -77,11 +79,7 @@ class ZooniverseReconcileChainedCommand extends Command
                 continue;
             }
 
-            $classification = config('zooniverse.directory.classification').'/'.$expeditionId.'.csv';
-            $lambda_reconciliation = config('zooniverse.directory.lambda-reconciliation').'/'.$expeditionId.'.csv';
-            Storage::disk('s3')->copy($classification, $lambda_reconciliation);
-
-            Artisan::queue('sqs:control reconcile_update --action=start')->onQueue(config('config.queue.default'));
+            $this->reconcileService->sendToReconcileTriggerQueue((int) $expeditionId, false);
         }
     }
 

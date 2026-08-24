@@ -43,8 +43,9 @@ jobs:
       - name: Determine version bump
         id: version_bump
         run: |
-          # Get the latest tag, default to 0.0.0 if no tags exist
-          LATEST_TAG=$(git describe --tags --abbrev=0 2>/dev/null || echo "0.0.0")
+          # Select the highest semantic-version tag reachable from HEAD.
+          LATEST_TAG="$(git tag --merged HEAD --list --sort=-version:refname | grep -m1 -E '^[0-9]+\.[0-9]+\.[0-9]+$' || true)"
+          LATEST_TAG="${LATEST_TAG:-0.0.0}"
           echo "Latest tag: $LATEST_TAG"
 
           # Check commit messages in the current push for version bump indicators

@@ -21,25 +21,13 @@
 namespace App\Livewire\Front;
 
 use App\Services\Expedition\ExpeditionService;
+use App\Traits\WithIncrementalExpeditions;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class ExpeditionsIndex extends Component
 {
-    public string $type = 'active';
-
-    public string $sort = 'date';
-
-    public string $order = 'asc';
-
-    public ?int $projectId = null;
-
-    public int $page = 1;
-
-    public bool $hasMore = false;
-
-    public Collection $expeditions;
+    use WithIncrementalExpeditions;
 
     protected ExpeditionService $expeditionService;
 
@@ -48,68 +36,19 @@ class ExpeditionsIndex extends Component
         $this->expeditionService = $expeditionService;
     }
 
-    public function mount(?string $type = null, ?int $projectId = null): void
+    protected function sortableExpeditionFields(): array
     {
-        if ($type !== null) {
-            $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
-        }
-
-        if ($projectId !== null) {
-            $this->projectId = $projectId;
-        }
-
-        $this->resetExpeditions();
+        return ['title', 'date'];
     }
 
-    public function sortBy(string $field): void
+    protected function typeChanged(): void
     {
-        if (! in_array($field, ['title', 'date'], true)) {
-            return;
-        }
-
-        if ($this->sort === $field) {
-            $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort = $field;
-            $this->order = 'asc';
-        }
-
-        $this->resetExpeditions();
-    }
-
-    public function setType(string $type): void
-    {
-        $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
-
-        $this->resetExpeditions();
         $this->dispatch('expedition-type-changed', type: $this->type);
-    }
-
-    public function loadMore(): void
-    {
-        if (! $this->hasMore) {
-            return;
-        }
-
-        $this->page++;
-        $expeditions = $this->getExpeditionPage();
-
-        $this->expeditions = $this->expeditions->concat($expeditions->items());
-        $this->hasMore = $expeditions->hasMorePages();
     }
 
     public function render()
     {
         return view('livewire.front.expeditions-index');
-    }
-
-    protected function resetExpeditions(): void
-    {
-        $this->page = 1;
-        $expeditions = $this->getExpeditionPage();
-
-        $this->expeditions = collect($expeditions->items());
-        $this->hasMore = $expeditions->hasMorePages();
     }
 
     protected function getExpeditionPage(): Paginator

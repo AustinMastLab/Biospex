@@ -21,52 +21,39 @@
 namespace App\Livewire\Admin;
 
 use App\Services\Expedition\ExpeditionService;
+use App\Traits\WithIncrementalExpeditions;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class ExpeditionsIndex extends Component
 {
-    public string $type = 'active';
+    use WithIncrementalExpeditions;
 
-    public string $sort = 'date';
+    protected ExpeditionService $expeditionService;
 
-    public string $order = 'asc';
-
-    public ?int $projectId = null;
-
-    public function mount(?string $type = null, ?int $projectId = null): void
+    public function boot(ExpeditionService $expeditionService): void
     {
-        if ($type !== null) {
-            $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
-        }
-
-        if ($projectId !== null) {
-            $this->projectId = $projectId;
-        }
+        $this->expeditionService = $expeditionService;
     }
 
-    public function sortBy(string $field): void
+    protected function sortableExpeditionFields(): array
     {
-        if ($this->sort === $field) {
-            $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort = $field;
-            $this->order = 'asc';
-        }
+        return ['title', 'project', 'date'];
     }
 
-    public function render(ExpeditionService $expeditionService)
+    protected function getExpeditionPage(): Paginator
     {
-        [$active, $completed] = $expeditionService->getAdminIndex(Auth::user(), [
+        return $this->expeditionService->getAdminIndexPage(Auth::user(), [
+            'type' => $this->type,
             'sort' => $this->sort,
             'order' => $this->order,
             'projectId' => $this->projectId,
-        ]);
+        ], $this->page);
+    }
 
-        $expeditions = $this->type === 'completed' ? $completed : $active;
-
-        return view('livewire.admin.expeditions-index', [
-            'expeditions' => $expeditions,
-        ]);
+    public function render()
+    {
+        return view('livewire.admin.expeditions-index');
     }
 }

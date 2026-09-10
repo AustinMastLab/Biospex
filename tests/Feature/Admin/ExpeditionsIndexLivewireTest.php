@@ -31,6 +31,14 @@ beforeEach(function () {
     Storage::fake('s3');
 });
 
+function makeAdminExpedition(Project $project, array $attributes = []): Expedition
+{
+    $expedition = Expedition::factory()->for($project)->create($attributes);
+    ExpeditionStat::factory()->for($expedition, 'expedition')->create();
+
+    return $expedition;
+}
+
 it('admin user sees all expeditions and sorting toggles by title', function () {
     $g1 = Group::factory()->create(['title' => 'G1']);
     $g2 = Group::factory()->create(['title' => 'G2']);
@@ -38,17 +46,13 @@ it('admin user sees all expeditions and sorting toggles by title', function () {
     $p1 = Project::factory()->for($g1)->create(['title' => 'Alpha Project']);
     $p2 = Project::factory()->for($g2)->create(['title' => 'Zebra Project']);
 
-    $e1 = Expedition::factory()->for($p1)->create(['title' => 'Alpha', 'completed' => 0]);
-    $e2 = Expedition::factory()->for($p2)->create(['title' => 'Zebra', 'completed' => 0]);
-    ExpeditionStat::factory()->for($e1, 'expedition')->create();
-    ExpeditionStat::factory()->for($e2, 'expedition')->create();
+    makeAdminExpedition($p1, ['title' => 'Alpha', 'completed' => 0]);
+    makeAdminExpedition($p2, ['title' => 'Zebra', 'completed' => 0]);
 
     $admin = User::factory()->create();
     $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
-    $admin->assignGroup($g1);
-    $admin->assignGroup($g2);
 
-    $this->actingAs($admin);
+    $this->actingAs($admin->fresh());
 
     Livewire::test(ExpeditionsIndex::class)
         ->call('sortBy', 'title')
@@ -67,17 +71,83 @@ it('non-admin user sees only scoped subset', function () {
     $p1 = Project::factory()->for($g1)->create(['title' => 'Alpha Project']);
     $p2 = Project::factory()->for($g2)->create(['title' => 'Zebra Project']);
 
-    $e1 = Expedition::factory()->for($p1)->create(['title' => 'E1', 'completed' => 0]);
-    $e2 = Expedition::factory()->for($p2)->create(['title' => 'E2', 'completed' => 0]);
-    ExpeditionStat::factory()->for($e1, 'expedition')->create();
-    ExpeditionStat::factory()->for($e2, 'expedition')->create();
+    makeAdminExpedition($p1, ['title' => 'E1', 'completed' => 0]);
+    makeAdminExpedition($p2, ['title' => 'E2', 'completed' => 0]);
 
     $user = User::factory()->create();
     $user->assignGroup($g1);
 
-    $this->actingAs($user);
+    $this->actingAs($user->fresh());
 
     Livewire::test(ExpeditionsIndex::class)
         ->assertSee('E1')
         ->assertDontSee('E2');
+});
+
+it('loads no more than twelve expeditions initially and appends the next page', function () {
+    $group = Group::factory()->create();
+    $project = Project::factory()->for($group)->create();
+    $admin = User::factory()->create();
+    $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
+
+    foreach (range(1, 13) as $number) {
+        makeAdminExpedition($project, [
+            'title' => sprintf('Expedition %02d', $number),
+            'created_at' => now()->addSeconds($number),
+            'completed' => 0,
+        ]);
+    }
+
+    $this->actingAs($admin->fresh());
+
+    Livewire::test(ExpeditionsIndex::class)
+        ->assertSee('Expedition 01')
+        ->assertSee('Expedition 12')
+        ->assertDontSee('Expedition 13')
+        ->assertSet('hasMore', true)
+        ->call('loadMore')
+        ->assertSeeInOrder(['Expedition 01', 'Expedition 12', 'Expedition 13'])
+        ->assertSet('page', 2)
+        ->assertSet('hasMore', false);
+});
+
+it('loads completed expeditions only when an admin changes type', function () {
+    $group = Group::factory()->create();
+    $project = Project::factory()->for($group)->create();
+    $admin = User::factory()->create();
+    $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
+    makeAdminExpedition($project, ['title' => 'Active Expedition', 'completed' => 0]);
+    makeAdminExpedition($project, ['title' => 'Completed Expedition', 'completed' => 1]);
+
+    $this->actingAs($admin->fresh());
+
+    Livewire::test(ExpeditionsIndex::class)
+        ->assertSee('Active Expedition')
+        ->assertDontSee('Completed Expedition')
+        ->call('setType', 'completed')
+        ->assertSee('Completed Expedition')
+        ->assertDontSee('Active Expedition')
+        ->assertSet('type', 'completed');
+});
+
+it('sorts admin expeditions by project and resets the loaded page', function () {
+    $admin = User::factory()->create();
+    $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
+    $firstProject = Project::factory()->create(['title' => 'Alpha Project']);
+    $secondProject = Project::factory()->create(['title' => 'Zebra Project']);
+
+    makeAdminExpedition($secondProject, ['title' => 'Alpha Expedition', 'completed' => 0]);
+    makeAdminExpedition($firstProject, ['title' => 'Zebra Expedition', 'completed' => 0]);
+
+    $this->actingAs($admin->fresh());
+
+    Livewire::test(ExpeditionsIndex::class)
+        ->call('sortBy', 'project')
+        ->assertSet('sort', 'project')
+        ->assertSet('order', 'asc')
+        ->assertSeeInOrder(['Zebra Expedition', 'Alpha Expedition'])
+        ->call('sortBy', 'project')
+        ->assertSet('order', 'desc')
+        ->assertSeeInOrder(['Alpha Expedition', 'Zebra Expedition'])
+        ->assertSet('page', 1);
 });

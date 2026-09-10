@@ -22,7 +22,6 @@ use App\Livewire\Front\EventsIndex;
 use App\Models\Event;
 use App\Models\PanoptesProject;
 use App\Models\Project;
-use App\Services\Event\EventService;
 use Illuminate\Support\Facades\Cache;
 use Livewire\Livewire;
 
@@ -127,21 +126,35 @@ it('project-scoped rendering shows only events from that project', function () {
         ->assertDontSee('P2 E');
 });
 
-it('calls EventService::getPublicIndexCachedData', function () {
-    $p = Project::factory()->create(['title' => 'Proj']);
-    PanoptesProject::factory()->create(['project_id' => $p->id]);
-    $active = Event::factory()->create(['project_id' => $p->id, 'title' => 'Mock Active', 'start_date' => now()->subDay(), 'end_date' => now()->addDay()]);
-    $completed = Event::factory()->create(['project_id' => $p->id, 'title' => 'Mock Completed', 'start_date' => now()->subDays(3), 'end_date' => now()->subDay()]);
-
-    $service = app(EventService::class);
-    $data = $service->getPublicIndex(['sort' => 'date', 'order' => 'asc']);
-
-    $mock = $this->mock(EventService::class);
-    $mock->shouldReceive('getPublicIndexCachedData')
-        ->once()
-        ->with(['sort' => 'date', 'order' => 'asc', 'projectId' => null])
-        ->andReturn($data);
+it('loads nine events initially and appends the final page', function () {
+    foreach (range(1, 10) as $number) {
+        makeEvent([
+            'title' => sprintf('Event %02d', $number),
+            'start_date' => now()->addDays($number),
+            'end_date' => now()->addDays($number + 1),
+        ]);
+    }
 
     Livewire::test(EventsIndex::class)
-        ->assertSee('Mock Active');
+        ->assertSee('Event 01')
+        ->assertSee('Event 09')
+        ->assertDontSee('Event 10')
+        ->assertSet('hasMore', true)
+        ->call('loadMore')
+        ->assertSee('Event 10')
+        ->assertSet('page', 2)
+        ->assertSet('hasMore', false);
+});
+
+it('loads completed events only after changing type', function () {
+    makeEvent(['title' => 'Active Event', 'start_date' => now()->subDay(), 'end_date' => now()->addDay()]);
+    makeEvent(['title' => 'Completed Event', 'start_date' => now()->subDays(2), 'end_date' => now()->subDay()]);
+
+    Livewire::test(EventsIndex::class)
+        ->assertSee('Active Event')
+        ->assertDontSee('Completed Event')
+        ->call('setType', 'completed')
+        ->assertSee('Completed Event')
+        ->assertDontSee('Active Event')
+        ->assertDispatched('event-type-changed');
 });

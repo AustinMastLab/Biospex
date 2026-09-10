@@ -1,4 +1,4 @@
-<div class="col-md-4 mb-4">
+<div wire:key="event-{{ $event->id }}" class="col-md-4 mb-4">
     <div class="card px-4 box-shadow h-100">
         <div class="card-body text-center">
             @if(event_before($event))

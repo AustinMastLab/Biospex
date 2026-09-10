@@ -120,6 +120,23 @@ it('uses cache on second call', function () {
     expect($secondCount)->toBe(0);
 });
 
+it('caches each public event page within the current minute', function () {
+    $event = Event::factory()->for(Project::factory())->create([
+        'title' => 'Cached Event',
+        'start_date' => now()->addDay(),
+        'end_date' => now()->addDays(2),
+    ]);
+
+    $service = app(EventService::class);
+    $params = ['type' => 'active', 'sort' => 'title', 'order' => 'asc'];
+
+    $firstPage = $service->getPublicIndexPage($params);
+    $event->deleteQuietly();
+
+    expect($service->getPublicIndexPage($params)->getCollection()->pluck('title')->all())
+        ->toEqual($firstPage->getCollection()->pluck('title')->all());
+});
+
 it('invalidates cache when event is created or updated (version bump)', function () {
     Cache::forget('public_sort:events:version');
 

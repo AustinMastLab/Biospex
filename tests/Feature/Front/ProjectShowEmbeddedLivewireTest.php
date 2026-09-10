@@ -102,7 +102,10 @@ it('embeds Livewire components on project show page and scopes by projectId', fu
         ->assertSee('P1 X2')
         ->assertDontSee('P2 X1')
         ->assertSee('wire:click="setType(\'completed\')"', false)
-        ->assertDontSee('data-target="#active-expeditions-main,#completed-expeditions-main"', false);
+        ->assertDontSee('Sort events by Project')
+        ->assertDontSee('Sort expeditions by Project')
+        ->assertDontSee('data-target="#active-expeditions-main,#completed-expeditions-main"', false)
+        ->assertDontSee('data-target="#active-events-main,#completed-events-main"', false);
 });
 
 it('multiple component instances do not conflict between events and expeditions', function () {

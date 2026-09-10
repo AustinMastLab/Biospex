@@ -137,21 +137,11 @@
     <div class="row">
         <div class="col-sm-8 offset-md-2 mt-5">
             <h2 class="text-center content-header text-uppercase mt-5" id="events">{{ t('Events') }}</h2>
-            <div class="text-center mt-4">
-                <button class="toggle-view-btn btn btn-primary text-uppercase"
-                        data-toggle="collapse"
-                        data-target="#active-events-main,#completed-events-main"
-                        data-value="{{ t('view active events') }}"
-                >{{ t('view completed events') }}</button>
-            </div>
             <hr class="header mx-auto">
         </div>
-        <div id="active-events-main" class="col-sm-12 show">
-            <livewire:front.events-index type="active" :project-id="$project->id" />
-        </div>
-        <div id="completed-events-main" class="col-sm-12 collapse">
-            <canvas id="event-conffeti" style="z-index: -1; position:fixed; top:0;left:0"></canvas>
-            <livewire:front.events-index type="completed" :project-id="$project->id" />
+        <div class="col-sm-12">
+            <canvas id="event-conffeti" style="z-index: -1; position:fixed; top:0;left:0; display: none;"></canvas>
+            <livewire:front.events-index :project-id="$project->id" />
         </div>
         @include('common.scoreboard')
         @include('common.event-step-chart')
@@ -235,7 +225,22 @@
             });
         });
 
-        let eventConfetti = new ConfettiGenerator({target: 'event-conffeti'});
-        eventConfetti.render();
+        let eventConfetti;
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('event-type-changed', ({type}) => {
+                let canvas = document.getElementById('event-conffeti');
+
+                if (type === 'completed') {
+                    canvas.style.display = 'block';
+                    eventConfetti = new ConfettiGenerator({target: canvas});
+                    eventConfetti.render();
+
+                    return;
+                }
+
+                eventConfetti?.clear();
+                canvas.style.display = 'none';
+            });
+        });
     </script>
 @endpush

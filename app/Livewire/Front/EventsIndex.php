@@ -21,56 +21,45 @@
 namespace App\Livewire\Front;
 
 use App\Services\Event\EventService;
+use App\Traits\WithIncrementalIndex;
+use Illuminate\Pagination\Paginator;
 use Livewire\Component;
 
 class EventsIndex extends Component
 {
-    public string $type = 'active';
+    use WithIncrementalIndex;
 
-    public string $sort = 'date';
+    protected EventService $eventService;
 
-    public string $order = 'asc';
-
-    public ?int $projectId = null;
-
-    public function mount(?string $type = null, ?int $projectId = null): void
+    public function boot(EventService $eventService): void
     {
-        if ($type !== null) {
-            $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
-        }
-
-        if ($projectId !== null) {
-            $this->projectId = $projectId;
-        }
+        $this->eventService = $eventService;
     }
 
-    public function sortBy(string $field): void
+    protected function sortableFields(): array
     {
-        if ($this->sort === $field) {
-            $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort = $field;
-            $this->order = 'asc';
-        }
+        return $this->projectId === null
+            ? ['title', 'project', 'date']
+            : ['title', 'date'];
     }
 
-    public function setType(string $type): void
+    protected function typeChanged(): void
     {
-        $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
+        $this->dispatch('event-type-changed', type: $this->type);
     }
 
-    public function render(EventService $eventService)
+    protected function getPage(): Paginator
     {
-        [$active, $completed] = $eventService->getPublicIndexCachedData([
+        return $this->eventService->getPublicIndexPage([
+            'type' => $this->type,
             'sort' => $this->sort,
             'order' => $this->order,
             'projectId' => $this->projectId,
-        ]);
+        ], $this->page);
+    }
 
-        $events = $this->type === 'completed' ? $completed : $active;
-
-        return view('livewire.front.events-index', [
-            'events' => $events,
-        ]);
+    public function render()
+    {
+        return view('livewire.front.events-index');
     }
 }

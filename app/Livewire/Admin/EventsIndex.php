@@ -21,45 +21,38 @@
 namespace App\Livewire\Admin;
 
 use App\Services\Event\EventService;
+use App\Traits\WithIncrementalIndex;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class EventsIndex extends Component
 {
-    public string $type = 'active';
+    use WithIncrementalIndex;
 
-    public string $sort = 'date';
+    protected EventService $eventService;
 
-    public string $order = 'asc';
-
-    public function mount(?string $type = null): void
+    public function boot(EventService $eventService): void
     {
-        if ($type !== null) {
-            $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
-        }
+        $this->eventService = $eventService;
     }
 
-    public function sortBy(string $field): void
+    protected function sortableFields(): array
     {
-        if ($this->sort === $field) {
-            $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort = $field;
-            $this->order = 'asc';
-        }
+        return ['title', 'project', 'date'];
     }
 
-    public function render(EventService $eventService)
+    protected function getPage(): Paginator
     {
-        [$active, $completed] = $eventService->getAdminIndex(Auth::user(), [
+        return $this->eventService->getAdminIndexPage(Auth::user(), [
+            'type' => $this->type,
             'sort' => $this->sort,
             'order' => $this->order,
-        ]);
+        ], $this->page);
+    }
 
-        $events = $this->type === 'completed' ? $completed : $active;
-
-        return view('livewire.admin.events-index', [
-            'events' => $events,
-        ]);
+    public function render()
+    {
+        return view('livewire.admin.events-index');
     }
 }

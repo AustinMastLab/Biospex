@@ -26,7 +26,6 @@ use App\Models\Event;
 use App\Services\Event\EventService;
 use App\Services\Permission\CheckPermission;
 use App\Services\Project\ProjectService;
-use Auth;
 use Redirect;
 use Throwable;
 use View;
@@ -50,9 +49,7 @@ class EventController extends Controller
     public function index(): mixed
     {
         try {
-            [$events, $eventsCompleted] = $this->eventService->getAdminIndex(Auth::user());
-
-            return View::make('admin.event.index', compact('events', 'eventsCompleted'));
+            return View::make('admin.event.index');
         } catch (Throwable $throwable) {
 
             return Redirect::route('admin.projects.index')

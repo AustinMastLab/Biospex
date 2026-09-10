@@ -52,9 +52,7 @@ class ExpeditionController extends Controller
      */
     public function index(): mixed
     {
-        [$expeditions, $expeditionsCompleted] = $this->expeditionService->getAdminIndex(Auth::user());
-
-        return View::make('admin.expedition.index', compact('expeditions', 'expeditionsCompleted'));
+        return View::make('admin.expedition.index');
     }
 
     /**

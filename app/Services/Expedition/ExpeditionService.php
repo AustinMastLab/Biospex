@@ -126,13 +126,59 @@ class ExpeditionService
     {
         $query = $this->expedition->with([
             'project.group', 'stat', 'panoptesProject', 'workflowManager', 'zooniverseExport',
-        ])->whereHas('project.group.users', function ($query) use ($user) {
-            $query->where('user_id', $user->id);
-        });
+        ]);
+
+        if (! $user->isAdmin()) {
+            $query->whereHas('project.group.users', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        }
 
         $sortedRecords = $this->sortRecords($query, $request);
 
         return $this->partitionExpeditions($sortedRecords);
+    }
+
+    /**
+     * Get one authorization-scoped page of expeditions for the admin index.
+     */
+    public function getAdminIndexPage(User $user, array $request = [], int $page = 1): Paginator
+    {
+        $type = ($request['type'] ?? 'active') === 'completed' ? 'completed' : 'active';
+        $sortField = $request['sort'] ?? 'date';
+        $sort = in_array($sortField, ['title', 'project', 'date'], true)
+            ? $sortField
+            : 'date';
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+        $projectId = $request['projectId'] ?? null;
+
+        $query = $this->expedition->newQuery()
+            ->with(['project.group', 'stat', 'panoptesProject', 'workflowManager', 'zooniverseExport'])
+            ->where('expeditions.completed', $type === 'completed');
+
+        if (! $user->isAdmin()) {
+            $query->whereHas('project.group.users', function ($query) use ($user) {
+                $query->where('user_id', $user->id);
+            });
+        }
+
+        if (! empty($projectId)) {
+            $query->where('expeditions.project_id', $projectId);
+        }
+
+        if ($sort === 'project') {
+            $query->join('projects', 'projects.id', '=', 'expeditions.project_id')
+                ->select('expeditions.*')
+                ->orderBy('projects.title', $order);
+        } elseif ($sort === 'title') {
+            $query->orderBy('expeditions.title', $order);
+        } else {
+            $query->orderBy('expeditions.created_at', $order);
+        }
+
+        return $query
+            ->orderBy('expeditions.id', $order)
+            ->simplePaginate(12, ['*'], 'expeditionPage', $page);
     }
 
     /**

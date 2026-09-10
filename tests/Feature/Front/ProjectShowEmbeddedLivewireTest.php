@@ -18,22 +18,26 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Livewire\Front\EventsIndex;
+use App\Livewire\Front\ExpeditionsIndex;
 use App\Models\Actor;
 use App\Models\Event;
 use App\Models\Expedition;
+use App\Models\ExpeditionStat;
 use App\Models\PanoptesProject;
 use App\Models\Project;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Config;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
     Cache::forget('public_sort:events:version');
     Cache::forget('public_sort:expeditions:version');
     // Configure and fake S3 to satisfy presenters that check S3
-    \Illuminate\Support\Facades\Config::set('filesystems.default', 's3');
-    \Illuminate\Support\Facades\Config::set('filesystems.disks.s3.bucket', 'test-bucket');
-    \Illuminate\Support\Facades\Storage::fake('s3');
+    Config::set('filesystems.default', 's3');
+    Config::set('filesystems.disks.s3.bucket', 'test-bucket');
+    Storage::fake('s3');
 });
 
 function makeProjectWithPublicData(string $projectTitle, array $eventTitles = [], array $expeditionTitles = []): Project
@@ -69,7 +73,7 @@ function makeProjectWithPublicData(string $projectTitle, array $eventTitles = []
         ]);
 
         // Ensure a stat record exists for the expedition to satisfy view expectations
-        \App\Models\ExpeditionStat::factory()->create([
+        ExpeditionStat::factory()->create([
             'expedition_id' => $expedition->id,
             'local_transcriptions_completed' => 0,
         ]);
@@ -96,20 +100,22 @@ it('embeds Livewire components on project show page and scopes by projectId', fu
         ->assertDontSee('P2 E1')
         ->assertSee('P1 X1')
         ->assertSee('P1 X2')
-        ->assertDontSee('P2 X1');
+        ->assertDontSee('P2 X1')
+        ->assertSee('wire:click="setType(\'completed\')"', false)
+        ->assertDontSee('data-target="#active-expeditions-main,#completed-expeditions-main"', false);
 });
 
 it('multiple component instances do not conflict between events and expeditions', function () {
     $p = makeProjectWithPublicData('Proj', ['Alpha Event', 'Zebra Event'], ['Alpha Exp', 'Zebra Exp']);
 
     // Two independent component instances (events vs expeditions) with same projectId
-    $events = Livewire::test(\App\Livewire\Front\EventsIndex::class, ['projectId' => $p->id, 'type' => 'active'])
+    $events = Livewire::test(EventsIndex::class, ['projectId' => $p->id, 'type' => 'active'])
         ->call('sortBy', 'title') // asc
         ->assertSeeInOrder(['Alpha Event', 'Zebra Event'])
         ->call('sortBy', 'title') // desc
         ->assertSeeInOrder(['Zebra Event', 'Alpha Event']);
 
-    $expeditions = Livewire::test(\App\Livewire\Front\ExpeditionsIndex::class, ['projectId' => $p->id, 'type' => 'active'])
+    $expeditions = Livewire::test(ExpeditionsIndex::class, ['projectId' => $p->id, 'type' => 'active'])
         ->assertSeeInOrder(['Alpha Exp', 'Zebra Exp']); // default date asc may not guarantee order; titles distinct still visible
 
     // Now, interact with expeditions and ensure events output remains unaffected

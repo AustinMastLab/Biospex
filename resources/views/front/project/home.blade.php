@@ -127,9 +127,11 @@
                 <span class="text">{{ get_project_transcriber_count($project->id) }} {{ t('Participants') }}</span>
             </div>
             <hr class="header mx-auto">
-        </div>,
-        <canvas id="expedition-conffeti" style="z-index: -1; position:fixed; top:0;left:0; display: none;"></canvas>
-        <livewire:front.expeditions-index :project-id="$project->id" />
+        </div>
+        <div class="col-sm-12">
+            <canvas id="expedition-conffeti" style="z-index: -1; position:fixed; top:0;left:0; display: none;"></canvas>
+            <livewire:front.expeditions-index :project-id="$project->id" />
+        </div>
     </div>
 
     <div class="row">

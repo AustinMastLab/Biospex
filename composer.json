@@ -31,6 +31,7 @@
     "livewire/livewire": "^4.0",
     "lstrojny/fxmlrpc": "^0.22",
     "mongodb/laravel-mongodb": "^5.0",
+    "mongodb/mongodb": "~2.1.0",
     "pda/pheanstalk": "^8.0",
     "pusher/pusher-php-server": "^7.0",
     "ratchet/pawl": "^0.4",
@@ -61,6 +62,11 @@
     "optimize-autoloader": true,
     "preferred-install": "dist",
     "sort-packages": true,
+    "audit": {
+      "ignore": [
+        "PKSA-61k5-cqr9-b8b4"
+      ]
+    },
     "allow-plugins": {
       "pestphp/pest-plugin": true,
       "php-http/discovery": true

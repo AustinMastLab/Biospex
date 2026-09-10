@@ -4,13 +4,12 @@ use App\Livewire\Front\ProjectsIndex;
 use App\Models\Group;
 use App\Models\PanoptesProject;
 use App\Models\Project;
-use App\Services\Project\ProjectService;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
-    Cache::forget('public_sort:projects:version');
+    Cache::flush();
     Storage::fake('s3');
 });
 
@@ -82,26 +81,30 @@ it('clicking Date sorts by date asc; toggling works', function () {
         ->assertSeeInOrder(['Old', 'New']);
 });
 
-it('calls ProjectService::getPublicIndexCachedData', function () {
-    $p = Project::factory()->create([
-        'title' => 'Mocked Project',
-    ]);
-    PanoptesProject::factory()->create(['project_id' => $p->id]);
+it('loads another page of projects without duplicates', function () {
+    $projects = Project::factory()->count(10)->sequence(
+        fn ($sequence) => ['title' => sprintf('Project %02d', $sequence->index + 1)],
+    )->create();
 
-    $service = new ProjectService(
-        app(\App\Models\Project::class),
-        app(\App\Models\ProjectAsset::class),
-        app(\App\Services\Helpers\CountService::class),
-        app(\App\Services\Helpers\DateService::class)
-    );
-    $data = $service->getPublicIndex(['sort' => 'date', 'order' => 'asc']);
-
-    $mock = $this->mock(ProjectService::class);
-    $mock->shouldReceive('getPublicIndexCachedData')
-        ->once()
-        ->with(['sort' => 'date', 'order' => 'asc'])
-        ->andReturn($data);
+    $projects->each(fn (Project $project) => PanoptesProject::factory()->create(['project_id' => $project->id]));
 
     Livewire::test(ProjectsIndex::class)
-        ->assertSee('Mocked Project');
+        ->assertSee('Project 01')
+        ->assertDontSee('Project 10')
+        ->assertSet('hasMore', true)
+        ->call('loadMore')
+        ->assertSee('Project 01')
+        ->assertSee('Project 10')
+        ->assertSet('hasMore', false);
+});
+
+it('renders a project from the paged public query', function () {
+    $project = Project::factory()->create([
+        'title' => 'Mocked Project',
+    ]);
+    PanoptesProject::factory()->create(['project_id' => $project->id]);
+
+    Livewire::test(ProjectsIndex::class)
+        ->assertSee('Mocked Project')
+        ->assertSet('hasMore', false);
 });

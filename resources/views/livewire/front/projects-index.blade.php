@@ -1,6 +1,5 @@
 <div>
-    <div class="row">
-        <div class="col-md-6 mx-auto mb-4 text-center">
+    <div class="col-md-6 mx-auto mb-4 text-center">
             <button type="button"
                     wire:click="sortBy('title')"
                     wire:loading.attr="disabled"
@@ -48,11 +47,29 @@
                 <i class="fas fa-{{ $sort === 'date' ? ($order === 'asc' ? 'sort-up' : 'sort-down') : 'sort' }}" aria-hidden="true"></i>
                 {{ t('Date') }}
             </button>
-        </div>
     </div>
     <div id="projects" class="row col-sm-12 mx-auto justify-content-center">
-        @foreach($projects as $project)
+        @forelse($records as $project)
             @include('front.project.partials.project-loop', ['project' => $project])
-        @endforeach
+        @empty
+            <h2 class="mx-auto pt-4">{{ t('No Projects exist.') }}</h2>
+        @endforelse
     </div>
+
+    @if($hasMore)
+        <div wire:key="project-load-more-{{ $page }}"
+             wire:intersect.once="loadMore"
+             class="py-4">
+            <div wire:loading
+                 wire:target="loadMore"
+                 class="w-100 text-center"
+                 style="display: none;"
+                 role="status"
+                 aria-live="polite">
+                <div class="loader d-inline-block">
+                    <span class="sr-only">{{ t('Loading projects') }}</span>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

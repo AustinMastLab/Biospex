@@ -53,9 +53,8 @@ class ProjectController extends Controller
     public function index(): \Illuminate\View\View
     {
         $groups = $this->groupService->getUserGroupCount(Auth::id());
-        $projects = $this->projectService->getAdminIndex(Auth::user());
 
-        return $groups === 0 ? View::make('admin.welcome') : View::make('admin.project.index', compact('projects'));
+        return $groups === 0 ? View::make('admin.welcome') : View::make('admin.project.index');
     }
 
     /**

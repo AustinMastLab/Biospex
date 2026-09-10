@@ -45,9 +45,7 @@ class ProjectController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\View
     {
-        $projects = $this->projectService->getPublicIndex();
-
-        return View::make('front.project.index', compact('projects'));
+        return View::make('front.project.index');
     }
 
     /**

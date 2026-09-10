@@ -27,6 +27,8 @@ use App\Services\Helpers\CountService;
 use App\Services\Helpers\DateService;
 use App\Services\Trait\EventPartitionTrait;
 use App\Services\Trait\ExpeditionPartitionTrait;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -187,21 +189,59 @@ class ProjectService
      */
     public function getAdminIndex(User $user, array $request = []): Collection
     {
-        $records = $this->project->withCount('expeditions')
-            ->withSum('expeditionStats', 'transcriptions_completed')
-            ->with([
-                'group' => function ($q) use ($user) {
-                    $q->whereHas('users', function ($q) use ($user) {
-                        $q->where('users.id', $user->id);
-                    });
-                },
-            ])->whereHas('group', function ($q) use ($user) {
-                $q->whereHas('users', function ($q) use ($user) {
-                    $q->where('users.id', $user->id);
-                });
-            })->get();
+        $query = $this->projectIndexQuery();
 
-        return $this->sortResults($records, $request);
+        if (! $user->isAdmin()) {
+            $query->whereHas('group.users', function (Builder $query) use ($user) {
+                $query->where('users.id', $user->id);
+            });
+        }
+
+        return $this->sortResults($query->get(), $request);
+    }
+
+    /**
+     * Get one authorization-scoped page of projects for the admin index.
+     */
+    public function getAdminIndexPage(User $user, array $request = [], int $page = 1): Paginator
+    {
+        $sort = $this->projectSortField($request['sort'] ?? 'date');
+        $order = $this->projectSortOrder($request['order'] ?? 'asc');
+        $query = $this->projectIndexQuery();
+
+        if (! $user->isAdmin()) {
+            $query->whereHas('group.users', function (Builder $query) use ($user) {
+                $query->where('users.id', $user->id);
+            });
+        }
+
+        $this->applyProjectOrdering($query, $sort, $order);
+
+        return $query
+            ->orderBy('projects.id', $order)
+            ->simplePaginate(9, ['*'], 'projectPage', $page);
+    }
+
+    /**
+     * Refresh loaded projects for the admin index.
+     *
+     * @param  array<int, int>  $projectIds
+     */
+    public function getAdminIndexRecords(User $user, array $projectIds): Collection
+    {
+        if ($projectIds === []) {
+            return collect();
+        }
+
+        $query = $this->projectIndexQuery()->whereKey($projectIds);
+
+        if (! $user->isAdmin()) {
+            $query->whereHas('group.users', function (Builder $query) use ($user) {
+                $query->where('users.id', $user->id);
+            });
+        }
+
+        return $this->orderProjectsByIds($query->get(), $projectIds);
     }
 
     /**
@@ -241,29 +281,117 @@ class ProjectService
      */
     public function getPublicIndex(array $request = []): Collection
     {
-        $sort = (string) ($request['sort'] ?? 'date');
-        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+        $sort = $this->projectSortField($request['sort'] ?? 'date');
+        $order = $this->projectSortOrder($request['order'] ?? 'asc');
+        $query = $this->publicProjectIndexQuery();
 
-        $query = $this->project
+        $this->applyProjectOrdering($query, $sort, $order);
+
+        return $query
+            ->orderBy('projects.id', $order)
+            ->get();
+    }
+
+    /**
+     * Get one cached page of projects for the public index.
+     */
+    public function getPublicIndexPage(array $request = [], int $page = 1): Paginator
+    {
+        $cacheKey = $this->publicIndexPageCacheKey($request, $page);
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($request, $page) {
+            $sort = $this->projectSortField($request['sort'] ?? 'date');
+            $order = $this->projectSortOrder($request['order'] ?? 'asc');
+            $query = $this->publicProjectIndexQuery();
+
+            $this->applyProjectOrdering($query, $sort, $order);
+
+            return $query
+                ->orderBy('projects.id', $order)
+                ->simplePaginate(9, ['*'], 'projectPage', $page);
+        });
+    }
+
+    /**
+     * Refresh loaded projects for the public index.
+     *
+     * @param  array<int, int>  $projectIds
+     */
+    public function getPublicIndexRecords(array $projectIds): Collection
+    {
+        if ($projectIds === []) {
+            return collect();
+        }
+
+        return $this->orderProjectsByIds(
+            $this->publicProjectIndexQuery()->whereKey($projectIds)->get(),
+            $projectIds,
+        );
+    }
+
+    protected function projectIndexQuery(): Builder
+    {
+        return $this->project
             ->newQuery()
             ->with('group')
             ->withCount(['expeditions', 'events'])
-            ->withSum('expeditionStats', 'transcriptions_completed')
-            ->has('panoptesProjects');
+            ->withSum('expeditionStats', 'transcriptions_completed');
+    }
 
+    protected function publicProjectIndexQuery(): Builder
+    {
+        return $this->projectIndexQuery()->has('panoptesProjects');
+    }
+
+    protected function applyProjectOrdering(Builder $query, string $sort, string $order): void
+    {
         if ($sort === 'group') {
-            $query
-                ->leftJoin('groups', 'groups.id', '=', 'projects.group_id')
-                ->addSelect('projects.*')
+            $query->leftJoin('groups', 'groups.id', '=', 'projects.group_id')
                 ->orderBy('groups.title', $order);
-        } elseif ($sort === 'title') {
-            $query->orderBy('projects.title', $order);
-        } else {
-            // date (default)
-            $query->orderBy('projects.created_at', $order);
+
+            return;
         }
 
-        return $query->get();
+        $query->orderBy($sort === 'title' ? 'projects.title' : 'projects.created_at', $order);
+    }
+
+    protected function projectSortField(mixed $sort): string
+    {
+        return in_array($sort, ['title', 'group', 'date'], true) ? $sort : 'date';
+    }
+
+    protected function projectSortOrder(mixed $order): string
+    {
+        return strtolower((string) $order) === 'desc' ? 'desc' : 'asc';
+    }
+
+    protected function publicIndexPageCacheKey(array $request, int $page): string
+    {
+        $version = (int) Cache::get('public_sort:projects:version', 1);
+        $sort = $this->projectSortField($request['sort'] ?? 'date');
+        $order = $this->projectSortOrder($request['order'] ?? 'asc');
+
+        return sprintf(
+            'public_sort:projects_page:v%d:locale=%s:sort=%s:order=%s:page=%d',
+            $version,
+            app()->getLocale(),
+            $sort,
+            $order,
+            $page,
+        );
+    }
+
+    /**
+     * @param  array<int, int>  $projectIds
+     */
+    protected function orderProjectsByIds(Collection $projects, array $projectIds): Collection
+    {
+        $projectsById = $projects->keyBy(fn (Project $project) => $project->getKey());
+
+        return collect($projectIds)
+            ->map(fn (int $projectId) => $projectsById->get($projectId))
+            ->filter()
+            ->values();
     }
 
     /**

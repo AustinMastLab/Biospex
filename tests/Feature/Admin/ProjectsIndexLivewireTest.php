@@ -53,9 +53,11 @@ function makeUserInGroup(Group $group): User
 it('admin user sees all projects', function () {
     $g1 = Group::factory()->create(['title' => 'G1']);
     $g2 = Group::factory()->create(['title' => 'G2']);
+    $g3 = Group::factory()->create(['title' => 'G3']);
 
     $p1 = Project::factory()->for($g1)->create(['title' => 'Alpha']);
     $p2 = Project::factory()->for($g2)->create(['title' => 'Zebra']);
+    $p3 = Project::factory()->for($g3)->create(['title' => 'Unassociated']);
 
     $admin = makeAdminUserWithGroups([$g1, $g2]);
 
@@ -63,7 +65,8 @@ it('admin user sees all projects', function () {
 
     Livewire::test(ProjectsIndex::class)
         ->assertSee('Alpha')
-        ->assertSee('Zebra');
+        ->assertSee('Zebra')
+        ->assertSee('Unassociated');
 });
 
 it('non-admin user sees only scoped subset', function () {
@@ -100,4 +103,23 @@ it('sorting toggles order on same field and resets on switch', function () {
         ->call('sortBy', 'date')
         ->assertSet('sort', 'date')
         ->assertSet('order', 'asc');
+});
+
+it('loads another authorization-scoped page of projects without duplicates', function () {
+    $group = Group::factory()->create(['title' => 'G']);
+    $projects = Project::factory()->for($group)->count(10)->sequence(
+        fn ($sequence) => ['title' => sprintf('Project %02d', $sequence->index + 1)],
+    )->create();
+    $admin = makeAdminUserWithGroups([$group]);
+
+    $this->actingAs($admin);
+
+    Livewire::test(ProjectsIndex::class)
+        ->assertSee('Project 01')
+        ->assertDontSee('Project 10')
+        ->assertSet('hasMore', true)
+        ->call('loadMore')
+        ->assertSee('Project 01')
+        ->assertSee('Project 10')
+        ->assertSet('hasMore', false);
 });

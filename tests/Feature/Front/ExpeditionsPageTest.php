@@ -33,10 +33,10 @@ describe('Expeditions Page Tests', function () {
         $response->assertViewIs('front.expedition.index');
     });
 
-    it('passes required data to the view', function () {
+    it('does not load expedition collections into the page view', function () {
         $response = $this->get(route('front.expeditions.index'));
 
-        $response->assertViewHas(['expeditions', 'expeditionsCompleted']);
+        $response->assertViewMissing(['expeditions', 'expeditionsCompleted']);
     });
 
     it('displays expeditions page with data when expeditions exist', function () {
@@ -59,8 +59,7 @@ describe('Expeditions Page Tests', function () {
 
         $response = $this->get(route('front.expeditions.index'));
 
-        // Check that the page loads successfully with completed expeditions
-        $response->assertStatus(200)
-            ->assertViewHas(['expeditions', 'expeditionsCompleted']);
+        $response->assertOk()
+            ->assertSeeLivewire('front.expeditions-index');
     });
 });

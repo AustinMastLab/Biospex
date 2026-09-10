@@ -23,10 +23,13 @@ namespace App\Services\Expedition;
 use App\Models\Expedition;
 use App\Models\Project;
 use App\Models\User;
+use App\Notifications\ZooniverseNewExpedition;
 use App\Services\Subject\SubjectService;
 use App\Services\Trait\ExpeditionPartitionTrait;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -154,6 +157,29 @@ class ExpeditionService
     }
 
     /**
+     * Cache key for one page of public expeditions.
+     */
+    protected function publicIndexPageCacheKey(array $request, int $page): string
+    {
+        $version = (int) Cache::get('public_sort:expeditions:version', 1);
+        $type = ($request['type'] ?? 'active') === 'completed' ? 'completed' : 'active';
+        $sort = ($request['sort'] ?? 'date') === 'title' ? 'title' : 'date';
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+        $projectId = $request['projectId'] ?? null;
+
+        return sprintf(
+            'public_sort:expeditions_page:v%d:locale=%s:type=%s:sort=%s:order=%s:project=%s:page=%d',
+            $version,
+            app()->getLocale(),
+            $type,
+            $sort,
+            $order,
+            empty($projectId) ? 'all' : (string) $projectId,
+            $page,
+        );
+    }
+
+    /**
      * Get cached DATA (Collection of partitions) for the public expedition index.
      * Must call the existing public query method and not duplicate it.
      */
@@ -180,6 +206,52 @@ class ExpeditionService
         $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
         $projectId = $request['projectId'] ?? null;
 
+        $query = $this->publicIndexQuery($projectId);
+
+        if ($sort === 'title') {
+            $query->orderBy('expeditions.title', $order);
+        } else {
+            // date (default)
+            $query->orderBy('expeditions.created_at', $order);
+        }
+
+        $records = $query->get();
+
+        return $this->partitionExpeditions($records);
+    }
+
+    /**
+     * Get one page of public expeditions for the selected filter and sort order.
+     */
+    public function getPublicIndexPage(array $request = [], int $page = 1): Paginator
+    {
+        $type = ($request['type'] ?? 'active') === 'completed' ? 'completed' : 'active';
+        $sort = ($request['sort'] ?? 'date') === 'title' ? 'title' : 'date';
+        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
+        $projectId = $request['projectId'] ?? null;
+        $cacheKey = $this->publicIndexPageCacheKey($request, $page);
+
+        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($projectId, $type, $sort, $order, $page) {
+            $query = $this->publicIndexQuery($projectId)
+                ->where('expeditions.completed', $type === 'completed');
+
+            if ($sort === 'title') {
+                $query->orderBy('expeditions.title', $order);
+            } else {
+                $query->orderBy('expeditions.created_at', $order);
+            }
+
+            return $query
+                ->orderBy('expeditions.id', $order)
+                ->simplePaginate(12, ['*'], 'expeditionPage', $page);
+        });
+    }
+
+    /**
+     * Build the shared public expedition query with card relationships.
+     */
+    protected function publicIndexQuery(?int $projectId = null): Builder
+    {
         $query = $this->expedition
             ->newQuery()
             ->with('project:id,title,slug')
@@ -193,16 +265,7 @@ class ExpeditionService
             $query->where('project_id', $projectId);
         }
 
-        if ($sort === 'title') {
-            $query->orderBy('expeditions.title', $order);
-        } else {
-            // date (default)
-            $query->orderBy('expeditions.created_at', $order);
-        }
-
-        $records = $query->get();
-
-        return $this->partitionExpeditions($records);
+        return $query;
     }
 
     /**
@@ -350,7 +413,7 @@ class ExpeditionService
     /**
      * Send notifications for new projects and actors.
      *
-     * @see \App\Notifications\ZooniverseNewExpedition
+     * @see ZooniverseNewExpedition
      */
     public function notifyActorContacts($expedition, $project): void
     {
@@ -430,7 +493,7 @@ class ExpeditionService
     /**
      * Get expedition download by actor.
      */
-    public function getExpeditionDownloadsByActor(Expedition &$expedition): \Illuminate\Database\Eloquent\Model
+    public function getExpeditionDownloadsByActor(Expedition &$expedition): Model
     {
         return $expedition->load([
             'project.group', 'actors.downloads' => function ($query) use ($expedition) {
@@ -450,7 +513,7 @@ class ExpeditionService
     /**
      * Get expedition for home page visuals.
      */
-    public function getHomePageProjectExpedition(): ?\Illuminate\Database\Eloquent\Model
+    public function getHomePageProjectExpedition(): ?Model
     {
         return $this->expedition->with([
             'project' => function ($q) {
@@ -472,7 +535,7 @@ class ExpeditionService
      *
      * @see ZooniverseCsvService::getExpedition()
      */
-    public function getExpeditionForZooniverseProcess(int $expeditionId): \Illuminate\Database\Eloquent\Model
+    public function getExpeditionForZooniverseProcess(int $expeditionId): Model
     {
         return $this->expedition->with(['panoptesProject'])->has('panoptesProject')->whereHas('actors', function ($q) {
             $q->zooniverse();

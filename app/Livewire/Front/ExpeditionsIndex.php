@@ -21,6 +21,8 @@
 namespace App\Livewire\Front;
 
 use App\Services\Expedition\ExpeditionService;
+use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Collection;
 use Livewire\Component;
 
 class ExpeditionsIndex extends Component
@@ -33,6 +35,19 @@ class ExpeditionsIndex extends Component
 
     public ?int $projectId = null;
 
+    public int $page = 1;
+
+    public bool $hasMore = false;
+
+    public Collection $expeditions;
+
+    protected ExpeditionService $expeditionService;
+
+    public function boot(ExpeditionService $expeditionService): void
+    {
+        $this->expeditionService = $expeditionService;
+    }
+
     public function mount(?string $type = null, ?int $projectId = null): void
     {
         if ($type !== null) {
@@ -42,30 +57,68 @@ class ExpeditionsIndex extends Component
         if ($projectId !== null) {
             $this->projectId = $projectId;
         }
+
+        $this->resetExpeditions();
     }
 
     public function sortBy(string $field): void
     {
+        if (! in_array($field, ['title', 'date'], true)) {
+            return;
+        }
+
         if ($this->sort === $field) {
             $this->order = $this->order === 'asc' ? 'desc' : 'asc';
         } else {
             $this->sort = $field;
             $this->order = 'asc';
         }
+
+        $this->resetExpeditions();
     }
 
-    public function render(ExpeditionService $expeditionService)
+    public function setType(string $type): void
     {
-        [$active, $completed] = $expeditionService->getPublicIndexCachedData([
+        $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
+
+        $this->resetExpeditions();
+        $this->dispatch('expedition-type-changed', type: $this->type);
+    }
+
+    public function loadMore(): void
+    {
+        if (! $this->hasMore) {
+            return;
+        }
+
+        $this->page++;
+        $expeditions = $this->getExpeditionPage();
+
+        $this->expeditions = $this->expeditions->concat($expeditions->items());
+        $this->hasMore = $expeditions->hasMorePages();
+    }
+
+    public function render()
+    {
+        return view('livewire.front.expeditions-index');
+    }
+
+    protected function resetExpeditions(): void
+    {
+        $this->page = 1;
+        $expeditions = $this->getExpeditionPage();
+
+        $this->expeditions = collect($expeditions->items());
+        $this->hasMore = $expeditions->hasMorePages();
+    }
+
+    protected function getExpeditionPage(): Paginator
+    {
+        return $this->expeditionService->getPublicIndexPage([
+            'type' => $this->type,
             'sort' => $this->sort,
             'order' => $this->order,
             'projectId' => $this->projectId,
-        ]);
-
-        $expeditions = $this->type === 'completed' ? $completed : $active;
-
-        return view('livewire.front.expeditions-index', [
-            'expeditions' => $expeditions,
-        ]);
+        ], $this->page);
     }
 }

@@ -21,10 +21,11 @@
 use App\Livewire\Front\ExpeditionsIndex;
 use App\Models\Actor;
 use App\Models\Expedition;
+use App\Models\ExpeditionStat;
 use App\Models\PanoptesProject;
 use App\Models\Project;
-use App\Services\Expedition\ExpeditionService;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Storage;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -35,7 +36,7 @@ beforeEach(function () {
         Actor::factory()->create(['id' => config('zooniverse.actor_id')]);
     }
 
-    \Illuminate\Support\Facades\Storage::fake('s3');
+    Storage::fake('s3');
     config(['filesystems.disks.s3.bucket' => 'test-bucket']);
 });
 
@@ -50,7 +51,7 @@ function makeExpedition(array $overrides = []): Expedition
         'created_at' => $overrides['created_at'] ?? now(),
     ], $overrides));
 
-    \App\Models\ExpeditionStat::factory()->create([
+    ExpeditionStat::factory()->create([
         'expedition_id' => $expedition->id,
         'local_transcriptions_completed' => 10,
         'transcriber_count' => 5,
@@ -136,18 +137,68 @@ it('project-scoped rendering works', function () {
         ->assertDontSee('Exp P2');
 });
 
-it('asserts component uses ExpeditionService::getPublicIndexCachedData', function () {
-    $exp = makeExpedition(['title' => 'Mocked Exp']);
-
-    $service = app(ExpeditionService::class);
-    $data = $service->getPublicIndex(['sort' => 'date', 'order' => 'asc']);
-
-    $mock = $this->mock(ExpeditionService::class);
-    $mock->shouldReceive('getPublicIndexCachedData')
-        ->once()
-        ->with(['sort' => 'date', 'order' => 'asc', 'projectId' => null])
-        ->andReturn($data);
+it('loads no more than twelve expeditions initially', function () {
+    foreach (range(1, 13) as $number) {
+        makeExpedition([
+            'title' => sprintf('Expedition %02d', $number),
+            'created_at' => now()->addSeconds($number),
+        ]);
+    }
 
     Livewire::test(ExpeditionsIndex::class)
-        ->assertSee('Mocked Exp');
+        ->assertSee('Expedition 01')
+        ->assertSee('Expedition 12')
+        ->assertDontSee('Expedition 13')
+        ->assertSet('page', 1)
+        ->assertSet('hasMore', true);
+});
+
+it('appends the next twelve expeditions and stops after the last page', function () {
+    foreach (range(1, 13) as $number) {
+        makeExpedition([
+            'title' => sprintf('Expedition %02d', $number),
+            'created_at' => now()->addSeconds($number),
+        ]);
+    }
+
+    Livewire::test(ExpeditionsIndex::class)
+        ->call('loadMore')
+        ->assertSeeInOrder(['Expedition 01', 'Expedition 12', 'Expedition 13'])
+        ->assertSet('page', 2)
+        ->assertSet('hasMore', false)
+        ->call('loadMore')
+        ->assertSet('page', 2);
+});
+
+it('loads completed expeditions only after changing type', function () {
+    makeExpedition(['title' => 'Active Exp', 'completed' => 0]);
+    makeExpedition(['title' => 'Completed Exp', 'completed' => 1]);
+
+    Livewire::test(ExpeditionsIndex::class)
+        ->assertSee('Active Exp')
+        ->assertDontSee('Completed Exp')
+        ->call('setType', 'completed')
+        ->assertSee('Completed Exp')
+        ->assertDontSee('Active Exp')
+        ->assertDispatched('expedition-type-changed')
+        ->assertSet('type', 'completed')
+        ->assertSet('page', 1);
+});
+
+it('resets to the first page when sorting changes', function () {
+    foreach (range(1, 13) as $number) {
+        makeExpedition([
+            'title' => $number === 13 ? 'Alpha' : sprintf('Expedition %02d', $number),
+            'created_at' => now()->addSeconds($number),
+        ]);
+    }
+
+    Livewire::test(ExpeditionsIndex::class)
+        ->call('loadMore')
+        ->assertSee('Alpha')
+        ->call('sortBy', 'title')
+        ->assertSee('Alpha')
+        ->assertDontSee('Expedition 12')
+        ->assertSet('page', 1)
+        ->assertSet('hasMore', true);
 });

@@ -121,13 +121,6 @@
     <div class="row">
         <div class="col-sm-8 offset-md-2 mt-5">
             <h2 class="text-center content-header text-uppercase mt-5" id="expeditions">{{ t('Expeditions') }}</h2>
-            <div class="text-center mt-4">
-                <button class="toggle-view-btn btn btn-primary text-uppercase"
-                        data-toggle="collapse"
-                        data-target="#active-expeditions-main,#completed-expeditions-main"
-                        data-value="{{ t('view active expeditions') }}"
-                >{{ t('view completed expeditions') }}</button>
-            </div>
             <div class="d-flex align-items-start justify-content-between mt-4 mb-3">
                 <span class="text">{{ $project->expeditions_count }} {{ t('Expeditions') }}</span>
                 <span class="text">{{ $project->expedition_stats_sum_transcriptions_completed }} {{ t('Digitizations') }}</span>
@@ -135,13 +128,8 @@
             </div>
             <hr class="header mx-auto">
         </div>,
-        <div id="active-expeditions-main" class="col-sm-12 show">
-            <livewire:front.expeditions-index type="active" :project-id="$project->id" />
-        </div>
-        <div id="completed-expeditions-main" class="col-sm-12 collapse">
-            <canvas id="expedition-conffeti" style="z-index: -1; position:fixed; top:0;left:0;"></canvas>
-            <livewire:front.expeditions-index type="completed" :project-id="$project->id" />
-        </div>
+        <canvas id="expedition-conffeti" style="z-index: -1; position:fixed; top:0;left:0; display: none;"></canvas>
+        <livewire:front.expeditions-index :project-id="$project->id" />
     </div>
 
     <div class="row">
@@ -227,8 +215,23 @@
     @endif
     <script src="{{ asset('js/amChartEventRate.min.js')}}"></script>
     <script>
-        let expeditionConfetti = new ConfettiGenerator({target: 'expedition-conffeti'});
-        expeditionConfetti.render();
+        let expeditionConfetti;
+        document.addEventListener('livewire:init', () => {
+            Livewire.on('expedition-type-changed', ({type}) => {
+                let canvas = document.getElementById('expedition-conffeti');
+
+                if (type === 'completed') {
+                    canvas.style.display = 'block';
+                    expeditionConfetti = new ConfettiGenerator({target: canvas});
+                    expeditionConfetti.render();
+
+                    return;
+                }
+
+                expeditionConfetti?.clear();
+                canvas.style.display = 'none';
+            });
+        });
 
         let eventConfetti = new ConfettiGenerator({target: 'event-conffeti'});
         eventConfetti.render();

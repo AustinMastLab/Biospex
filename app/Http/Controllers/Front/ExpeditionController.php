@@ -21,7 +21,6 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Services\Expedition\ExpeditionService;
 use View;
 
 /**
@@ -32,10 +31,8 @@ class ExpeditionController extends Controller
     /**
      * Displays Expeditions on public page.
      */
-    public function __invoke(ExpeditionService $expeditionService): \Illuminate\View\View
+    public function __invoke(): \Illuminate\View\View
     {
-        [$expeditions, $expeditionsCompleted] = $expeditionService->getPublicIndex();
-
-        return View::make('front.expedition.index', compact('expeditions', 'expeditionsCompleted'));
+        return View::make('front.expedition.index');
     }
 }

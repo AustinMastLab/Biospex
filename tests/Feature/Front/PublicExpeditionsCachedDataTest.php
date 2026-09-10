@@ -24,6 +24,7 @@ use App\Models\PanoptesProject;
 use App\Models\Project;
 use App\Services\Expedition\ExpeditionService;
 use Illuminate\Support\Facades\Cache;
+use Mockery\MockInterface;
 
 beforeEach(function () {
     Cache::forget('public_sort:expeditions:version');
@@ -140,13 +141,29 @@ it('uses cache on second call with same params', function () {
     $service->getPublicIndexCachedData(['sort' => 'date', 'order' => 'asc']);
 
     // Spy on underlying getPublicIndex to ensure it is NOT called again
-    /** @var \App\Services\Expedition\ExpeditionService&\Mockery\MockInterface $mock */
+    /** @var ExpeditionService&MockInterface $mock */
     $mock = $this->partialMock(ExpeditionService::class);
     $mock->shouldReceive('getPublicIndex')->never();
 
     $mock->getPublicIndexCachedData(['sort' => 'date', 'order' => 'asc']);
     // If it tried to call getPublicIndex, the expectation would fail
     expect(true)->toBeTrue();
+});
+
+it('caches each public expedition page', function () {
+    ['expeditions' => [$expedition]] = seedExpeditionsFixtures();
+
+    $service = app(ExpeditionService::class);
+    $params = ['type' => 'active', 'sort' => 'title', 'order' => 'asc'];
+
+    $firstPage = $service->getPublicIndexPage($params);
+    $firstTitles = $firstPage->getCollection()->pluck('title')->all();
+
+    $expedition->deleteQuietly();
+
+    $secondPage = $service->getPublicIndexPage($params);
+
+    expect($secondPage->getCollection()->pluck('title')->all())->toEqual($firstTitles);
 });
 
 it('invalidates cache when expedition is created or updated (version bump)', function () {

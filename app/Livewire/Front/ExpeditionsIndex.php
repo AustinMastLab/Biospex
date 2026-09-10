@@ -21,51 +21,43 @@
 namespace App\Livewire\Front;
 
 use App\Services\Expedition\ExpeditionService;
+use App\Traits\WithIncrementalExpeditions;
+use Illuminate\Pagination\Paginator;
 use Livewire\Component;
 
 class ExpeditionsIndex extends Component
 {
-    public string $type = 'active';
+    use WithIncrementalExpeditions;
 
-    public string $sort = 'date';
+    protected ExpeditionService $expeditionService;
 
-    public string $order = 'asc';
-
-    public ?int $projectId = null;
-
-    public function mount(?string $type = null, ?int $projectId = null): void
+    public function boot(ExpeditionService $expeditionService): void
     {
-        if ($type !== null) {
-            $this->type = in_array($type, ['active', 'completed'], true) ? $type : 'active';
-        }
-
-        if ($projectId !== null) {
-            $this->projectId = $projectId;
-        }
+        $this->expeditionService = $expeditionService;
     }
 
-    public function sortBy(string $field): void
+    protected function sortableExpeditionFields(): array
     {
-        if ($this->sort === $field) {
-            $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort = $field;
-            $this->order = 'asc';
-        }
+        return ['title', 'date'];
     }
 
-    public function render(ExpeditionService $expeditionService)
+    protected function typeChanged(): void
     {
-        [$active, $completed] = $expeditionService->getPublicIndexCachedData([
+        $this->dispatch('expedition-type-changed', type: $this->type);
+    }
+
+    public function render()
+    {
+        return view('livewire.front.expeditions-index');
+    }
+
+    protected function getExpeditionPage(): Paginator
+    {
+        return $this->expeditionService->getPublicIndexPage([
+            'type' => $this->type,
             'sort' => $this->sort,
             'order' => $this->order,
             'projectId' => $this->projectId,
-        ]);
-
-        $expeditions = $this->type === 'completed' ? $completed : $active;
-
-        return view('livewire.front.expeditions-index', [
-            'expeditions' => $expeditions,
-        ]);
+        ], $this->page);
     }
 }

@@ -48,16 +48,18 @@ task('deploy:vendors', function () {
         return;
     }
 
+    run(withUmask('cd {{release_path}} && {{bin/composer}} clear-cache'));
+
     // Check if this is a development deployment
     $isDevelopment = get('environment') === 'development';
 
     if ($isDevelopment) {
         // Install with dev dependencies for development environment
-        run(withUmask('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-scripts'));
+        run(withUmask('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-cache --no-progress --no-interaction --optimize-autoloader --no-scripts'));
         writeln('✅ Composer dependencies installed with dev packages (development environment)');
     } else {
         // Install without dev dependencies for production
-        run(withUmask('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-progress --no-suggest --no-dev --optimize-autoloader --no-scripts'));
+        run(withUmask('cd {{release_path}} && {{bin/composer}} install --prefer-dist --no-cache --no-progress --no-interaction --no-dev --optimize-autoloader --no-scripts'));
         writeln('✅ Composer dependencies installed safely (production environment - without dev packages)');
     }
 });
@@ -306,4 +308,3 @@ task('env:ssm', function () {
     writeln("Running: {$cmd}");
     run(withUmask($cmd));
 })->once(); // only once per deploy
-

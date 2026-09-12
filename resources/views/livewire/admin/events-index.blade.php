@@ -1,5 +1,27 @@
 <div>
     <div class="col-md-8 mx-auto mb-4 text-center">
+        <div class="d-flex flex-wrap justify-content-center mb-4">
+            <button type="button"
+                    class="toggle-view-btn btn btn-primary mr-2 text-uppercase"
+                    wire:click="setType('{{ $type === 'active' ? 'completed' : 'active' }}')"
+                    wire:loading.attr="disabled"
+                    wire:target="setType">
+                {{ $type === 'active' ? t('view completed events') : t('view active events') }}
+            </button>
+            <a href="{{ route('admin.events.create') }}"
+               class="btn btn-primary ml-2 text-uppercase">
+                <i class="fas fa-plus-circle"></i> {{ t('New Event') }}
+            </a>
+            <div wire:loading
+                 wire:target="setType"
+                 class="w-100 mt-2"
+                 style="display: none;"
+                 role="status">
+                <i class="fas fa-spinner fa-spin color-action" aria-hidden="true"></i>
+                <span class="sr-only">{{ t('Loading events') }}</span>
+            </div>
+        </div>
+
         <div class="mb-3">
             <button type="button"
                     class="sort-page mr-2 text-uppercase"
@@ -48,7 +70,28 @@
         </div>
     </div>
 
-    <div id="{{ $this->type === 'completed' ? 'completed-events' : 'active-events' }}" class="row col-sm-12 mx-auto justify-content-center">
-        @include('admin.event.partials.event', ['events' => $events])
+    <div id="{{ $type === 'completed' ? 'completed-events' : 'active-events' }}" class="row col-sm-12 mx-auto justify-content-center">
+        @forelse($records as $event)
+            @include('admin.event.partials.event-loop')
+        @empty
+            <h2 class="mx-auto pt-4">{{ t('No Events exist.') }}</h2>
+        @endforelse
     </div>
+
+    @if($hasMore)
+        <div wire:key="admin-event-load-more-{{ $page }}"
+             wire:intersect.once="loadMore"
+             class="py-4">
+            <div wire:loading
+                 wire:target="loadMore"
+                 class="w-100 text-center"
+                 style="display: none;"
+                 role="status"
+                 aria-live="polite">
+                <div class="loader d-inline-block">
+                    <span class="sr-only">{{ t('Loading events') }}</span>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

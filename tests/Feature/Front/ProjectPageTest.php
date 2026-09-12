@@ -18,10 +18,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Models\Project;
 use Database\Seeders\ProjectPageTestSeeder;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Storage;
 
 beforeEach(function () {
+    Cache::flush();
     Storage::fake('s3');
 });
 
@@ -40,16 +43,18 @@ it('returns correct view', function () {
 it('shows list of projects', function () {
     $this->seed(ProjectPageTestSeeder::class);
 
-    $projects = \App\Models\Project::all();
+    $projects = Project::all();
     $this->assertCount(10, $projects->toArray());
 
     $titles = $projects->pluck('title')->toArray();
 
     $response = $this->get(route('front.projects.index'));
 
-    foreach ($titles as $title) {
+    foreach (array_slice($titles, 0, 9) as $title) {
         $response->assertSee($title);
     }
+
+    $response->assertDontSee($titles[9]);
 });
 
 // Legacy /sort endpoint tests were removed in Task 9.

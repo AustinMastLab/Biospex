@@ -25,6 +25,7 @@ use App\Models\EventTeam;
 use App\Models\User;
 use App\Services\Helpers\DateService;
 use App\Services\Trait\EventPartitionTrait;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
@@ -43,7 +44,7 @@ class EventService
     /**
      * Get events for admin index.
      *
-     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
+     * @return array{0: Collection, 1: Collection}
      */
     public function getAdminIndex(User $user, array $request = []): array
     {
@@ -54,6 +55,30 @@ class EventService
         $sortedRecords = $this->sortRecords($records, $request);
 
         return $this->partitionEvents($sortedRecords);
+    }
+
+    /**
+     * Get one authorization-scoped page of events for the admin index.
+     */
+    public function getAdminIndexPage(User $user, array $request = [], int $page = 1): Paginator
+    {
+        $type = ($request['type'] ?? 'active') === 'completed' ? 'completed' : 'active';
+        $sort = $this->eventSortField($request['sort'] ?? 'date');
+        $order = $this->eventSortOrder($request['order'] ?? 'asc');
+
+        $query = $this->event->newQuery()
+            ->with(['project.lastPanoptesProject', 'teams:id,title,event_id']);
+
+        if (! $user->isAdmin()) {
+            $query->where('events.owner_id', $user->id);
+        }
+
+        $this->applyEventType($query, $type);
+        $this->applyEventOrdering($query, $sort, $order);
+
+        return $query
+            ->orderBy('events.id', $order)
+            ->simplePaginate(9, ['*'], 'eventPage', $page);
     }
 
     /**
@@ -78,10 +103,34 @@ class EventService
     }
 
     /**
+     * Cache key for one public event page, limited to the current minute.
+     */
+    protected function publicIndexPageCacheKey(array $request, int $page): string
+    {
+        $version = (int) Cache::get('public_sort:events:version', 1);
+        $type = ($request['type'] ?? 'active') === 'completed' ? 'completed' : 'active';
+        $sort = $this->eventSortField($request['sort'] ?? 'date');
+        $order = $this->eventSortOrder($request['order'] ?? 'asc');
+        $projectId = $request['projectId'] ?? null;
+
+        return sprintf(
+            'public_sort:events_page:v%d:locale=%s:type=%s:sort=%s:order=%s:project=%s:minute=%s:page=%d',
+            $version,
+            app()->getLocale(),
+            $type,
+            $sort,
+            $order,
+            empty($projectId) ? 'all' : (string) $projectId,
+            now()->format('YmdHi'),
+            $page,
+        );
+    }
+
+    /**
      * Get cached DATA (Collection of partitions) for the public event index.
      * Must call the existing public query method and not duplicate it.
      *
-     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
+     * @return array{0: Collection, 1: Collection}
      */
     public function getPublicIndexCachedData(array $params = []): array
     {
@@ -100,7 +149,7 @@ class EventService
     /**
      * Get events for public index.
      *
-     * @return array{0: \Illuminate\Support\Collection, 1: \Illuminate\Support\Collection}
+     * @return array{0: Collection, 1: Collection}
      */
     public function getPublicIndex(array $request = []): array
     {
@@ -132,6 +181,62 @@ class EventService
         $records = $query->get();
 
         return $this->partitionEvents($records);
+    }
+
+    /**
+     * Get one public event page for the selected filter and sort order.
+     */
+    public function getPublicIndexPage(array $request = [], int $page = 1): Paginator
+    {
+        $type = ($request['type'] ?? 'active') === 'completed' ? 'completed' : 'active';
+        $sort = $this->eventSortField($request['sort'] ?? 'date');
+        $order = $this->eventSortOrder($request['order'] ?? 'asc');
+        $projectId = $request['projectId'] ?? null;
+        $cacheKey = $this->publicIndexPageCacheKey($request, $page);
+
+        return Cache::remember($cacheKey, now()->addMinute(), function () use ($projectId, $type, $sort, $order, $page) {
+            $query = $this->event->newQuery()
+                ->with(['project.lastPanoptesProject', 'teams:id,title,event_id']);
+
+            if (! empty($projectId)) {
+                $query->where('events.project_id', $projectId);
+            }
+
+            $this->applyEventType($query, $type);
+            $this->applyEventOrdering($query, $sort, $order);
+
+            return $query
+                ->orderBy('events.id', $order)
+                ->simplePaginate(9, ['*'], 'eventPage', $page);
+        });
+    }
+
+    protected function applyEventType($query, string $type): void
+    {
+        $query->where('events.end_date', $type === 'completed' ? '<' : '>=', now());
+    }
+
+    protected function applyEventOrdering($query, string $sort, string $order): void
+    {
+        if ($sort === 'project') {
+            $query->join('projects', 'projects.id', '=', 'events.project_id')
+                ->select('events.*')
+                ->orderBy('projects.title', $order);
+
+            return;
+        }
+
+        $query->orderBy($sort === 'title' ? 'events.title' : 'events.start_date', $order);
+    }
+
+    protected function eventSortField(mixed $sort): string
+    {
+        return in_array($sort, ['title', 'project', 'date'], true) ? $sort : 'date';
+    }
+
+    protected function eventSortOrder(mixed $order): string
+    {
+        return strtolower((string) $order) === 'desc' ? 'desc' : 'asc';
     }
 
     /**

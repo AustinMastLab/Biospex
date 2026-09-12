@@ -1,6 +1,12 @@
 <div>
-    @if($projects->isNotEmpty())
-        <div class="col-md-6 mx-auto mb-4 text-center">
+    <div class="col-md-6 mx-auto mb-4 text-center">
+        <div class="mb-4">
+            <a href="{{ route('admin.projects.create') }}"
+               class="btn btn-primary text-uppercase">
+                <i class="fas fa-plus-circle"></i> {{ t('New Project') }}
+            </a>
+        </div>
+
             <button type="button"
                     class="sort-page mr-2 text-uppercase {{ $sort === 'title' ? 'active' : '' }}"
                     wire:click="sortBy('title')"
@@ -45,10 +51,30 @@
                 </span>
                 <i class="fas fa-{{ $sort === 'date' ? ($order === 'asc' ? 'sort-up' : 'sort-down') : 'sort' }}" aria-hidden="true"></i> {{ t('Date') }}
             </button>
-        </div>
-    @endif
+    </div>
 
     <div id="projects" class="row col-sm-12 mx-auto justify-content-center">
-        @include('admin.project.partials.project', ['projects' => $projects])
+        @forelse($records as $project)
+            @include('admin.project.partials.project-loop', ['project' => $project])
+        @empty
+            <h2 class="mx-auto pt-4">{{ t('No Projects exist.') }}</h2>
+        @endforelse
     </div>
+
+    @if($hasMore)
+        <div wire:key="admin-project-load-more-{{ $page }}"
+             wire:intersect.once="loadMore"
+             class="py-4">
+            <div wire:loading
+                 wire:target="loadMore"
+                 class="w-100 text-center"
+                 style="display: none;"
+                 role="status"
+                 aria-live="polite">
+                <div class="loader d-inline-block">
+                    <span class="sr-only">{{ t('Loading projects') }}</span>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>

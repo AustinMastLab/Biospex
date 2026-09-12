@@ -40,7 +40,7 @@ it('admin user sees all events and sorting toggles by title', function () {
     Event::factory()->for($p1)->create(['title' => 'Alpha', 'start_date' => now()->addDay(), 'end_date' => now()->addDays(2)]);
     Event::factory()->for($p2)->create(['title' => 'Zebra', 'start_date' => now()->addDays(2), 'end_date' => now()->addDays(3)]);
 
-    $admin = \App\Models\User::factory()->create();
+    $admin = User::factory()->create();
     $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
     $admin->assignGroup($g1);
     $admin->assignGroup($g2);
@@ -75,4 +75,46 @@ it('non-admin user sees only scoped subset', function () {
     Livewire::test(EventsIndex::class)
         ->assertSee('E1')
         ->assertDontSee('E2');
+});
+
+it('loads nine events initially and appends the final page for admins', function () {
+    $admin = User::factory()->create();
+    $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
+    $project = Project::factory()->create();
+
+    foreach (range(1, 10) as $number) {
+        Event::factory()->for($project)->create([
+            'title' => sprintf('Event %02d', $number),
+            'start_date' => now()->addDays($number),
+            'end_date' => now()->addDays($number + 1),
+        ]);
+    }
+
+    $this->actingAs($admin->fresh());
+
+    Livewire::test(EventsIndex::class)
+        ->assertSee('Event 01')
+        ->assertSee('Event 09')
+        ->assertDontSee('Event 10')
+        ->assertSet('hasMore', true)
+        ->call('loadMore')
+        ->assertSee('Event 10')
+        ->assertSet('hasMore', false);
+});
+
+it('loads completed events only after changing type', function () {
+    $admin = User::factory()->create();
+    $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
+    $project = Project::factory()->create();
+    Event::factory()->for($project)->create(['title' => 'Active Event', 'start_date' => now()->subDay(), 'end_date' => now()->addDay()]);
+    Event::factory()->for($project)->create(['title' => 'Completed Event', 'start_date' => now()->subDays(2), 'end_date' => now()->subDay()]);
+
+    $this->actingAs($admin->fresh());
+
+    Livewire::test(EventsIndex::class)
+        ->assertSee('Active Event')
+        ->assertDontSee('Completed Event')
+        ->call('setType', 'completed')
+        ->assertSee('Completed Event')
+        ->assertDontSee('Active Event');
 });

@@ -22,8 +22,13 @@ use App\Models\Group;
 use App\Models\PanoptesProject;
 use App\Models\Project;
 use App\Services\Project\ProjectService;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
+
+beforeEach(function () {
+    Cache::flush();
+});
 
 it('returns projects sorted by title asc/desc', function () {
     Cache::forget('public_sort:projects:version');
@@ -132,4 +137,25 @@ it('invalidates cache when project is created or updated (version bump)', functi
 
     $list3 = $service->getPublicIndexCachedData(['sort' => 'title', 'order' => 'asc']);
     expect($list3->pluck('title')->all())->toBe(['Alpha', 'Zebra']);
+});
+
+it('caches public project pages separately', function () {
+    Cache::forget('public_sort:projects:version');
+
+    $projects = Project::factory()->count(10)->sequence(
+        fn ($sequence) => ['title' => sprintf('Project %02d', $sequence->index + 1)],
+    )->create();
+    $projects->each(fn (Project $project) => PanoptesProject::factory()->create(['project_id' => $project->id]));
+
+    $service = app(ProjectService::class);
+
+    $firstPage = $service->getPublicIndexPage(['sort' => 'title', 'order' => 'asc'], 1);
+    $secondPage = $service->getPublicIndexPage(['sort' => 'title', 'order' => 'asc'], 2);
+
+    expect($firstPage)
+        ->toBeInstanceOf(Paginator::class)
+        ->and($firstPage->pluck('title')->all())->toHaveCount(9)
+        ->and($firstPage->hasMorePages())->toBeTrue()
+        ->and($secondPage->pluck('title')->all())->toBe(['Project 10'])
+        ->and($secondPage->hasMorePages())->toBeFalse();
 });

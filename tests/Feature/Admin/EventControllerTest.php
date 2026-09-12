@@ -255,7 +255,12 @@ describe('Admin Event Controller Tests', function () {
 
             $response->assertStatus(200)
                 ->assertViewIs('admin.event.index')
-                ->assertViewHas(['events', 'eventsCompleted'])
+                ->assertViewMissing(['events', 'eventsCompleted'])
+                ->assertSeeLivewire('admin.events-index')
+                ->assertSeeInOrder([
+                    t('view completed events'),
+                    t('New Event'),
+                ])
                 ->assertSee('Test Event');
         });
     });

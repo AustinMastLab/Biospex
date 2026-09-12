@@ -23,6 +23,7 @@ namespace App\Http\Controllers\Front;
 use App\Http\Controllers\Controller;
 use App\Services\Project\ProjectService;
 use App\Services\Transcriptions\StateCountyService;
+use Illuminate\Http\RedirectResponse;
 use JavaScript;
 use Redirect;
 use View;
@@ -44,15 +45,13 @@ class ProjectController extends Controller
      */
     public function index(): \Illuminate\Contracts\View\View
     {
-        $projects = $this->projectService->getPublicIndex();
-
-        return View::make('front.project.index', compact('projects'));
+        return View::make('front.project.index');
     }
 
     /**
      * Show public project page.
      */
-    public function show($slug): \Illuminate\Http\RedirectResponse|\Illuminate\Contracts\View\View
+    public function show($slug): RedirectResponse|\Illuminate\Contracts\View\View
     {
         $project = $this->projectService->getProjectPageBySlug($slug);
 
@@ -61,8 +60,6 @@ class ProjectController extends Controller
         }
 
         [$expeditions, $expeditionsCompleted] = $this->projectService->partitionExpeditions($project->expeditions);
-
-        [$events, $eventsCompleted] = $this->projectService->partitionEvents($project->events);
 
         $years = ! isset($project->amChart) || is_null($project->amChart->data) ?
             null : array_keys($project->amChart->data);
@@ -77,6 +74,6 @@ class ProjectController extends Controller
             'project' => $project->id,
         ]);
 
-        return View::make('front.project.home', compact('project', 'years', 'expeditions', 'expeditionsCompleted', 'events', 'eventsCompleted'));
+        return View::make('front.project.home', compact('project', 'years', 'expeditions', 'expeditionsCompleted'));
     }
 }

@@ -22,7 +22,6 @@ namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
 use App\Models\Event;
-use App\Services\Event\EventService;
 use View;
 
 /**
@@ -30,16 +29,12 @@ use View;
  */
 class EventController extends Controller
 {
-    public function __construct(protected EventService $eventService) {}
-
     /**
      * Displays Events on public page.
      */
     public function index(): \Illuminate\Contracts\View\View
     {
-        [$events, $eventsCompleted] = $this->eventService->getPublicIndex();
-
-        return View::make('front.event.index', compact('events', 'eventsCompleted'));
+        return View::make('front.event.index');
     }
 
     /**

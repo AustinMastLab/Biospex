@@ -3,33 +3,36 @@
 namespace App\Livewire\Front;
 
 use App\Services\Project\ProjectService;
+use App\Traits\WithIncrementalIndex;
+use Illuminate\Pagination\Paginator;
 use Livewire\Component;
 
 class ProjectsIndex extends Component
 {
-    public string $sort = 'date';
+    use WithIncrementalIndex;
 
-    public string $order = 'asc';
-
-    public function sortBy(string $field): void
+    protected function sortableFields(): array
     {
-        if ($this->sort === $field) {
-            $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort = $field;
-            $this->order = 'asc';
-        }
+        return ['title', 'group', 'date'];
     }
 
-    public function render(ProjectService $projectService)
+    protected function getPage(): Paginator
     {
-        $projects = $projectService->getPublicIndexCachedData([
+        return app(ProjectService::class)->getPublicIndexPage([
             'sort' => $this->sort,
             'order' => $this->order,
-        ]);
+        ], $this->page);
+    }
 
-        return view('livewire.front.projects-index', [
-            'projects' => $projects,
-        ]);
+    public function hydrateRecords(): void
+    {
+        $this->records = app(ProjectService::class)->getPublicIndexRecords(
+            $this->records->pluck('id')->all(),
+        );
+    }
+
+    public function render()
+    {
+        return view('livewire.front.projects-index');
     }
 }

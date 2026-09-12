@@ -21,34 +21,38 @@
 namespace App\Livewire\Admin;
 
 use App\Services\Project\ProjectService;
+use App\Traits\WithIncrementalIndex;
+use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Auth;
 use Livewire\Component;
 
 class ProjectsIndex extends Component
 {
-    public string $sort = 'date';
+    use WithIncrementalIndex;
 
-    public string $order = 'asc';
-
-    public function sortBy(string $field): void
+    protected function sortableFields(): array
     {
-        if ($this->sort === $field) {
-            $this->order = $this->order === 'asc' ? 'desc' : 'asc';
-        } else {
-            $this->sort = $field;
-            $this->order = 'asc';
-        }
+        return ['title', 'group', 'date'];
     }
 
-    public function render(ProjectService $projectService)
+    protected function getPage(): Paginator
     {
-        $projects = $projectService->getAdminIndex(Auth::user(), [
+        return app(ProjectService::class)->getAdminIndexPage(Auth::user(), [
             'sort' => $this->sort,
             'order' => $this->order,
-        ]);
+        ], $this->page);
+    }
 
-        return view('livewire.admin.projects-index', [
-            'projects' => $projects,
-        ]);
+    public function hydrateRecords(): void
+    {
+        $this->records = app(ProjectService::class)->getAdminIndexRecords(
+            Auth::user(),
+            $this->records->pluck('id')->all(),
+        );
+    }
+
+    public function render()
+    {
+        return view('livewire.admin.projects-index');
     }
 }

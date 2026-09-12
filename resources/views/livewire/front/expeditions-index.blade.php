@@ -34,23 +34,6 @@
                 <i class="fas fa-{{ $sort === 'title' ? ($order === 'asc' ? 'sort-up' : 'sort-down') : 'sort' }}" aria-hidden="true"></i> {{ t('Title') }}
             </button>
 
-            @if( strpos(Route::currentRouteName(), 'admin') > -1)
-                <button type="button"
-                        class="sort-page ml-2 text-uppercase"
-                        wire:click="sortBy('project')"
-                        wire:loading.attr="disabled"
-                        wire:target="sortBy"
-                        aria-label="{{ t('Sort expeditions by Project') }}">
-                    <span class="mr-1 d-none"
-                          wire:loading.class.remove="d-none"
-                          wire:target="sortBy"
-                          aria-hidden="true">
-                        <i class="fas fa-spinner fa-spin"></i>
-                    </span>
-                    <i class="fas fa-{{ $sort === 'project' ? ($order === 'asc' ? 'sort-up' : 'sort-down') : 'sort' }}" aria-hidden="true"></i> {{ t('Project') }}
-                </button>
-            @endif
-
             <button type="button"
                     class="sort-page ml-2 text-uppercase"
                     wire:click="sortBy('date')"

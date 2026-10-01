@@ -35,7 +35,11 @@ class NavComposer
      */
     public function compose(View $view): void
     {
-        $event = $this->weDigBioEvent->where('active', 1)->first();
+        $event = $this->weDigBioEvent
+            ->active()
+            ->where('start_date', '<=', now('UTC'))
+            ->where('end_date', '>=', now('UTC'))
+            ->first();
 
         $view->with('event', $event);
     }

@@ -279,6 +279,6 @@ notify = function (icon, msg, type) {
             enter: "animate__animated animate__fadeInDown",
             exit: "animate__animated animate__fadeOutUp"
         },
-        delay: 30000,
+        delay: 6000,
     });
 }

@@ -51,6 +51,7 @@ class ExpeditionFormRequest extends Request
                 new FileUploadNameValidation,
             ],
             'logo_path' => 'nullable|string',
+            'subject-ids' => 'nullable|string',
             'workflow_id' => 'required',
         ];
     }
@@ -63,7 +64,10 @@ class ExpeditionFormRequest extends Request
     public function alterInput()
     {
         $input = $this->all();
-        $input['title'] = trim($input['title']);
+        if (array_key_exists('title', $input)) {
+            $input['title'] = trim($input['title']);
+        }
+
         $this->replace($input);
 
         return $this->all();

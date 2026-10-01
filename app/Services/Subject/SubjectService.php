@@ -26,6 +26,7 @@ use App\Models\Subject;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
 use MongoDB\BSON\ObjectId;
+use RuntimeException;
 
 class SubjectService
 {
@@ -175,6 +176,34 @@ class SubjectService
         $this->updateSubjects($subjectIds, [
             '$addToSet' => ['expedition_ids' => ['$each' => [$expeditionId]]],
         ]);
+    }
+
+    /**
+     * Resolve legacy image source IDs submitted by the expedition grid to MongoDB document IDs.
+     */
+    public function getDocumentIdsByImageIds(Collection $imageIds): Collection
+    {
+        $imageIds = $imageIds
+            ->filter()
+            ->map(fn ($imageId): string => (string) $imageId)
+            ->unique()
+            ->values();
+
+        if ($imageIds->isEmpty()) {
+            return collect();
+        }
+
+        $documentIds = $this->subject
+            ->whereIn('imageId', $imageIds->all())
+            ->get(['_id'])
+            ->map(fn (Subject $subject): string => (string) $subject->getKey())
+            ->values();
+
+        if ($documentIds->count() !== $imageIds->count()) {
+            throw new RuntimeException('Unable to resolve every selected image ID to a Subject document.');
+        }
+
+        return $documentIds;
     }
 
     /**

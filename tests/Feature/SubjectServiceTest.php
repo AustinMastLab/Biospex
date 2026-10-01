@@ -53,3 +53,55 @@ it('uses a sequential BSON array when attaching sparse subject selections', func
         '$addToSet' => ['expedition_ids' => ['$each' => [123]]],
     ]);
 });
+
+it('resolves legacy image source IDs to MongoDB document IDs', function () {
+    $firstDocumentId = new ObjectId('507f1f77bcf86cd799439011');
+    $secondDocumentId = new ObjectId('507f1f77bcf86cd799439012');
+    $firstSubject = new Subject(['id' => $firstDocumentId]);
+    $secondSubject = new Subject(['id' => $secondDocumentId]);
+    $query = mock(Builder::class);
+    $subject = mock(Subject::class);
+
+    $subject->shouldReceive('whereIn')
+        ->once()
+        ->with('imageId', [
+            '3e3a7635-43a7-4267-8757-8b99631f2ee5',
+            '5c298ace-6ebb-448d-8b8d-cc03e31607ca',
+        ])
+        ->andReturn($query);
+
+    $query->shouldReceive('get')
+        ->once()
+        ->with(['_id'])
+        ->andReturn(collect([$firstSubject, $secondSubject]));
+
+    $documentIds = (new SubjectService($subject))->getDocumentIdsByImageIds(collect([
+        '3e3a7635-43a7-4267-8757-8b99631f2ee5',
+        '5c298ace-6ebb-448d-8b8d-cc03e31607ca',
+    ]));
+
+    expect($documentIds->all())
+        ->toBe([
+            '507f1f77bcf86cd799439011',
+            '507f1f77bcf86cd799439012',
+        ]);
+});
+
+it('fails when a selected image source ID no longer has a Subject document', function () {
+    $query = mock(Builder::class);
+    $subject = mock(Subject::class);
+
+    $subject->shouldReceive('whereIn')
+        ->once()
+        ->with('imageId', ['3e3a7635-43a7-4267-8757-8b99631f2ee5'])
+        ->andReturn($query);
+
+    $query->shouldReceive('get')
+        ->once()
+        ->with(['_id'])
+        ->andReturn(collect());
+
+    expect(fn () => (new SubjectService($subject))->getDocumentIdsByImageIds(collect([
+        '3e3a7635-43a7-4267-8757-8b99631f2ee5',
+    ])))->toThrow(RuntimeException::class, 'Unable to resolve every selected image ID to a Subject document.');
+});

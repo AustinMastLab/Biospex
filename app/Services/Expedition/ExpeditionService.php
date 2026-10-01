@@ -337,11 +337,25 @@ class ExpeditionService
     }
 
     /**
-     * Get subject ids assigned to expedition.
+     * Get legacy image source IDs assigned to an expedition for the selection grid.
      */
     public function getSubjectIdsByExpeditionId(Expedition $expedition): Collection
     {
-        return $this->subjectService->subject->where('expedition_ids', $expedition->id)->get(['_id'])->pluck('_id');
+        return $this->subjectService->subject
+            ->where('expedition_ids', $expedition->id)
+            ->get(['imageId'])
+            ->pluck('imageId');
+    }
+
+    /**
+     * Get MongoDB document IDs assigned to an expedition for bulk updates.
+     */
+    private function getSubjectDocumentIdsByExpeditionId(Expedition $expedition): Collection
+    {
+        return $this->subjectService->subject
+            ->where('expedition_ids', $expedition->id)
+            ->get(['_id'])
+            ->map(fn ($subject): string => (string) $subject->getKey());
     }
 
     /**
@@ -355,12 +369,11 @@ class ExpeditionService
             return $this->getSubjectIdsByExpeditionId($expedition)->count();
         }
 
-        $oldIds = $this->getSubjectIdsByExpeditionId($expedition)
+        $oldIds = $this->getSubjectDocumentIdsByExpeditionId($expedition)
             ->map(fn ($subjectId): string => (string) $subjectId);
-        $newIds = $subjectIds
-            ->map(fn ($subjectId): string => (string) $subjectId)
-            ->unique()
-            ->values();
+        $newIds = $this->subjectService
+            ->getDocumentIdsByImageIds($subjectIds)
+            ->map(fn ($subjectId): string => (string) $subjectId);
 
         $detachIds = $oldIds->diff($newIds);
         $attachIds = $newIds->diff($oldIds);
@@ -368,7 +381,7 @@ class ExpeditionService
         $this->detachSubjects($expedition->id, $detachIds);
         $this->attachSubjects($expedition->id, $attachIds);
 
-        return $this->getSubjectIdsByExpeditionId($expedition)->count();
+        return $this->getSubjectDocumentIdsByExpeditionId($expedition)->count();
     }
 
     /**

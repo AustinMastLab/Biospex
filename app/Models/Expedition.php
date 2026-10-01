@@ -23,8 +23,11 @@ namespace App\Models;
 use App\Presenters\ExpeditionPresenter;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\Relations\HasOneThrough;
 
@@ -79,7 +82,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the dashboard transcriptions for this expedition.
      */
-    public function dashboard(): Expedition|\Illuminate\Database\Eloquent\Builder|\Illuminate\Database\Eloquent\Relations\HasMany
+    public function dashboard(): Expedition|Builder|HasMany
     {
         return $this->hasMany(PusherTranscription::class, 'expedition_id');
     }
@@ -87,7 +90,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get all downloads associated with this expedition.
      */
-    public function downloads(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function downloads(): HasMany
     {
         return $this->hasMany(Download::class);
     }
@@ -95,7 +98,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the GeoLocate CSV download for this expedition.
      */
-    public function geoLocateCsvDownload(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function geoLocateCsvDownload(): HasOne
     {
         return $this->hasOne(Download::class)->where('actor_id', config('geolocate.actor_id'))->where('type', 'csv');
     }
@@ -103,7 +106,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the export queue entry for this expedition.
      */
-    public function exportQueue(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function exportQueue(): HasOne
     {
         return $this->hasOne(ExportQueue::class);
     }
@@ -111,7 +114,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the GeoLocate export download for this expedition.
      */
-    public function geoLocateExport(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function geoLocateExport(): HasOne
     {
         return $this->hasOne(Download::class)->where('actor_id', config('geolocate.actor_id'))->where('type', 'export');
     }
@@ -119,7 +122,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get all OCR queue entries for this expedition.
      */
-    public function ocrQueue(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function ocrQueue(): HasMany
     {
         return $this->hasMany(OcrQueue::class);
     }
@@ -135,15 +138,23 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the statistics for this expedition.
      */
-    public function stat(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function stat(): HasOne
     {
         return $this->hasOne(ExpeditionStat::class);
     }
 
     /**
+     * Get the pending subject save request for this expedition.
+     */
+    public function saveRequest(): HasOne
+    {
+        return $this->hasOne(ExpeditionSaveRequest::class);
+    }
+
+    /**
      * Get all subjects associated with this expedition.
      */
-    public function subjects(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function subjects(): HasMany
     {
         return $this->hasMany(Subject::class, 'expedition_ids', 'id')->where('expedition_ids', $this->id);
     }
@@ -159,7 +170,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the workflow manager for this expedition.
      */
-    public function workflowManager(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function workflowManager(): HasOne
     {
         return $this->hasOne(WorkflowManager::class);
     }
@@ -167,7 +178,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the Zooniverse export download for this expedition.
      */
-    public function zooniverseExport(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function zooniverseExport(): HasOne
     {
         return $this->hasOne(Download::class)->where('actor_id', config('zooniverse.actor_id'))
             ->where('type', 'export');
@@ -176,7 +187,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get all actors associated with this expedition through the pivot table.
      */
-    public function actors(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function actors(): BelongsToMany
     {
         return $this->belongsToMany(Actor::class, 'actor_expedition')
             ->withPivot('id', 'expedition_id', 'actor_id', 'state', 'total', 'error', 'order', 'expert')
@@ -187,7 +198,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get all actor expedition records for this expedition.
      */
-    public function actorExpeditions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function actorExpeditions(): HasMany
     {
         return $this->hasMany(ActorExpedition::class);
     }
@@ -195,7 +206,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the GeoLocate actor expedition record for this expedition.
      */
-    public function geoActorExpedition(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function geoActorExpedition(): HasOne
     {
         return $this->hasOne(ActorExpedition::class)->where('actor_id', config('geolocate.actor_id'));
     }
@@ -203,7 +214,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the Zooniverse actor expedition record for this expedition.
      */
-    public function zooActorExpedition(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function zooActorExpedition(): HasOne
     {
         return $this->hasOne(ActorExpedition::class)->where('actor_id', config('zooniverse.actor_id'));
     }
@@ -211,7 +222,7 @@ class Expedition extends BaseEloquentModel
     /**
      * Get the Panoptes project associated with this expedition.
      */
-    public function panoptesProject(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function panoptesProject(): HasOne
     {
         return $this->hasOne(PanoptesProject::class);
     }

@@ -23,6 +23,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ExpeditionFormRequest;
 use App\Jobs\DeleteExpeditionJob;
+use App\Jobs\ExpeditionSaveJob;
 use App\Models\Expedition;
 use App\Models\Project;
 use App\Services\Expedition\ExpeditionService;
@@ -85,9 +86,10 @@ class ExpeditionController extends Controller
                 return Redirect::route('admin.projects.index');
             }
 
-            $expedition = $this->expeditionService->store($project, $request->all());
+            $expedition = $this->expeditionService->store($project, $request->validated(), Auth::user());
+            ExpeditionSaveJob::dispatch($expedition->id);
 
-            return Redirect::route('admin.expeditions.show', [$expedition])->with('success', t('Record was created successfully.'));
+            return Redirect::route('admin.expeditions.show', [$expedition])->with('success', t('Expedition data was saved. Subject assignment is being processed, and you will be notified by email when it is complete.'));
         } catch (Throwable $throwable) {
             return Redirect::route('admin.projects.show', [$project])->with('danger', t('An error occurred when saving record. Please contact the administrator.'));
         }
@@ -142,10 +144,11 @@ class ExpeditionController extends Controller
         }
 
         try {
-            $this->expeditionService->update($expedition, $request->all());
+            $this->expeditionService->update($expedition, $request->validated(), Auth::user());
+            ExpeditionSaveJob::dispatch($expedition->id);
 
             return Redirect::route('admin.expeditions.show', [$expedition])
-                ->with('success', t('Record was updated successfully.'));
+                ->with('success', t('Expedition data was saved. Subject assignment is being processed, and you will be notified by email when it is complete.'));
         } catch (Throwable $throwable) {
             return Redirect::route('admin.expeditions.edit', [$expedition])
                 ->with('danger', t('An error occurred when saving record. Please contact the administrator.'));

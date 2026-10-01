@@ -25,6 +25,7 @@ use App\Models\Project;
 use App\Models\Subject;
 use Illuminate\Support\Collection;
 use Illuminate\Support\LazyCollection;
+use MongoDB\BSON\ObjectId;
 
 class SubjectService
 {
@@ -66,7 +67,7 @@ class SubjectService
      *
      * @param  array  $data  The data to update the subject with
      * @param  int|string  $resourceId  The ID of the subject to update
-     * @return \App\Models\Subject|bool Returns the updated Subject model on success, false on failure
+     * @return Subject|bool Returns the updated Subject model on success, false on failure
      */
     public function update(array $data, int|string $resourceId): bool|Subject
     {
@@ -161,14 +162,9 @@ class SubjectService
      */
     public function detachSubjects(Collection $subjectIds, int $expeditionId): void
     {
-        $subjectIds->each(function ($subjectId) use ($expeditionId) {
-            $subject = $this->subject->find($subjectId);
-            $subject->expedition_ids = collect($subject->expedition_ids)->filter(function ($value) use ($expeditionId) {
-                return $value != $expeditionId;
-            })->unique()->toArray();
-
-            $subject->save();
-        });
+        $this->updateSubjects($subjectIds, [
+            '$pull' => ['expedition_ids' => $expeditionId],
+        ]);
     }
 
     /**
@@ -176,11 +172,29 @@ class SubjectService
      */
     public function attachSubjects(Collection $subjectIds, int $expeditionId): void
     {
-        $subjectIds->each(function ($subjectId) use ($expeditionId) {
-            $subject = $this->subject->find($subjectId);
-            $subject->expedition_ids = collect($subject->expedition_ids)->push($expeditionId)->unique()->toArray();
-            $subject->save();
-        });
+        $this->updateSubjects($subjectIds, [
+            '$addToSet' => ['expedition_ids' => ['$each' => [$expeditionId]]],
+        ]);
+    }
+
+    /**
+     * Apply an expedition assignment update in bounded MongoDB bulk operations.
+     */
+    private function updateSubjects(Collection $subjectIds, array $update): void
+    {
+        $subjectIds
+            ->filter()
+            ->map(fn ($subjectId): ObjectId => new ObjectId((string) $subjectId))
+            ->values()
+            ->chunk(1000)
+            ->each(function (Collection $subjectIds) use ($update): void {
+                $this->subject->newQuery()->raw(function ($collection) use ($subjectIds, $update): void {
+                    $collection->updateMany(
+                        ['_id' => ['$in' => $subjectIds->all()]],
+                        $update
+                    );
+                });
+            });
     }
 
     /**

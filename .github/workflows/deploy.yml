@@ -1,7 +1,7 @@
 # CI/CD Deployment Workflow with Semantic Versioning
 #
 # WORKFLOW:
-# - Push to 'development' branch → Deploys to DEVELOPMENT automatically
+# - Manual run on 'development' branch → Deploys to DEVELOPMENT
 # - Push to 'main' branch → Calculates version → Deploys to PRODUCTION → Creates GitHub release (only on success)
 #
 # VERSION CONTROL:
@@ -22,7 +22,7 @@ on:
   push:
     branches:
       - main
-      - development
+  workflow_dispatch:
 
 permissions:
   id-token: write
@@ -31,7 +31,7 @@ permissions:
 jobs:
   calculate-version:
     runs-on: ubuntu-latest
-    if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     outputs:
       new_version: ${{ steps.new_version.outputs.new_version }}
       current_version: ${{ steps.version_bump.outputs.current_version }}
@@ -116,7 +116,7 @@ jobs:
     needs: calculate-version
     runs-on: ubuntu-latest
     environment: production
-    if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
       - uses: actions/checkout@v6
 
@@ -243,7 +243,7 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: "github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
+    if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
       - uses: actions/checkout@v6
         with:
@@ -286,7 +286,7 @@ jobs:
   build-and-deploy-development:
     runs-on: ubuntu-latest
     environment: development
-    if: "github.ref == 'refs/heads/development' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
+    if: "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/development'"
     steps:
       - uses: actions/checkout@v6
 

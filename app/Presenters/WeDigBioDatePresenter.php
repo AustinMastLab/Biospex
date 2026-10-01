@@ -47,11 +47,15 @@ class WeDigBioDatePresenter extends Presenter
         $start_date = $this->model->start_date->setTimezone('UTC');
         $end_date = $this->model->end_date->setTimeZone('UTC');
 
+        if ($now->lt($start_date)) {
+            return $start_date->toIso8601ZuluString();
+        }
+
         if ($now->gt($end_date)) {
             return 'Completed';
         }
 
-        return $end_date->gt($start_date) ? $end_date->toIso8601ZuluString() : $start_date->toIso8601ZuluString();
+        return $end_date->toIso8601ZuluString();
     }
 
     /**

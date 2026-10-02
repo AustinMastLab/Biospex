@@ -82,9 +82,14 @@ $(function () {
 
             // Force delete by matching the path and ensuring no domain conflict
             document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
-            // Extra safety: Try to delete the dotted domain version too if it exists
             document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=" + window.location.hostname + ";";
             document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + window.location.hostname + ";";
+
+            const domainSegments = window.location.hostname.split('.');
+            for (let index = 1; index < domainSegments.length - 1; index++) {
+                const parentDomain = domainSegments.slice(index).join('.');
+                document.cookie = "app_flash=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/; domain=." + parentDomain + ";";
+            }
         } catch (e) {
             console.error("Flash cookie error", e);
         }

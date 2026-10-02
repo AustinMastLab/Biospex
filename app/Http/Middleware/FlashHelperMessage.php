@@ -32,7 +32,7 @@ class FlashHelperMessage
     {
         // If there's a flash message, tell the Cache middleware (running next) to skip this request
         if (session()->hasAny(['success', 'info', 'warning', 'danger'])) {
-            $request->attributes->set('laravel-responsecache.do-not-cache', true);
+            $request->attributes->set('responsecache.doNotCache', true);
         }
 
         $response = $next($request);

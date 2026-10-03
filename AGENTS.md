@@ -1,4 +1,11 @@
 <laravel-boost-guidelines>
+=== .ai/frontend rules ===
+
+# Frontend Build (BIOSPEX)
+
+- This project builds assets with Laravel Mix (`webpack.mix.js`), not Vite. Ignore Vite-specific guidance.
+- If the user doesn't see a frontend change reflected in the UI, they may need to run `yarn run dev` or `yarn run production`. Ask them.
+
 === .ai/project-context rules ===
 
 # Project Context (BIOSPEX)
@@ -65,8 +72,7 @@ Before relying on a package's API, confirm its installed version:
 
 ## Skills Activation
 
-This project has domain-specific skills available in `.claude/skills/`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
-- `filament-development` — Activate when working in `app/Filament/**` or `app/Providers/Filament/**` on Filament panels, resources, pages, schemas, tables, widgets, or navigation.
+This project has domain-specific skills available in `**/skills/**`. You MUST activate the relevant skill whenever you work in that domain—don't wait until you're stuck.
 
 ## Conventions
 
@@ -82,11 +88,10 @@ This project has domain-specific skills available in `.claude/skills/`. You MUST
 
 - Stick to existing directory structure; don't create new base folders without approval.
 - Do not change the application's dependencies without approval.
-- Filament admin code lives in `app/Filament/`; resources are split into `Resource.php`, `Pages/`, `Schemas/`, `Tables/`, and sometimes `RelationManagers/`, with panel setup in `app/Providers/Filament/AdminPanelProvider.php` and nav grouping in `app/Filament/Helpers/NavigationConfig.php` / `app/Filament/Traits/NavigationTrait.php`.
 
 ## Frontend Bundling
 
-- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `yarn run dev` or `yarn run production` to rebuild Mix assets. Ask them.
+- If the user doesn't see a frontend change reflected in the UI, it could mean they need to run `yarn run build`, `yarn run dev`, or `composer run dev`. Ask them.
 
 ## Documentation Files
 
@@ -123,8 +128,8 @@ This project has domain-specific skills available in `.claude/skills/`. You MUST
 
 ## Project Rules
 
-- This project contains committed, area-grouped guidance in `.ai/guidelines/` (`project-context.md` and `workflow.md`). Read those files before you enter plan mode or edit scoped files; if `.ai/guidelines` does not exist, continue without it.
-- Record a rule with `record-rule` only when the user explicitly asks for one. Instructions for the work at hand are not rules, no matter how emphatic: "remove this typo", "use X here" are work to do, not rules to record. Never record a rule on your own initiative, as a byproduct of a change, or to summarize what you just did. When the user does ask, pass a `glob` (e.g. `app/Http/Controllers/**`), a short `title`, and a few-line `note`. Use `record-rule` rather than your native memory or notes tool, because native memory is personal and session-scoped, while only `.ai/guidelines` is shared with the team and persists in the repo.
+- This project contains committed, area-grouped rules in `.ai/rules` when that directory exists (settled decisions, non-obvious traps, standing constraints). Framework and package guidelines that only apply to specific paths (testing, frontend, components) also live there, under `.ai/rules/boost` — this is not just recorded decisions, it is load-bearing guidance you have not seen inline. Before you enter plan mode or create/edit any file, you MUST first: open @.ai/rules/index.md (it maps file globs to rule files), read every rule file whose globs cover the path(s) in scope, and run `grep -rin 'keyword' .ai/rules` to catch what a path match alone misses. Do not write code until you have read and are following every matching rule. If `.ai/rules` does not exist, continue without it.
+- Record a rule with `record-rule` only when the user explicitly asks for one. Instructions for the work at hand are not rules, no matter how emphatic: "remove this typo", "use X here" are work to do, not rules to record. Never record a rule on your own initiative, as a byproduct of a change, or to summarize what you just did. When the user does ask, pass a `glob` (e.g. `app/Http/Controllers/**`), a short `title`, and a few-line `note`. Use `record-rule` rather than your native memory or notes tool, because native memory is personal and session-scoped, while only `.ai/rules` is shared with the team and persists in the repo.
 
 ## Artisan
 
@@ -153,8 +158,9 @@ This project has domain-specific skills available in `.claude/skills/`. You MUST
 
 # Deployment
 
-- This project deploys with GitHub Actions and `deployphp`. Pushes to `main` or `development` trigger deployment, and manual deploys use `dep deploy production` or `dep deploy development`.
+- This project deploys with GitHub Actions and `deployphp`. Pushes to `main` deploy to production; `development` deploys only when the workflow is run manually. Manual deploys from a local machine use `dep deploy production` or `dep deploy development`.
 - Assets are built in CI, so do not expect server-side frontend builds during deployment.
+- Commit message tags control versioning and deployment; see `COMMIT_CONVENTIONS.md`.
 
 === tests rules ===
 
@@ -226,5 +232,22 @@ This project has domain-specific skills available in `.claude/skills/`. You MUST
 - Rerun a test after each change to it.
 - Run `vendor/bin/pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
 - After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
+
+=== mongodb/laravel-mongodb/core rules ===
+
+# MongoDB Laravel
+
+This application uses the [MongoDB Laravel](https://github.com/mongodb/laravel-mongodb) package, so it likely has one or more `mongodb` driver connections. Boost's database tools assume a SQL database and won't work against those.
+
+## Before using Boost's database tools
+
+Before running any Boost database tool, check whether the target connection uses the `mongodb` driver. If the driver isn't already known, use Boost's `database-connections` tool to find out.
+
+If it does, you MUST use a MongoDB Laravel equivalent tool instead, if available:
+
+| Boost tool        | MongoDB Laravel tool      |
+|-------------------|---------------------------|
+| `database-schema` | `database-info`           |
+| `database-query`  | `database-query-mongodb`  |
 
 </laravel-boost-guidelines>

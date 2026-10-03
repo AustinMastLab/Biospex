@@ -1,4 +1,11 @@
 <laravel-boost-guidelines>
+=== .ai/frontend rules ===
+
+# Frontend Build (BIOSPEX)
+
+- This project builds assets with Laravel Mix (`webpack.mix.js`), not Vite. Ignore Vite-specific guidance.
+- If the user doesn't see a frontend change reflected in the UI, they may need to run `yarn run dev` or `yarn run production`. Ask them.
+
 === .ai/project-context rules ===
 
 # Project Context (BIOSPEX)
@@ -151,8 +158,9 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 
 # Deployment
 
-- Laravel can be deployed using [Laravel Cloud](https://cloud.laravel.com/), which is the fastest way to deploy and scale production Laravel applications.
-- Activate the `deploying-to-cloud` skill whenever deploying to Laravel Cloud, configuring Cloud environments or resources, using the Cloud CLI, or troubleshooting Cloud deployments.
+- This project deploys with GitHub Actions and `deployphp`. Pushes to `main` deploy to production; `development` deploys only when the workflow is run manually. Manual deploys from a local machine use `dep deploy production` or `dep deploy development`.
+- Assets are built in CI, so do not expect server-side frontend builds during deployment.
+- Commit message tags control versioning and deployment; see `COMMIT_CONVENTIONS.md`.
 
 === tests rules ===
 
@@ -224,5 +232,22 @@ This project has domain-specific skills available in `**/skills/**`. You MUST ac
 - Rerun a test after each change to it.
 - Run `vendor/bin/pest` to call the test runner directly. It accepts the same file path and `--filter=testName` arguments.
 - After the feature tests pass, ask the user to run the complete suite with `php artisan test --compact`.
+
+=== mongodb/laravel-mongodb/core rules ===
+
+# MongoDB Laravel
+
+This application uses the [MongoDB Laravel](https://github.com/mongodb/laravel-mongodb) package, so it likely has one or more `mongodb` driver connections. Boost's database tools assume a SQL database and won't work against those.
+
+## Before using Boost's database tools
+
+Before running any Boost database tool, check whether the target connection uses the `mongodb` driver. If the driver isn't already known, use Boost's `database-connections` tool to find out.
+
+If it does, you MUST use a MongoDB Laravel equivalent tool instead, if available:
+
+| Boost tool        | MongoDB Laravel tool      |
+|-------------------|---------------------------|
+| `database-schema` | `database-info`           |
+| `database-query`  | `database-query-mongodb`  |
 
 </laravel-boost-guidelines>

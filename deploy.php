@@ -54,8 +54,8 @@ set('clear_paths', [
     'deployment-package', // Remove any residual nesting dirs
 ]);
 
-// Phase-specific DB update operation for this branch.
-set('update_queries_operation', 'wedigbio-phase-8');
+// One-off app:update-queries operation for this release. Set back to '' once it has run in production.
+set('update_queries_operation', 'expedition-logo-paths');
 
 // Determine if the local identity file exists (for manual deployments)
 $localKey = '/home/ubuntu/.ssh/biospexaws.pem';
@@ -110,8 +110,9 @@ task('deploy', [
     'artisan:filament:assets',
     'artisan:app:deploy-files', // Custom app deployment files
 
-    // Phase 4: Database
+    // Phase 4: Database & Updates
     'artisan:migrate',         // Run database migrations
+    'artisan:app:update-queries', // One-off data updates (skipped when update_queries_operation is empty)
 
     // Phase 5: Cache Optimization
     'artisan:optimize:clear',  // Clear all Laravel caches

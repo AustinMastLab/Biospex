@@ -51,7 +51,7 @@
                             </div>
                             <div class="form-group col-sm-6">
                                 <img class="img-fluid" style="display: inline; width: 100px; height: 100px;"
-                                     src="{{ $expedition->present()->show_medium_logo }}" alt="Expedition Logo"/>
+                                     src="{{ $expedition->present()->show_logo }}" alt="Expedition Logo"/>
                             </div>
                         </div>
 

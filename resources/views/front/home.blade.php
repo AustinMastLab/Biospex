@@ -196,7 +196,7 @@
                         <div class="card black mb-4 box-shadow">
                             <div class="card-top m-0 p-0">
                                 <img class="card-img-top" style="max-height: 100%"
-                                     src="{{ $expedition->present()->show_medium_logo }}"
+                                     src="{{ $expedition->present()->show_logo }}"
                                      alt="{{ $expedition->present()->logo_alt }}">
                                 <div class="card-img-overlay">
                                     <h3 class="card-title text-center pt-4 expedition-card-title">{{ $expedition->title }}</h3>

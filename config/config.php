@@ -38,8 +38,6 @@ return [
     'uploads' => [
         'project_logos' => env('UPLOAD_PROJECT_LOGOS', 'uploads/projects/logos'),
         'expedition_logos' => env('UPLOAD_EXPEDITION_LOGOS', 'uploads/expeditions/logos'),
-        'expedition_logos_medium' => env('UPLOAD_EXPEDITION_LOGOS_MEDIUM', 'uploads/expeditions/logos/medium'),
-        'expedition_logos_original' => env('UPLOAD_EXPEDITION_LOGOS_ORIGINAL', 'uploads/expeditions/logos/original'),
         'profile_avatars' => env('UPLOAD_PROFILE_AVATARS', 'uploads/profiles/avatars'),
         'profile_avatars_small' => env('UPLOAD_PROFILE_AVATARS_SMALL', 'uploads/profiles/avatars/small'),
         'profile_avatars_medium' => env('UPLOAD_PROFILE_AVATARS_MEDIUM', 'uploads/profiles/avatars/medium'),

@@ -33,7 +33,7 @@ class ExpeditionInfolist
                     ->getStateUsing(function ($record) {
                         // Custom logic to determine the logo URL
                         if (! empty($record->logo_path)) {
-                            return $record->present()->show_medium_logo;
+                            return $record->present()->show_logo;
                         }
 
                         return config('config.missing_expedition_logo');

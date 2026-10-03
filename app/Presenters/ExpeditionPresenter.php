@@ -28,44 +28,18 @@ use Storage;
 class ExpeditionPresenter extends Presenter
 {
     /**
-     * Check if logo file exists or return default.
+     * URL of the expedition logo, or the placeholder when none is stored.
      *
-     * @return \Illuminate\Config\Repository|mixed
+     * Builds the URL from logo_path without checking S3, so rendering a card
+     * makes no network calls.
      */
-    public function showMediumLogo()
+    public function showLogo(): string
     {
-        // Check for new Livewire logo_path with medium variant first (check S3 for new uploads)
-        if (! empty($this->model->logo_path)) {
-            // Try medium variant path on S3 first
-            $mediumPath = str_replace('/logos/original/', '/logos/medium/', $this->model->logo_path);
-            if (Storage::disk('s3')->exists($mediumPath)) {
-                return Storage::disk('s3')->url($mediumPath);
-            }
-
-            // Try original path on S3 as fallback
-            if (Storage::disk('s3')->exists($this->model->logo_path)) {
-                return Storage::disk('s3')->url($this->model->logo_path);
-            }
+        if (empty($this->model->logo_path)) {
+            return config('config.missing_expedition_logo');
         }
 
-        return config('config.missing_expedition_logo');
-    }
-
-    /**
-     * Check if logo file exists or return default (original size).
-     *
-     * @return \Illuminate\Config\Repository|mixed
-     */
-    public function showLogo()
-    {
-        // Check for new Livewire logo_path first (check S3 for new uploads)
-        if (! empty($this->model->logo_path) && Storage::disk('s3')->exists($this->model->logo_path)) {
-            // Generate a temporary signed URL for private S3 files (valid for 1 hour)
-            return Storage::disk('s3')->url($this->model->logo_path);
-        }
-
-        // Return default missing logo
-        return config('config.missing_expedition_logo');
+        return Storage::disk('s3')->url($this->model->logo_path);
     }
 
     public function expeditionShowIcon()

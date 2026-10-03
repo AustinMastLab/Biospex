@@ -25,6 +25,7 @@ use App\Models\Profile;
 use App\Models\Project;
 use App\Models\ProjectAsset;
 use App\Models\SiteAsset;
+use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Storage;
 
@@ -68,8 +69,6 @@ class CleanupOrphanedS3UploadFiles extends Command
         $directories = [
             config('config.uploads.project_logos'),
             config('config.uploads.expedition_logos'),
-            config('config.uploads.expedition_logos_medium'),
-            config('config.uploads.expedition_logos_original'),
             config('config.uploads.profile_avatars'),
             config('config.uploads.profile_avatars_medium'),
             config('config.uploads.profile_avatars_original'),
@@ -174,7 +173,7 @@ class CleanupOrphanedS3UploadFiles extends Command
                 // Check file age
                 try {
                     $lastModified = Storage::disk('s3')->lastModified($file);
-                    $fileDate = \Carbon\Carbon::createFromTimestamp($lastModified);
+                    $fileDate = Carbon::createFromTimestamp($lastModified);
 
                     if ($fileDate->greaterThan($cutoffTime)) {
                         $this->line("  Skipping recent file: {$file} (modified: {$fileDate})");

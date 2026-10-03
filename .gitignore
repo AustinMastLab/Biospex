@@ -53,9 +53,8 @@ hooks
 laradumps.yaml
 /push-env-params
 /remove-env-params
-/.ai/
+/.ai/mcp/
 /generate-env
-/.ai/
 /.github/
 /.vscode/
 /clean-logs.sh

@@ -637,22 +637,8 @@ class ExpeditionService
         try {
             $disk = config('filesystems.default') === 's3' ? 's3' : 'public';
 
-            // Remove the main logo file
             if (\Storage::disk($disk)->exists($expedition->logo_path)) {
                 \Storage::disk($disk)->delete($expedition->logo_path);
-            }
-
-            // Remove any variants if they exist (medium, small, etc.)
-            $logoDirectory = dirname($expedition->logo_path);
-            $logoFilename = basename($expedition->logo_path);
-
-            // Check for variant directories (medium, small, etc.)
-            $variantDirs = ['medium', 'small'];
-            foreach ($variantDirs as $variant) {
-                $variantPath = $logoDirectory.'/'.$variant.'/'.$logoFilename;
-                if (\Storage::disk($disk)->exists($variantPath)) {
-                    \Storage::disk($disk)->delete($variantPath);
-                }
             }
         } catch (\Exception $e) {
             // Log error but don't fail the update

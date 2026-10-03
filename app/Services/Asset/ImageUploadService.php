@@ -35,10 +35,19 @@ class ImageUploadService
             'medium' => ['width' => 160, 'height' => 160],
             'small' => ['width' => 25, 'height' => 25],
         ],
-        'Expedition' => [
-            'medium' => ['width' => 318, 'height' => 208],
-        ],
         'Project' => [], // No variants for projects
+    ];
+
+    /**
+     * Model types stored as a single image forced to exact dimensions.
+     *
+     * Expedition tiles require a fixed size, so the upload is stretched to fit
+     * rather than cropped. Stored at 2x and displayed at 318x208.
+     *
+     * @var array<string, array{width: int, height: int}>
+     */
+    protected array $fixedSizeConfigs = [
+        'Expedition' => ['width' => 636, 'height' => 416],
     ];
 
     /**
@@ -57,6 +66,11 @@ class ImageUploadService
 
             $disk = 's3';
             $filename = time().'_'.$file->getClientOriginalName();
+
+            if (isset($this->fixedSizeConfigs[$modelType])) {
+                return $this->storeFixedSize($file, $filename, $storagePath, $this->fixedSizeConfigs[$modelType], $disk);
+            }
+
             $variants = $this->variantConfigs[$modelType] ?? [];
 
             // Determine storage path - use 'original' subdirectory if variants are configured
@@ -85,6 +99,26 @@ class ImageUploadService
     }
 
     /**
+     * Resize the upload to exact dimensions and store it as the only file.
+     *
+     * @param  UploadedFile|TemporaryUploadedFile  $file
+     * @param  array{width: int, height: int}  $dimensions
+     */
+    protected function storeFixedSize($file, string $filename, string $storagePath, array $dimensions, string $disk): string
+    {
+        $image = Image::decode($file->getRealPath());
+        $image->resize($dimensions['width'], $dimensions['height']);
+
+        $path = $storagePath.'/'.$filename;
+
+        if (! Storage::disk($disk)->put($path, (string) $image->encodeUsingPath($filename))) {
+            throw new \Exception('Failed to upload file to S3');
+        }
+
+        return $path;
+    }
+
+    /**
      * Create image variants
      *
      * @param  UploadedFile|TemporaryUploadedFile  $file
@@ -94,7 +128,7 @@ class ImageUploadService
         foreach ($variants as $variant => $dimensions) {
             try {
                 // Create intervention image from uploaded file
-                $image = Image::read($file->getRealPath());
+                $image = Image::decode($file->getRealPath());
 
                 // Resize image maintaining aspect ratio
                 $image->resize($dimensions['width'], $dimensions['height']);

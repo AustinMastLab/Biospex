@@ -24,7 +24,9 @@ use App\Models\Event;
 use App\Models\Expedition;
 use App\Models\Project;
 use App\Observers\EventPublicCacheObserver;
+use App\Observers\ExpeditionLogoObserver;
 use App\Observers\ExpeditionPublicCacheObserver;
+use App\Observers\ProjectLogoObserver;
 use App\Observers\ProjectPublicCacheObserver;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Pagination\Paginator;
@@ -59,8 +61,8 @@ class AppServiceProvider extends ServiceProvider
 
         // Register model observers
         Event::observe(EventPublicCacheObserver::class);
-        Expedition::observe(ExpeditionPublicCacheObserver::class);
-        Project::observe(ProjectPublicCacheObserver::class);
+        Expedition::observe([ExpeditionPublicCacheObserver::class, ExpeditionLogoObserver::class]);
+        Project::observe([ProjectPublicCacheObserver::class, ProjectLogoObserver::class]);
     }
 
     /**

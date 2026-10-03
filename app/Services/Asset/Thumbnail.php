@@ -25,6 +25,7 @@ use Exception;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
 use Illuminate\Contracts\Filesystem\Factory as Storage;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Filesystem\Filesystem as File;
 use Illuminate\Support\Facades\Log;
 use Intervention\Image\ImageManager;
@@ -95,7 +96,7 @@ class Thumbnail
     /**
      * Return thumbnail or create if not exists.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function getThumbnail($url): string
     {
@@ -130,7 +131,7 @@ class Thumbnail
     /**
      * Get image and create thumbnail.
      *
-     * @throws \Exception
+     * @throws Exception
      */
     protected function processImage(string $url, string $filePath): void
     {
@@ -159,7 +160,7 @@ class Thumbnail
                 throw new Exception("Downloaded image is empty from: {$url}");
             }
 
-            $this->imageManager->read($imageContent)
+            $this->imageManager->decode($imageContent)
                 ->resize($this->tnWidth, $this->tnHeight)
                 ->save($filePath);
 
@@ -177,7 +178,7 @@ class Thumbnail
                 'error' => $e->getMessage(),
             ]);
             throw new Exception("HTTP error downloading image: {$e->getMessage()}", 0, $e);
-        } catch (\Exception $e) {
+        } catch (Exception $e) {
             Log::warning('Thumbnail: Image processing error', [
                 'url' => $url,
                 'error' => $e->getMessage(),
@@ -189,7 +190,7 @@ class Thumbnail
     /**
      * Get thumbnail file or default file.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     protected function getFile($thumbFile): string
     {

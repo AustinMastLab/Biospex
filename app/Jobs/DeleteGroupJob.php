@@ -71,6 +71,10 @@ class DeleteGroupJob implements ShouldQueue
 
             $mongoDbService->setCollection('subjects');
             $mongoDbService->deleteMany(['project_id' => $project->id]);
+
+            // Delete through Eloquent so project observers (e.g. logo removal) run;
+            // the database cascade from the group delete fires no model events.
+            $project->delete();
         });
 
         $this->group->delete();

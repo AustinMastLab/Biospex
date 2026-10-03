@@ -36,18 +36,18 @@ class ProjectPresenter extends Presenter
     }
 
     /**
-     * Check if logo file exists or return default.
+     * URL of the project logo, or the placeholder when none is stored.
      *
-     * @return \Illuminate\Config\Repository|mixed
+     * Builds the URL from logo_path without checking S3, so rendering a card
+     * makes no network calls.
      */
-    public function showLogo()
+    public function showLogo(): string
     {
-        // Check for new Livewire logo_path first (check S3 for new uploads)
-        if (! empty($this->model->logo_path) && Storage::disk('s3')->exists($this->model->logo_path)) {
-            return Storage::disk('s3')->url($this->model->logo_path);
+        if (empty($this->model->logo_path)) {
+            return config('config.missing_project_logo');
         }
 
-        return config('config.missing_project_logo');
+        return Storage::disk('s3')->url($this->model->logo_path);
     }
 
     /**

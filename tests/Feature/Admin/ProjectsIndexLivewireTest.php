@@ -114,12 +114,15 @@ it('loads another authorization-scoped page of projects without duplicates', fun
 
     $this->actingAs($admin);
 
-    Livewire::test(ProjectsIndex::class)
+    $component = Livewire::test(ProjectsIndex::class)
         ->assertSee('Project 01')
         ->assertDontSee('Project 10')
-        ->assertSet('hasMore', true)
-        ->call('loadMore')
-        ->assertSee('Project 01')
-        ->assertSee('Project 10')
-        ->assertSet('hasMore', false);
+        ->assertSet('hasMore', true);
+
+    $appended = loadMoreCards($component);
+
+    expect($appended)->toContain('Project 10')
+        ->and($appended)->not->toContain('Project 01');
+
+    $component->assertSet('hasMore', false);
 });

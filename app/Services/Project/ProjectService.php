@@ -223,28 +223,6 @@ class ProjectService
     }
 
     /**
-     * Refresh loaded projects for the admin index.
-     *
-     * @param  array<int, int>  $projectIds
-     */
-    public function getAdminIndexRecords(User $user, array $projectIds): Collection
-    {
-        if ($projectIds === []) {
-            return collect();
-        }
-
-        $query = $this->projectIndexQuery()->whereKey($projectIds);
-
-        if (! $user->isAdmin()) {
-            $query->whereHas('group.users', function (Builder $query) use ($user) {
-                $query->where('users.id', $user->id);
-            });
-        }
-
-        return $this->orderProjectsByIds($query->get(), $projectIds);
-    }
-
-    /**
      * Cache key for the DATA collection of public projects.
      */
     protected function publicIndexDataCacheKey(array $request = []): string
@@ -312,23 +290,6 @@ class ProjectService
         });
     }
 
-    /**
-     * Refresh loaded projects for the public index.
-     *
-     * @param  array<int, int>  $projectIds
-     */
-    public function getPublicIndexRecords(array $projectIds): Collection
-    {
-        if ($projectIds === []) {
-            return collect();
-        }
-
-        return $this->orderProjectsByIds(
-            $this->publicProjectIndexQuery()->whereKey($projectIds)->get(),
-            $projectIds,
-        );
-    }
-
     protected function projectIndexQuery(): Builder
     {
         return $this->project
@@ -379,19 +340,6 @@ class ProjectService
             $order,
             $page,
         );
-    }
-
-    /**
-     * @param  array<int, int>  $projectIds
-     */
-    protected function orderProjectsByIds(Collection $projects, array $projectIds): Collection
-    {
-        $projectsById = $projects->keyBy(fn (Project $project) => $project->getKey());
-
-        return collect($projectIds)
-            ->map(fn (int $projectId) => $projectsById->get($projectId))
-            ->filter()
-            ->values();
     }
 
     /**

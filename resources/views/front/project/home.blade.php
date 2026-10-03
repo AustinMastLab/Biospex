@@ -38,7 +38,7 @@
 
                 <div class="col-12 col-md-10 offset-md-1">
                     <div class="col-5 float-right">
-                        <img src="{{ $project->present()->show_logo }}" class="img-fluid"
+                        <img src="{{ $project->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'" class="img-fluid"
                              alt="{{ $project->title }} logo">
                     </div>
                     @if($project->contact !== null)

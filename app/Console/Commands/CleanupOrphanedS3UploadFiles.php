@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -25,19 +25,24 @@ use App\Models\Profile;
 use App\Models\Project;
 use App\Models\ProjectAsset;
 use App\Models\SiteAsset;
-use Carbon\Carbon;
+use Carbon\CarbonInterface;
 use Illuminate\Console\Command;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Storage;
 
 /**
- * Cleanup orphaned files from S3 that are not referenced in database records
+ * Cleanup orphaned files from S3 that are not referenced in database records.
+ *
+ * Each upload directory is scanned including subdirectories, so files left in
+ * retired layouts (such as the old expedition logos/original and logos/medium
+ * variants) are treated as orphans once nothing references them.
  */
 class CleanupOrphanedS3UploadFiles extends Command
 {
     /**
      * The name and signature of the console command.
      */
-    protected $signature = 'files:cleanup-orphaned 
+    protected $signature = 'files:cleanup-orphaned
                           {--dry-run : Show what would be deleted without actually deleting}
                           {--older-than=24 : Only delete files older than X hours (default: 24)}';
 
@@ -47,11 +52,23 @@ class CleanupOrphanedS3UploadFiles extends Command
     protected $description = 'Clean up orphaned files in S3 that are not referenced in database records';
 
     /**
+     * Avatar sizes stored beside the original upload.
+     *
+     * @var array<int, string>
+     */
+    private const AVATAR_VARIANTS = ['medium', 'small'];
+
+    /**
+     * Whether any directory could not be listed or any file could not be deleted.
+     */
+    private bool $hadErrors = false;
+
+    /**
      * Execute the console command.
      */
-    public function handle()
+    public function handle(): int
     {
-        $dryRun = $this->option('dry-run');
+        $dryRun = (bool) $this->option('dry-run');
         $olderThanHours = (int) $this->option('older-than');
         $cutoffTime = now()->subHours($olderThanHours);
 
@@ -61,18 +78,13 @@ class CleanupOrphanedS3UploadFiles extends Command
         $this->line("Cutoff time: Files older than {$olderThanHours} hours ({$cutoffTime})");
         $this->newLine();
 
-        // Get all referenced file paths from database
         $referencedFiles = $this->getReferencedFiles();
         $this->info('Found '.count($referencedFiles).' files referenced in database');
 
-        // Check each upload directory
         $directories = [
             config('config.uploads.project_logos'),
             config('config.uploads.expedition_logos'),
             config('config.uploads.profile_avatars'),
-            config('config.uploads.profile_avatars_medium'),
-            config('config.uploads.profile_avatars_original'),
-            config('config.uploads.profile_avatars_small'),
             config('config.uploads.project-assets'),
             config('config.uploads.site-assets'),
         ];
@@ -85,8 +97,7 @@ class CleanupOrphanedS3UploadFiles extends Command
             $this->info("Checking directory: {$directory}");
             $this->line('----------------------------------------');
 
-            $orphanedCount = $this->cleanupDirectory($directory, $referencedFiles, $cutoffTime, $dryRun, $totalDeleted);
-            $totalOrphaned += $orphanedCount;
+            $totalOrphaned += $this->cleanupDirectory($directory, $referencedFiles, $cutoffTime, $dryRun, $totalDeleted);
         }
 
         $this->newLine();
@@ -100,60 +111,56 @@ class CleanupOrphanedS3UploadFiles extends Command
         } else {
             $this->info("Total files deleted: {$totalDeleted}");
         }
+
+        if ($this->hadErrors) {
+            $this->error('Some directories or files could not be processed; see errors above. Results are incomplete.');
+
+            return self::FAILURE;
+        }
+
+        return self::SUCCESS;
     }
 
     /**
-     * Get all file paths referenced in database records
+     * Get all file paths referenced in database records, keyed by path for fast lookup.
+     *
+     * @return array<string, true>
      */
     private function getReferencedFiles(): array
     {
-        $referencedFiles = [];
+        $avatarOriginals = Profile::whereNotNull('avatar_path')->pluck('avatar_path')->filter();
 
-        // Project logos
-        $projectLogos = Project::whereNotNull('logo_path')
-            ->pluck('logo_path')
+        $avatarVariants = $avatarOriginals
+            ->filter(fn (string $path) => str_contains($path, '/original/'))
+            ->flatMap(fn (string $path) => array_map(
+                fn (string $variant) => str_replace('/original/', "/{$variant}/", $path),
+                self::AVATAR_VARIANTS,
+            ));
+
+        return collect()
+            ->merge(Project::whereNotNull('logo_path')->pluck('logo_path'))
+            ->merge(Expedition::whereNotNull('logo_path')->pluck('logo_path'))
+            ->merge($avatarOriginals)
+            ->merge($avatarVariants)
+            ->merge(ProjectAsset::whereNotNull('download_path')->pluck('download_path'))
+            ->merge(SiteAsset::whereNotNull('download_path')->pluck('download_path'))
             ->filter()
-            ->toArray();
-        $referencedFiles = array_merge($referencedFiles, $projectLogos);
-
-        // Expedition logos
-        $expeditionLogos = Expedition::whereNotNull('logo_path')
-            ->pluck('logo_path')
-            ->filter()
-            ->toArray();
-        $referencedFiles = array_merge($referencedFiles, $expeditionLogos);
-
-        // Profile avatars
-        $profileAvatars = Profile::whereNotNull('avatar_path')
-            ->pluck('avatar_path')
-            ->filter()
-            ->toArray();
-        $referencedFiles = array_merge($referencedFiles, $profileAvatars);
-
-        // Project site-asset downloads
-        $projectResourceDownloads = ProjectAsset::whereNotNull('download_path')
-            ->pluck('download_path')
-            ->filter()
-            ->toArray();
-        $referencedFiles = array_merge($referencedFiles, $projectResourceDownloads);
-
-        // Resource documents
-        $resourceDocuments = SiteAsset::whereNotNull('download_path')
-            ->pluck('download_path')
-            ->filter()
-            ->toArray();
-        $referencedFiles = array_merge($referencedFiles, $resourceDocuments);
-
-        return array_unique($referencedFiles);
+            ->mapWithKeys(fn (string $path) => [$path => true])
+            ->all();
     }
 
     /**
-     * Clean up orphaned files in a specific directory
+     * Clean up orphaned files in a directory and its subdirectories.
+     *
+     * @param  array<string, true>  $referencedFiles
      */
-    private function cleanupDirectory(string $directory, array $referencedFiles, $cutoffTime, bool $dryRun, int &$totalDeleted): int
+    private function cleanupDirectory(string $directory, array $referencedFiles, CarbonInterface $cutoffTime, bool $dryRun, int &$totalDeleted): int
     {
         try {
-            $files = Storage::disk('s3')->files($directory);
+            $files = array_filter(
+                Storage::disk('s3')->allFiles($directory),
+                fn (string $file) => ! str_starts_with(basename($file), '.'),
+            );
             $orphanedCount = 0;
 
             if (empty($files)) {
@@ -165,15 +172,12 @@ class CleanupOrphanedS3UploadFiles extends Command
             $this->line('  Found '.count($files).' files in directory');
 
             foreach ($files as $file) {
-                // Skip if file is referenced in database
-                if (in_array($file, $referencedFiles)) {
+                if (isset($referencedFiles[$file])) {
                     continue;
                 }
 
-                // Check file age
                 try {
-                    $lastModified = Storage::disk('s3')->lastModified($file);
-                    $fileDate = Carbon::createFromTimestamp($lastModified);
+                    $fileDate = Carbon::createFromTimestamp(Storage::disk('s3')->lastModified($file));
 
                     if ($fileDate->greaterThan($cutoffTime)) {
                         $this->line("  Skipping recent file: {$file} (modified: {$fileDate})");
@@ -186,19 +190,21 @@ class CleanupOrphanedS3UploadFiles extends Command
                     continue;
                 }
 
-                // File is orphaned and old enough to delete
                 $orphanedCount++;
 
                 if ($dryRun) {
                     $this->line("  [DRY RUN] Would delete: {$file}");
-                } else {
-                    try {
-                        Storage::disk('s3')->delete($file);
-                        $totalDeleted++;
-                        $this->info("  Deleted: {$file}");
-                    } catch (\Exception $e) {
-                        $this->error("  Failed to delete {$file}: ".$e->getMessage());
-                    }
+
+                    continue;
+                }
+
+                try {
+                    Storage::disk('s3')->delete($file);
+                    $totalDeleted++;
+                    $this->info("  Deleted: {$file}");
+                } catch (\Exception $e) {
+                    $this->hadErrors = true;
+                    $this->error("  Failed to delete {$file}: ".$e->getMessage());
                 }
             }
 
@@ -207,8 +213,8 @@ class CleanupOrphanedS3UploadFiles extends Command
             }
 
             return $orphanedCount;
-
         } catch (\Exception $e) {
+            $this->hadErrors = true;
             $this->error("Error processing directory {$directory}: ".$e->getMessage());
 
             return 0;

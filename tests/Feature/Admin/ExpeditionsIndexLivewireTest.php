@@ -100,15 +100,19 @@ it('loads no more than twelve expeditions initially and appends the next page', 
 
     $this->actingAs($admin->fresh());
 
-    Livewire::test(ExpeditionsIndex::class)
+    $component = Livewire::test(ExpeditionsIndex::class)
         ->assertSee('Expedition 01')
         ->assertSee('Expedition 12')
         ->assertDontSee('Expedition 13')
-        ->assertSet('hasMore', true)
-        ->call('loadMore')
-        ->assertSeeInOrder(['Expedition 01', 'Expedition 12', 'Expedition 13'])
-        ->assertSet('page', 2)
-        ->assertSet('hasMore', false);
+        ->assertSet('hasMore', true);
+
+    $appended = loadMoreCards($component);
+
+    expect($appended)->toContain('Expedition 13')
+        ->and($appended)->not->toContain('Expedition 01')
+        ->and($appended)->not->toContain('Expedition 12');
+
+    $component->assertSet('page', 2)->assertSet('hasMore', false);
 });
 
 it('loads completed expeditions only when an admin changes type', function () {

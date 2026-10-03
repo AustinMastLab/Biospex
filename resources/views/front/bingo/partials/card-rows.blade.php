@@ -3,7 +3,7 @@
         @foreach($row as $cellId => $values)
             @if ($cellId === "c3")
                 <div class="square logo d-inline float-left d-flex text-center justify-content-center align-items-center">
-                    <img src="{{ $project->present()->show_logo }}" class="img-fluid"
+                    <img src="{{ $project->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'" class="img-fluid"
                          alt="{{ $project->title }} logo"></div>
                 @continue
             @endif

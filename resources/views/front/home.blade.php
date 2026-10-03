@@ -145,7 +145,7 @@
                                 <div class="col-12">
                                     <div class="col-4 float-right">
                                         <img class="img-fluid"
-                                             src="{{ $expedition->project->present()->show_logo }}"
+                                             src="{{ $expedition->project->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'"
                                              alt="{{ $expedition->project->present()->logo_alt }}">
                                     </div>
                                     <p>{{ $expedition->project->description_short }}</p>
@@ -196,7 +196,7 @@
                         <div class="card black mb-4 box-shadow">
                             <div class="card-top m-0 p-0">
                                 <img class="card-img-top" style="max-height: 100%"
-                                     src="{{ $expedition->present()->show_logo }}"
+                                     src="{{ $expedition->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_expedition_logo') }}'"
                                      alt="{{ $expedition->present()->logo_alt }}">
                                 <div class="card-img-overlay">
                                     <h3 class="card-title text-center pt-4 expedition-card-title">{{ $expedition->title }}</h3>

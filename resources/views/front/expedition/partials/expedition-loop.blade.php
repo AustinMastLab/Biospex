@@ -2,7 +2,7 @@
     <div class="card black box-shadow h-100">
         <div class="card-top m-0 p-0">
             <img class="card-img-top"
-                 src="{{ $expedition->present()->show_logo }}"
+                 src="{{ $expedition->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_expedition_logo') }}'"
                  alt="{{ $expedition->present()->logo_alt }}">
             <div class="card-img-overlay">
                 <h3 class="card-title expedition-card-title card-audit-contrast text-center pt-3">{{ $expedition->title }}</h3>

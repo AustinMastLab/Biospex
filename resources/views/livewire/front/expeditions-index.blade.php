@@ -52,27 +52,29 @@
     </div>
 
     <div id="{{ $type === 'completed' ? 'completed-expeditions' : 'active-expeditions' }}" class="row col-sm-12 mx-auto justify-content-center">
-        @forelse($expeditions as $expedition)
-            @include('front.expedition.partials.expedition-loop')
-        @empty
-            <h2 class="mx-auto pt-4">{{ t('No Expeditions exist.') }}</h2>
-        @endforelse
+        @island(name: 'cards', always: true)
+            @forelse($expeditions as $expedition)
+                @include('front.expedition.partials.expedition-loop')
+            @empty
+                <h2 class="mx-auto pt-4">{{ t('No Expeditions exist.') }}</h2>
+            @endforelse
+            @if($hasMore)
+                <span wire:key="expedition-load-more-{{ $page }}"
+                      wire:intersect.once="loadMore"
+                      wire:island.append="cards"
+                      aria-hidden="true"></span>
+            @endif
+        @endisland
     </div>
 
-    @if($hasMore)
-        <div wire:key="expedition-load-more-{{ $page }}"
-             wire:intersect.once="loadMore"
-             class="py-4">
-            <div wire:loading
-                 wire:target="loadMore"
-                 class="w-100 text-center"
-                 style="display: none;"
-                 role="status"
-                 aria-live="polite">
-                <div class="loader d-inline-block">
-                <span class="sr-only">{{ t('Loading expeditions') }}</span>
-                </div>
-            </div>
+    <div wire:loading
+         wire:target="loadMore"
+         class="w-100 text-center py-4"
+         style="display: none;"
+         role="status"
+         aria-live="polite">
+        <div class="loader d-inline-block">
+        <span class="sr-only">{{ t('Loading expeditions') }}</span>
         </div>
-    @endif
+    </div>
 </div>

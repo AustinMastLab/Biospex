@@ -88,14 +88,17 @@ it('loads another page of projects without duplicates', function () {
 
     $projects->each(fn (Project $project) => PanoptesProject::factory()->create(['project_id' => $project->id]));
 
-    Livewire::test(ProjectsIndex::class)
+    $component = Livewire::test(ProjectsIndex::class)
         ->assertSee('Project 01')
         ->assertDontSee('Project 10')
-        ->assertSet('hasMore', true)
-        ->call('loadMore')
-        ->assertSee('Project 01')
-        ->assertSee('Project 10')
-        ->assertSet('hasMore', false);
+        ->assertSet('hasMore', true);
+
+    $appended = loadMoreCards($component);
+
+    expect($appended)->toContain('Project 10')
+        ->and($appended)->not->toContain('Project 01');
+
+    $component->assertSet('hasMore', false);
 });
 
 it('renders a project from the paged public query', function () {

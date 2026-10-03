@@ -18,33 +18,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Livewire\Admin;
+use App\Models\Project;
+use Illuminate\Support\Facades\Storage;
 
-use App\Services\Project\ProjectService;
-use App\Traits\WithIncrementalIndex;
-use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Facades\Auth;
-use Livewire\Component;
+it('returns the stored project logo url without checking that the file exists', function () {
+    Storage::fake('s3');
+    $project = Project::factory()->make(['logo_path' => 'uploads/projects/logos/12_logo.png']);
 
-class ProjectsIndex extends Component
-{
-    use WithIncrementalIndex;
+    expect($project->present()->show_logo)
+        ->toBe(Storage::disk('s3')->url('uploads/projects/logos/12_logo.png'));
+});
 
-    protected function sortableFields(): array
-    {
-        return ['title', 'group', 'date'];
-    }
+it('returns the project placeholder when no logo is stored', function (?string $logoPath) {
+    $project = Project::factory()->make(['logo_path' => $logoPath]);
 
-    protected function getPage(): Paginator
-    {
-        return app(ProjectService::class)->getAdminIndexPage(Auth::user(), [
-            'sort' => $this->sort,
-            'order' => $this->order,
-        ], $this->page);
-    }
-
-    public function render()
-    {
-        return view('livewire.admin.projects-index');
-    }
-}
+    expect($project->present()->show_logo)->toBe(config('config.missing_project_logo'));
+})->with([null, '']);

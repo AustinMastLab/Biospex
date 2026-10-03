@@ -252,7 +252,7 @@
                             </div>
                             <div class="form-group col-sm-6">
                                 <img class="img-fluid" style="display: inline; width: 100px; height: 100px;"
-                                     src="{{ $project->present()->show_logo }}" alt="{{ $project->present()->logo_alt }}"/>
+                                     src="{{ $project->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'" alt="{{ $project->present()->logo_alt }}"/>
                             </div>
                         </div>
 

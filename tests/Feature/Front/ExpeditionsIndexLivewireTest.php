@@ -161,13 +161,19 @@ it('appends the next twelve expeditions and stops after the last page', function
         ]);
     }
 
-    Livewire::test(ExpeditionsIndex::class)
-        ->call('loadMore')
-        ->assertSeeInOrder(['Expedition 01', 'Expedition 12', 'Expedition 13'])
-        ->assertSet('page', 2)
-        ->assertSet('hasMore', false)
-        ->call('loadMore')
-        ->assertSet('page', 2);
+    $component = Livewire::test(ExpeditionsIndex::class);
+
+    $appended = loadMoreCards($component);
+
+    expect($appended)->toContain('Expedition 13')
+        ->and($appended)->not->toContain('Expedition 01')
+        ->and($appended)->not->toContain('Expedition 12');
+
+    $component->assertSet('page', 2)->assertSet('hasMore', false);
+
+    loadMoreCards($component);
+
+    $component->assertSet('page', 2);
 });
 
 it('loads completed expeditions only after changing type', function () {

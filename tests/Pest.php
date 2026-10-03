@@ -1,5 +1,9 @@
 <?php
 
+use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Features\SupportTesting\Testable;
+use Tests\TestCase;
+
 /*
 |--------------------------------------------------------------------------
 | Test Case
@@ -11,8 +15,8 @@
 |
 */
 
-pest()->extend(Tests\TestCase::class)
-    ->use(Illuminate\Foundation\Testing\RefreshDatabase::class)
+pest()->extend(TestCase::class)
+    ->use(RefreshDatabase::class)
     ->beforeEach(function () {
         $this->withoutVite();
     })
@@ -47,4 +51,22 @@ expect()->extend('toBeOne', function () {
 function something()
 {
     // ..
+}
+
+/**
+ * Call loadMore the way the browser does: through the `cards` island in append mode.
+ *
+ * Returns only the HTML appended for the new page; earlier pages stay in the
+ * browser and are not sent again.
+ */
+function loadMoreCards(Testable $component): string
+{
+    $component->update(calls: [[
+        'method' => 'loadMore',
+        'params' => [],
+        'path' => '',
+        'metadata' => ['island' => ['name' => 'cards', 'mode' => 'append']],
+    ]]);
+
+    return implode('', $component->effects['islandFragments'] ?? []);
 }

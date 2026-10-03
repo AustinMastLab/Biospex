@@ -5,7 +5,7 @@
         <div class="row card-body pb-2">
             <div class="col-12">
                 <div class="col-4 float-right">
-                    <img class="img-fluid" src="{{ $project->present()->show_logo }}" alt="Card image cap">
+                    <img class="img-fluid" src="{{ $project->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'" alt="Card image cap">
                 </div>
                 <p class="smalltext">{{ $project->description_short }}</p>
             </div>

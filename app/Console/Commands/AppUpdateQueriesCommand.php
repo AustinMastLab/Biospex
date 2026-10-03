@@ -20,9 +20,7 @@
 
 namespace App\Console\Commands;
 
-use App\Models\Expedition;
 use Illuminate\Console\Command;
-use Illuminate\Support\Facades\Storage;
 
 /**
  * One-off data updates run during deployment.
@@ -37,7 +35,7 @@ class AppUpdateQueriesCommand extends Command
      * The console command name.
      */
     protected $signature = 'app:update-queries
-                            {operation? : The operation to run (expedition-logo-paths)}
+                            {operation? : The operation to run}
                             {--force : Run without confirmation prompts}';
 
     /**
@@ -54,7 +52,6 @@ class AppUpdateQueriesCommand extends Command
 
         return match ($operation) {
             '' => $this->noOperation(),
-            'expedition-logo-paths' => $this->expeditionLogoPaths(),
             default => $this->unknownOperation($operation),
         };
     }
@@ -71,49 +68,5 @@ class AppUpdateQueriesCommand extends Command
         $this->error("Unknown operation: {$operation}");
 
         return self::FAILURE;
-    }
-
-    /**
-     * Move expedition logos from the original/medium variant layout to a single file.
-     *
-     * For each expedition whose logo_path points into logos/original/, copy the
-     * medium variant to logos/<file> and point logo_path at it. Expeditions whose
-     * medium file is missing are reported and left unchanged. Safe to re-run.
-     */
-    private function expeditionLogoPaths(): int
-    {
-        $disk = Storage::disk('s3');
-        $updated = 0;
-        $copied = 0;
-        $missing = 0;
-
-        Expedition::query()
-            ->where('logo_path', 'like', '%/logos/original/%')
-            ->select(['id', 'logo_path'])
-            ->chunkById(100, function ($expeditions) use ($disk, &$updated, &$copied, &$missing) {
-                foreach ($expeditions as $expedition) {
-                    $newPath = str_replace('/logos/original/', '/logos/', $expedition->logo_path);
-                    $mediumPath = str_replace('/logos/original/', '/logos/medium/', $expedition->logo_path);
-
-                    if (! $disk->exists($newPath)) {
-                        if (! $disk->exists($mediumPath)) {
-                            $this->warn("Expedition {$expedition->id}: medium logo not found at {$mediumPath}");
-                            $missing++;
-
-                            continue;
-                        }
-
-                        $disk->copy($mediumPath, $newPath);
-                        $copied++;
-                    }
-
-                    Expedition::whereKey($expedition->id)->toBase()->update(['logo_path' => $newPath]);
-                    $updated++;
-                }
-            });
-
-        $this->info("Expedition logos: {$updated} paths updated, {$copied} files copied, {$missing} missing.");
-
-        return self::SUCCESS;
     }
 }

@@ -24,13 +24,6 @@ class ProjectsIndex extends Component
         ], $this->page);
     }
 
-    public function hydrateRecords(): void
-    {
-        $this->records = app(ProjectService::class)->getPublicIndexRecords(
-            $this->records->pluck('id')->all(),
-        );
-    }
-
     public function render()
     {
         return view('livewire.front.projects-index');

@@ -58,6 +58,13 @@ trait WithIncrementalIndex
         $this->typeChanged();
     }
 
+    /**
+     * Load the next page into state on its own.
+     *
+     * The view triggers this from the `cards` island with append mode, so only
+     * the new page is rendered and appended in the browser; earlier pages are
+     * neither kept in state nor rendered again.
+     */
     public function loadMore(): void
     {
         if (! $this->hasMore) {
@@ -67,7 +74,7 @@ trait WithIncrementalIndex
         $this->page++;
         $records = $this->getPage();
 
-        $this->records = $this->records->concat($records->items());
+        $this->records = collect($records->items());
         $this->hasMore = $records->hasMorePages();
     }
 

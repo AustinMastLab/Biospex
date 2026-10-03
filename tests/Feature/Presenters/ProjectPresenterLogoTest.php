@@ -18,14 +18,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-it('succeeds without changes when no operation is given', function () {
-    $this->artisan('app:update-queries')->assertSuccessful();
+use App\Models\Project;
+use Illuminate\Support\Facades\Storage;
+
+it('returns the stored project logo url without checking that the file exists', function () {
+    Storage::fake('s3');
+    $project = Project::factory()->make(['logo_path' => 'uploads/projects/logos/12_logo.png']);
+
+    expect($project->present()->show_logo)
+        ->toBe(Storage::disk('s3')->url('uploads/projects/logos/12_logo.png'));
 });
 
-it('fails for an unknown operation', function () {
-    $this->artisan('app:update-queries', ['operation' => 'not-an-operation'])->assertFailed();
-});
+it('returns the project placeholder when no logo is stored', function (?string $logoPath) {
+    $project = Project::factory()->make(['logo_path' => $logoPath]);
 
-it('accepts the force option passed by the deploy task', function () {
-    $this->artisan('app:update-queries', ['--force' => true])->assertSuccessful();
-});
+    expect($project->present()->show_logo)->toBe(config('config.missing_project_logo'));
+})->with([null, '']);

@@ -30,6 +30,9 @@ class ExpeditionInfolist
                     ->label('Logo')
                     ->height(150)
                     ->width(150)
+                    ->extraImgAttributes([
+                        'onerror' => "this.onerror=null;this.src='".config('config.missing_expedition_logo')."'",
+                    ])
                     ->getStateUsing(function ($record) {
                         // Custom logic to determine the logo URL
                         if (! empty($record->logo_path)) {

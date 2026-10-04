@@ -86,11 +86,18 @@ class ExpeditionController extends Controller
             }
 
             $expedition = $this->expeditionService->store($project, $request->all());
-
-            return Redirect::route('admin.expeditions.show', [$expedition])->with('success', t('Record was created successfully.'));
         } catch (Throwable $throwable) {
             return Redirect::route('admin.projects.show', [$project])->with('danger', t('An error occurred when saving record. Please contact the administrator.'));
         }
+
+        if (! $this->saveSubjects($expedition, $request->input('subject-ids'))) {
+            return $this->subjectSaveFailed($expedition);
+        }
+
+        $expedition->load(['project', 'workflow.actors.contacts']);
+        $this->expeditionService->notifyActorContacts($expedition, $expedition->project);
+
+        return Redirect::route('admin.expeditions.show', [$expedition])->with('success', t('Record was created successfully.'));
 
     }
 
@@ -143,13 +150,42 @@ class ExpeditionController extends Controller
 
         try {
             $this->expeditionService->update($expedition, $request->all());
-
-            return Redirect::route('admin.expeditions.show', [$expedition])
-                ->with('success', t('Record was updated successfully.'));
         } catch (Throwable $throwable) {
             return Redirect::route('admin.expeditions.edit', [$expedition])
                 ->with('danger', t('An error occurred when saving record. Please contact the administrator.'));
         }
+
+        if (! $this->saveSubjects($expedition, $request->input('subject-ids'))) {
+            return $this->subjectSaveFailed($expedition);
+        }
+
+        return Redirect::route('admin.expeditions.show', [$expedition])
+            ->with('success', t('Record was updated successfully.'));
+    }
+
+    /**
+     * Apply the submitted subjects to MongoDB, reporting rather than throwing on failure.
+     */
+    private function saveSubjects(Expedition $expedition, ?string $subjectIds): bool
+    {
+        try {
+            $this->expeditionService->saveSubjects($expedition, $subjectIds);
+
+            return true;
+        } catch (Throwable $throwable) {
+            report($throwable);
+
+            return false;
+        }
+    }
+
+    /**
+     * The expedition itself was saved; send the user back to resubmit its subjects.
+     */
+    private function subjectSaveFailed(Expedition $expedition): mixed
+    {
+        return Redirect::route('admin.expeditions.edit', [$expedition])
+            ->with('danger', t('The Expedition was saved, but its subjects could not be. Please submit the form again.'));
     }
 
     /**

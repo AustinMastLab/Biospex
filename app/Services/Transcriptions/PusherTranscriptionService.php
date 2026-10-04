@@ -22,14 +22,16 @@ namespace App\Services\Transcriptions;
 
 use App\Models\PusherTranscription;
 use Carbon\Carbon;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 /**
  * Service class for handling PusherTranscription operations including CRUD and dashboard queries.
  */
 class PusherTranscriptionService
 {
-    /** @var \Illuminate\Database\Eloquent\Builder Query builder for dashboard operations */
-    private \Illuminate\Database\Eloquent\Builder $dashboardQuery;
+    /** @var Builder Query builder for dashboard operations */
+    private Builder $dashboardQuery;
 
     /**
      * Create a new PusherTranscriptionService instance.
@@ -58,7 +60,7 @@ class PusherTranscriptionService
     /**
      * Update existing PusherTranscription record.
      */
-    public function update(array $data, mixed $resourceId): \App\Models\PusherTranscription|false
+    public function update(array $data, mixed $resourceId): PusherTranscription|false
     {
         $model = $this->model->find($resourceId);
         $result = $model->fill($data)->save();
@@ -77,7 +79,7 @@ class PusherTranscriptionService
     /**
      * Get paginated dashboard items.
      */
-    public function getWeDigBioDashboardItems(int $limit, int $offset): \Illuminate\Database\Eloquent\Collection
+    public function getWeDigBioDashboardItems(int $limit, int $offset): Collection
     {
         return $this->dashboardQuery->limit($limit)->offset($offset)->orderBy('timestamp', 'desc')->get();
     }
@@ -87,30 +89,43 @@ class PusherTranscriptionService
      */
     public function setQueryForDashboard(array $request): void
     {
+        $this->dashboardQuery = $this->buildDashboardQuery($request);
+    }
+
+    /**
+     * Build the dashboard query for a time window.
+     *
+     * timestampStart is the older (lower) bound and is optional; timestampEnd is
+     * the newer (upper) bound and defaults to now. Both bounds are inclusive.
+     *
+     * @param  array{timestampStart?: string, timestampEnd?: string}  $request
+     */
+    public function buildDashboardQuery(array $request): Builder
+    {
         $timestampStart = $this->setTimestampStart($request);
         $timestampEnd = $this->setTimestampEnd($request);
 
-        $this->dashboardQuery = $this->model->where(function ($query) use ($timestampStart, $timestampEnd) {
-            $query->where('timestamp', '<=', $timestampStart);
-            if ($timestampEnd !== null) {
-                $query->where('timestamp', '>=', $timestampEnd);
+        return $this->model->newQuery()->where(function ($query) use ($timestampStart, $timestampEnd) {
+            $query->where('timestamp', '<=', $timestampEnd);
+            if ($timestampStart !== null) {
+                $query->where('timestamp', '>=', $timestampStart);
             }
         });
     }
 
     /**
-     * Set start timestamp from request or current time.
+     * Get the start (lower) timestamp from the request, or null for no lower bound.
      */
-    private function setTimestampStart(array $request): Carbon
+    private function setTimestampStart(array $request): ?Carbon
     {
-        return isset($request['timestampStart']) ? Carbon::parse($request['timestampStart'], 'UTC') : Carbon::now('UTC');
+        return isset($request['timestampStart']) ? Carbon::parse($request['timestampStart'], 'UTC') : null;
     }
 
     /**
-     * Set the end timestamp from request or null.
+     * Get the end (upper) timestamp from the request, or the current time.
      */
-    private function setTimestampEnd(array $request): ?Carbon
+    private function setTimestampEnd(array $request): Carbon
     {
-        return isset($request['timestampEnd']) ? Carbon::parse($request['timestampEnd'], 'UTC') : null;
+        return isset($request['timestampEnd']) ? Carbon::parse($request['timestampEnd'], 'UTC') : Carbon::now('UTC');
     }
 }

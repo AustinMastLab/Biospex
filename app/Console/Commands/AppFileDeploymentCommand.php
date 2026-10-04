@@ -39,7 +39,9 @@ class AppFileDeploymentCommand extends Command
      *
      * @var string
      */
-    protected $signature = 'app:deploy-files {--dry-run : Show what would be done without making changes}';
+    protected $signature = 'app:deploy-files
+                            {--dry-run : Show what would be done without making changes}
+                            {--current-path= : Path the Supervisor programs run from (default: the application base path)}';
 
     /**
      * The console command description.
@@ -259,7 +261,22 @@ class AppFileDeploymentCommand extends Command
                 }
 
                 return $value !== null && $value !== '';
-            });
+            })
+            ->put('APP_CURRENT_PATH', $this->currentPath());
+    }
+
+    /**
+     * Directory the Supervisor programs run from.
+     *
+     * Deployer passes its `current` symlink with --current-path; a release
+     * directory would go stale on the next deploy. Without the option, this
+     * app's own base path is used, which is right for local setups.
+     */
+    private function currentPath(): string
+    {
+        $currentPath = $this->option('current-path');
+
+        return is_string($currentPath) && $currentPath !== '' ? rtrim($currentPath, '/') : base_path();
     }
 
     /**
@@ -305,6 +322,10 @@ class AppFileDeploymentCommand extends Command
      */
     private function createSupervisorDirectory(): void
     {
+        if ($this->isDryRun || app()->runningUnitTests()) {
+            return;
+        }
+
         $logDir = '/var/log/supervisor';
         $appTag = config('app.tag');
         $appLogDir = "{$logDir}/{$appTag}";

@@ -76,7 +76,6 @@ return [
     */
     'tag' => env('APP_TAG', 'biospex'),
     'domain' => env('APP_DOMAIN', 'biospex.org'),
-    'current_path' => env('APP_CURRENT_PATH', '/data/web/biospex/current'),
     'server_user' => env('APP_SERVER_USER', 'ubuntu'),
     'registration' => env('APP_REGISTRATION', true),
 

@@ -55,7 +55,7 @@ set('clear_paths', [
 ]);
 
 // One-off app:update-queries operation for this release. Set back to '' once it has run in production.
-set('update_queries_operation', '');
+set('update_queries_operation', 'pusher-transcription-duplicates');
 
 // Determine if the local identity file exists (for manual deployments)
 $localKey = '/home/ubuntu/.ssh/biospexaws.pem';

@@ -25,8 +25,6 @@ use App\Models\EventUser;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Validation\Rule;
-use Validator;
 
 /**
  * Class EventTranscriptionService
@@ -72,32 +70,15 @@ class EventTranscriptionService
                     'user_id' => $user->id,
                 ];
 
-                if ($this->validateClassification($attributes)) {
-                    return;
-                }
-
-                $values = array_merge($attributes, ['created_at' => $timestamp->toDateTimeString(), 'updated_at' => $timestamp->toDateTimeString()]);
-
-                $this->eventTranscription->create($values);
+                // The unique index on these attributes makes this safe against concurrent or retried jobs.
+                $this->eventTranscription->createOrFirst($attributes, [
+                    'created_at' => $timestamp->toDateTimeString(),
+                    'updated_at' => $timestamp->toDateTimeString(),
+                ]);
             });
         });
 
         return $events->isNotEmpty();
-    }
-
-    /**
-     * Validate classification.
-     */
-    private function validateClassification(array $attributes): bool
-    {
-        $validator = Validator::make($attributes, [
-            'classification_id' => Rule::unique('event_transcriptions')->where(function ($query) use ($attributes) {
-                return $query->where('classification_id', $attributes['classification_id'])->where('event_id', $attributes['event_id'])->where('team_id', $attributes['team_id'])->where('user_id', $attributes['user_id']);
-            }),
-        ]);
-
-        // returns true if records exists
-        return $validator->fails();
     }
 
     /**

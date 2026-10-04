@@ -39,8 +39,6 @@ class ExpeditionService
 {
     use ExpeditionPartitionTrait;
 
-    private Collection $subjectIds;
-
     /**
      * Create a new instance of ExpeditionService.
      */
@@ -50,73 +48,44 @@ class ExpeditionService
     ) {}
 
     /**
-     * Create Expedition and return.
+     * Create the expedition in MySQL.
+     *
+     * Subjects are applied afterwards with saveSubjects(), outside the MySQL
+     * transaction, because MongoDB cannot take part in it.
+     *
+     * @param  array<string, mixed>  $request
      *
      * @throws \Throwable
      */
-    public function store(Project $project, array $request): mixed
+    public function store(Project $project, array $request): Expedition
     {
-        // Handle logo upload for new expeditions
         $this->handleLogoUploadForCreate($request);
 
         $request['project_id'] = $project->id;
 
-        $expedition = DB::transaction(function () use ($project, $request) {
+        return DB::transaction(function () use ($request) {
             $expedition = Expedition::create($request);
-            $expedition->load(['project', 'workflow.actors.contacts']);
-            $this->setSubjectIds($request['subject-ids']);
-            $this->attachSubjects($expedition->id);
-
-            try {
-                $this->syncActors($expedition);
-                $this->syncStat($expedition);
-            } catch (\Exception $e) {
-                Log::error('Failed during sync operations in transaction', [
-                    'expedition_id' => $expedition->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString(),
-                ]);
-                $this->rollbackSubjects($expedition->id);
-                throw $e; // Re-throw to trigger MySQL rollback
-            }
-
-            $this->notifyActorContacts($expedition, $project);
+            $this->syncStat($expedition, 0);
 
             return $expedition;
         });
-
-        return $expedition;
     }
 
     /**
-     * Rollback subject attachments for failed expedition creation.
+     * Apply the submitted subject selection to MongoDB and refresh the subject totals.
+     *
+     * Safe to repeat: resubmitting the same selection changes nothing, so a
+     * failure here can be fixed by submitting the form again.
      */
-    private function rollbackSubjects(int $expeditionId): void
+    public function saveSubjects(Expedition $expedition, ?string $subjectIds): int
     {
-        try {
-            $this->subjectService->detachSubjects($this->subjectIds, $expeditionId);
-        } catch (\Exception $e) {
-            Log::error('Failed to rollback subjects during expedition creation failure', [
-                'expedition_id' => $expeditionId, 'error' => $e->getMessage(),
-            ]);
-        }
-    }
+        $expedition->load(['actors', 'workflow.actors', 'workflowManager']);
 
-    /**
-     * Rollback subject changes for failed expedition update.
-     */
-    private function rollbackSubjectChanges(int $expeditionId, Collection $originalSubjectIds): void
-    {
-        try {
-            // Detach all current subjects
-            $currentSubjectIds = $this->getSubjectIdsByExpeditionId($this->expedition->find($expeditionId));
-            $this->subjectService->detachSubjects($currentSubjectIds, $expeditionId);
+        $subjectCount = $this->syncSubjects($expedition, $this->parseSubjectIds($subjectIds));
+        $this->syncStat($expedition, $subjectCount);
+        $this->syncActors($expedition, $subjectCount);
 
-            // Reattach original subjects
-            $this->subjectService->attachSubjects($originalSubjectIds, $expeditionId);
-        } catch (\Exception $e) {
-            Log::error('Failed to rollback subject changes during expedition update failure', [
-                'expedition_id' => $expeditionId, 'error' => $e->getMessage(),
-            ]);
-        }
+        return $subjectCount;
     }
 
     /**
@@ -337,19 +306,15 @@ class ExpeditionService
     }
 
     /**
-     * Get subject id count.
+     * Normalize the comma-separated subject ids posted by the subject grid.
      */
-    public function getSubjectCount(): int
+    public function parseSubjectIds(?string $subjectIds): Collection
     {
-        return $this->subjectIds->count();
-    }
-
-    /**
-     * Set subject ids.
-     */
-    public function setSubjectIds(?string $subjectIds = null): void
-    {
-        $this->subjectIds = $subjectIds === null ? collect([]) : collect(explode(',', $subjectIds));
+        return collect(explode(',', (string) $subjectIds))
+            ->map(fn (string $subjectId) => trim($subjectId))
+            ->filter()
+            ->unique()
+            ->values();
     }
 
     /**
@@ -357,49 +322,28 @@ class ExpeditionService
      */
     public function getSubjectIdsByExpeditionId(Expedition $expedition): Collection
     {
-        return $this->subjectService->subject->where('expedition_ids', $expedition->id)->get(['_id'])->pluck('_id');
+        return $this->subjectService->getIdsByExpeditionId($expedition->id);
     }
 
     /**
-     * Update subjects for expedition if changed and if workflow manager does not exist.
+     * Apply a subject selection to MongoDB and return how many subjects are now assigned.
+     *
+     * Subjects are left unchanged once a workflow manager exists. The returned
+     * count is read back from MongoDB, so it is correct even on a retry.
      */
-    public function updateSubjects(Expedition $expedition): void
+    public function syncSubjects(Expedition $expedition, Collection $subjectIds): int
     {
-        if ($expedition->workflowManager !== null) {
-            return;
+        if ($expedition->workflowManager === null) {
+            $currentIds = $this->getSubjectIdsByExpeditionId($expedition);
+
+            $this->subjectService->detachSubjects($currentIds->diff($subjectIds), $expedition->id);
+            $this->subjectService->attachSubjects($subjectIds->diff($currentIds), $expedition->id);
         }
 
-        $oldIds = $this->getSubjectIdsByExpeditionId($expedition);
-        $newIds = $this->subjectIds;
-
-        $detachIds = $oldIds->diff($newIds);
-        $attachIds = $newIds->diff($oldIds);
-
-        $this->detachSubjects($expedition->id, $detachIds);
-        $this->attachSubjects($expedition->id, $attachIds);
-
-        $this->syncStat($expedition);
+        return $this->subjectService->countByExpeditionId($expedition->id);
     }
 
-    /**
-     * Detach subjects from expedition.
-     */
-    public function detachSubjects(int $expeditionId, Collection $detachIds): void
-    {
-        $this->subjectService->detachSubjects($detachIds, $expeditionId);
-    }
-
-    /**
-     * Attach subjects to expedition.
-     */
-    public function attachSubjects(int $expeditionId, ?Collection $attachIds = null): void
-    {
-        $attachIds = $attachIds === null ? $this->subjectIds : $attachIds;
-
-        $this->subjectService->attachSubjects($attachIds, $expeditionId);
-    }
-
-    public function syncActors(Expedition $expedition): void
+    public function syncActors(Expedition $expedition, int $subjectCount): void
     {
         if (! $expedition->workflow) {
             return;
@@ -408,8 +352,6 @@ class ExpeditionService
         if (! $expedition->workflow->actors || $expedition->workflow->actors->isEmpty()) {
             return;
         }
-
-        $subjectCount = $this->getSubjectCount();
 
         $actors = $expedition->workflow->actors->mapWithKeys(function ($actor) use ($expedition, $subjectCount) {
             $isExistingActor = $expedition->actors->contains('id', $actor->id);
@@ -425,35 +367,15 @@ class ExpeditionService
             }
         })->toArray();
 
-        try {
-            $expedition->actors()->sync($actors);
-        } catch (\Exception $e) {
-            Log::error('Failed to sync actors', [
-                'expedition_id' => $expedition->id, 'error' => $e->getMessage(),
-            ]);
-            throw $e;
-        }
+        $expedition->actors()->sync($actors);
     }
 
-    public function syncStat(Expedition $expedition): void
+    public function syncStat(Expedition $expedition, int $subjectCount): void
     {
-        $subjectCount = $this->getSubjectCount();
-
-        try {
-            // Simple updateOrCreate - much cleaner!
-            $expedition->stat()->updateOrCreate(
-                ['expedition_id' => $expedition->id],
-                ['local_subject_count' => $subjectCount]
-            );
-
-            // Manually flush all Lada Cache
-
-        } catch (\Exception $e) {
-            Log::error('Failed to sync expedition stat', [
-                'expedition_id' => $expedition->id, 'error' => $e->getMessage(),
-            ]);
-            throw $e;
-        }
+        $expedition->stat()->updateOrCreate(
+            ['expedition_id' => $expedition->id],
+            ['local_subject_count' => $subjectCount]
+        );
     }
 
     /**
@@ -478,41 +400,23 @@ class ExpeditionService
     }
 
     /**
-     * Update Expedition.
-     * If the expedition is completed and unlocked, this is a first change. If workflow id
+     * Update the expedition in MySQL.
+     *
+     * If the expedition is completed and unlocked, this is a first change.
+     * Subjects are applied afterwards with saveSubjects().
+     *
+     * @param  array<string, mixed>  $request
      *
      * @throws \Throwable
      */
     public function update(Expedition $expedition, array $request): Expedition
     {
-        // Handle logo upload and removal
         $this->handleLogoUpload($request, $expedition);
 
         return DB::transaction(function () use ($expedition, $request) {
-            try {
-                $expedition->completed = $this->setExpeditionCompleted($expedition, $request['workflow_id']);
+            $expedition->completed = $this->setExpeditionCompleted($expedition, $request['workflow_id']);
 
-                $expedition->fill($request)->save();
-
-                $expedition->load(['actors', 'workflow.actors', 'workflowManager']);
-
-                $this->setSubjectIds($request['subject-ids']);
-
-                // Store original subject IDs for potential rollback
-                $originalSubjectIds = $this->getSubjectIdsByExpeditionId($expedition);
-
-                $this->updateSubjects($expedition);
-
-                $this->syncActors($expedition);
-            } catch (\Exception $e) {
-                Log::error('Failed during sync operations in update transaction', [
-                    'expedition_id' => $expedition->id, 'error' => $e->getMessage(), 'trace' => $e->getTraceAsString(),
-                ]);
-
-                // Rollback MongoDB changes - restore original subjects
-                $this->rollbackSubjectChanges($expedition->id, $originalSubjectIds);
-                throw $e; // Re-throw to trigger MySQL rollback
-            }
+            $expedition->fill($request)->save();
 
             return $expedition;
         });

@@ -66,7 +66,7 @@ class SubjectService
      *
      * @param  array  $data  The data to update the subject with
      * @param  int|string  $resourceId  The ID of the subject to update
-     * @return \App\Models\Subject|bool Returns the updated Subject model on success, false on failure
+     * @return Subject|bool Returns the updated Subject model on success, false on failure
      */
     public function update(array $data, int|string $resourceId): bool|Subject
     {
@@ -157,30 +157,52 @@ class SubjectService
     }
 
     /**
+     * Number of subject ids sent to MongoDB in one bulk update.
+     */
+    private const SUBJECT_CHUNK_SIZE = 1000;
+
+    /**
      * Detach subjects from expedition.
+     *
+     * Removes the expedition id from each subject's expedition_ids with one
+     * `$pull` update per chunk. Safe to repeat.
      */
     public function detachSubjects(Collection $subjectIds, int $expeditionId): void
     {
-        $subjectIds->each(function ($subjectId) use ($expeditionId) {
-            $subject = $this->subject->find($subjectId);
-            $subject->expedition_ids = collect($subject->expedition_ids)->filter(function ($value) use ($expeditionId) {
-                return $value != $expeditionId;
-            })->unique()->toArray();
-
-            $subject->save();
+        $subjectIds->filter()->unique()->chunk(self::SUBJECT_CHUNK_SIZE)->each(function (Collection $chunk) use ($expeditionId) {
+            $this->subject->newQuery()->whereIn('id', $chunk->values()->all())->pull('expedition_ids', $expeditionId);
         });
     }
 
     /**
      * Attach subjects to expedition.
+     *
+     * Adds the expedition id to each subject's expedition_ids with one
+     * `$addToSet` update per chunk, so repeating it never duplicates the id.
      */
     public function attachSubjects(Collection $subjectIds, int $expeditionId): void
     {
-        $subjectIds->each(function ($subjectId) use ($expeditionId) {
-            $subject = $this->subject->find($subjectId);
-            $subject->expedition_ids = collect($subject->expedition_ids)->push($expeditionId)->unique()->toArray();
-            $subject->save();
+        $subjectIds->filter()->unique()->chunk(self::SUBJECT_CHUNK_SIZE)->each(function (Collection $chunk) use ($expeditionId) {
+            $this->subject->newQuery()->whereIn('id', $chunk->values()->all())->push('expedition_ids', $expeditionId, true);
         });
+    }
+
+    /**
+     * Get the ids (as strings) of subjects assigned to an expedition.
+     */
+    public function getIdsByExpeditionId(int $expeditionId): Collection
+    {
+        return $this->subject->newQuery()->where('expedition_ids', $expeditionId)->get(['_id'])
+            ->toBase()
+            ->map(fn ($subject) => (string) $subject->id);
+    }
+
+    /**
+     * Count subjects assigned to an expedition.
+     */
+    public function countByExpeditionId(int $expeditionId): int
+    {
+        return $this->subject->newQuery()->where('expedition_ids', $expeditionId)->count();
     }
 
     /**

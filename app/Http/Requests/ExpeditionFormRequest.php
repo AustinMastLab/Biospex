@@ -52,6 +52,17 @@ class ExpeditionFormRequest extends Request
             ],
             'logo_path' => 'nullable|string',
             'workflow_id' => 'required',
+            'subject-ids' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, \Closure $fail): void {
+                    $maximum = (int) config('config.expedition_size');
+
+                    if (collect(explode(',', (string) $value))->filter()->unique()->count() > $maximum) {
+                        $fail(t('An Expedition can have at most %s subjects.', number_format($maximum)));
+                    }
+                },
+            ],
         ];
     }
 

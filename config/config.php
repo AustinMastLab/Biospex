@@ -202,7 +202,6 @@ return [
         'APP_ENV',
         'APP_DOMAIN',
         'APP_SERVER_USER',
-        'APP_CURRENT_PATH',
         'APP_TAG',
         'AWS_SQS_BATCH_UPDATE',
         'AWS_SQS_EXPORT_UPDATE',

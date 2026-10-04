@@ -98,7 +98,7 @@ task('artisan:app:update-queries', function () {
 desc('Deploying application-specific files and configurations');
 task('artisan:app:deploy-files', function () {
     cd('{{release_or_current_path}}');
-    run(withUmask('php artisan app:deploy-files'));    // Custom command for file deployments
+    run(withUmask('php artisan app:deploy-files --current-path={{current_path}}'));    // Render Supervisor configs for the current symlink
 });
 
 /**

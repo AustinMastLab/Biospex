@@ -121,7 +121,7 @@ class ZooniverseZipTriggerService
         if ($fileCount > $zipThreshold) {
             // Trigger Step Function for large jobs
             $this->stepFunctions->startExecution([
-                'stateMachineArn' => 'arn:aws:states:us-east-2:147899039648:stateMachine:ZipBatchOrchestrator',
+                'stateMachineArn' => config('services.aws.zip_state_machine_arn'),
                 'input' => json_encode($payload),
             ]);
         } else {

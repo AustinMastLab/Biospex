@@ -107,16 +107,16 @@ class TesseractOcrProcessJob implements ShouldQueue
                     $batches[$queueUrlCache[$host]][] = [
                         'Id' => (string) $file->id,
                         'MessageBody' => json_encode([
-                            'taskType'        => 'ocr',
-                            'queueId'         => $this->ocrQueue->id,
-                            'fileId'          => $file->id,
-                            'subjectId'       => $file->subject_id,
-                            'accessURI'       => $file->access_uri,
-                            's3Bucket'        => $s3Bucket,
-                            's3Path'          => $s3Path,
+                            'taskType' => 'ocr',
+                            'queueId' => $this->ocrQueue->id,
+                            'fileId' => $file->id,
+                            'subjectId' => $file->subject_id,
+                            'accessURI' => $file->access_uri,
+                            's3Bucket' => $s3Bucket,
+                            's3Path' => $s3Path,
                             'updatesQueueUrl' => $updatesQueueUrl,
-                            'maxWidth'        => 2500,
-                            'maxHeight'       => 2500,
+                            'maxWidth' => 2500,
+                            'maxHeight' => 2500,
                         ]),
                     ];
                 }
@@ -126,7 +126,7 @@ class TesseractOcrProcessJob implements ShouldQueue
                     foreach (array_chunk($messages, 10) as $chunk) {
                         $sqs->sendMessageBatch([
                             'QueueUrl' => $queueUrl,
-                            'Entries'  => $chunk,
+                            'Entries' => $chunk,
                         ]);
                         $sentCount += count($chunk);
                     }
@@ -135,7 +135,7 @@ class TesseractOcrProcessJob implements ShouldQueue
 
         if ($sentCount !== $totalFiles) {
             \Artisan::queue('app:lambda-control', [
-                'lambda' => config('services.aws.lambdas.BiospexImageFetcher'),
+                'lambda' => 'BiospexImageFetcher',
                 'action' => 'stop',
             ])->onQueue(config('config.queue.default'));
             throw new \Exception("SQS send incomplete: {$sentCount}/{$totalFiles} messages sent");

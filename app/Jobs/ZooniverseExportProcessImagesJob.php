@@ -101,16 +101,16 @@ class ZooniverseExportProcessImagesJob implements ShouldQueue
                     $batches[$queueUrlCache[$host]][] = [
                         'Id' => (string) $file->id,
                         'MessageBody' => json_encode([
-                            'taskType'        => 'export',
-                            'queueId'         => $this->exportQueue->id,
-                            'fileId'          => $file->id,
-                            'subjectId'       => $file->subject_id,
-                            'accessURI'       => $file->access_uri,
-                            's3Bucket'        => $s3Bucket,
-                            's3Path'          => "scratch/{$processDir}/{$file->subject_id}.jpg",
+                            'taskType' => 'export',
+                            'queueId' => $this->exportQueue->id,
+                            'fileId' => $file->id,
+                            'subjectId' => $file->subject_id,
+                            'accessURI' => $file->access_uri,
+                            's3Bucket' => $s3Bucket,
+                            's3Path' => "scratch/{$processDir}/{$file->subject_id}.jpg",
                             'updatesQueueUrl' => $updatesQueueUrl,
-                            'maxWidth'        => 1500,
-                            'maxHeight'       => 1500,
+                            'maxWidth' => 1500,
+                            'maxHeight' => 1500,
                         ]),
                     ];
                 }
@@ -120,7 +120,7 @@ class ZooniverseExportProcessImagesJob implements ShouldQueue
                     foreach (array_chunk($messages, 10) as $chunk) {
                         $sqs->sendMessageBatch([
                             'QueueUrl' => $queueUrl,
-                            'Entries'  => $chunk,
+                            'Entries' => $chunk,
                         ]);
                         $sentCount += count($chunk);
                     }
@@ -130,7 +130,7 @@ class ZooniverseExportProcessImagesJob implements ShouldQueue
         // Check if all messages were sent successfully
         if ($sentCount !== $totalFiles) {
             \Artisan::queue('app:lambda-control', [
-                'lambda' => config('services.aws.lambdas.BiospexImageFetcher'),
+                'lambda' => 'BiospexImageFetcher',
                 'action' => 'stop',
             ])->onQueue(config('config.queue.default'));
             throw new \Exception("SQS send incomplete: {$sentCount}/{$totalFiles} messages sent");

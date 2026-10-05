@@ -17,7 +17,7 @@ This information was taken from AWS and the repositories on 2026-10-05. Check AW
 | `BiospexReconcile312` | [BiospexReconcile312](https://github.com/AustinMastLab/BiospexReconcile312) | Python 3.12 | 1024 MB / 900 s | 8 |
 | `BiospexLabelReconcile` | [BiospexLabelReconcile](https://github.com/AustinMastLab/BiospexLabelReconcile) | Python 3.10 | 1024 MB / 900 s | 8 |
 
-`BiospexLabelReconcile` is the old reconciliation function. It is no longer used, having been replaced by `BiospexReconcile312`, but it is still deployed.
+`BiospexLabelReconcile` is the old reconciliation function, replaced by `BiospexReconcile312`. Nothing triggers it, and its repository is archived, but the function is still deployed.
 
 The **ZipBatchOrchestrator** repository ([ZipBatchOrchestrator](https://github.com/AustinMastLab/ZipBatchOrchestrator)) holds an AWS Step Functions state machine, not a Lambda. It runs `BiospexZipCreator` and `BiospexZipMerger` for large exports.
 
@@ -72,7 +72,7 @@ On the BIOSPEX side, each `*-update` queue is read by its own listener: `export:
 `ZooniverseZipTriggerService::sendZipTrigger()` decides how an export is zipped:
 
 - **Up to `services.aws.zip_threshold` files (8,000):** a single message on `{prefix}-export-zip-trigger`, and `BiospexZipCreator` builds one zip.
-- **Above that:** it starts the `ZipBatchOrchestrator` state machine. The ARN is hard-coded in the service.
+- **Above that:** it starts the `ZipBatchOrchestrator` state machine, whose ARN is `services.aws.zip_state_machine_arn` (env `AWS_ZIP_STATE_MACHINE_ARN`, defaulting to the production state machine).
   1. **SplitFiles** splits the files into four fixed ranges: 0–4,999, 5,000–9,999, 10,000–14,999, and 15,000–19,999.
   2. **MapState** runs `BiospexZipCreator` for each range, up to four at once, producing partial zips.
   3. **MergeZips** runs `BiospexZipMerger`, which combines the parts into `export/{processDir}.zip` and reports `zip-ready`.
@@ -117,12 +117,24 @@ When adding or changing an SQS trigger:
 
 The Step Function definition is in `ZipBatchOrchestrator/step-function.json`. It is updated in the AWS console or with `aws stepfunctions update-state-machine`.
 
+## Pausing a function
+
+`php artisan app:lambda-control <function> stop` sets a function's reserved concurrency to 0, and `start` restores it to the value in `config/services.php` → `aws.lambdas`. The function names are that list's keys.
+
+BIOSPEX checks for paused functions before starting new work, through `AwsLambdaApiService`:
+
+| Before starting | Checks | If paused |
+| --- | --- | --- |
+| The next OCR queue (`tesseract:ocr-process`) | `BiospexImageFetcher` and `BiospexOcrProcessor` | The queue stays waiting, and the command reports "OCR Lambda concurrency is 0" every minute until the function is restarted. |
+| The next export queue (`export:queue`) | `BiospexImageFetcher` | The queue stays waiting, and the command reports "Export Lambda concurrency is 0" every minute. |
+
+If the concurrency can't be read (for example an AWS error), BIOSPEX logs a warning and carries on, so an AWS problem doesn't stop processing.
+
+`TesseractOcrProcessJob` and `ZooniverseExportProcessImagesJob` stop `BiospexImageFetcher` automatically if they fail to send every image message to SQS. Restore it with `app:lambda-control BiospexImageFetcher start` once the problem is fixed. Because concurrency is per function, this pauses the fetcher in every environment.
+
 ## Known gaps
 
-- **`config/services.php` → `aws.lambdas` still lists `BiospexLabelReconcile`** and not `BiospexReconcile312`. As a result, `app:lambda-control` controls the old function, not the active one.
-- **The pause checks look up function names that no longer exist.** `TesseractOcrQueueService` checks `BiospexTesseractOcr` and `ZooniverseExportQueueService` checks `BiospexImageProcess`. AWS returns "not found", and the code treats that as "ready", so pausing the real functions doesn't hold back new queues.
-- **The automatic stop passes the wrong value.** `TesseractOcrProcessJob` and `ZooniverseExportProcessImagesJob` pass the concurrency value (`100`) instead of the function name to `app:lambda-control`, so it never stops anything.
-- **Stale event source mapping:** a mapping from `ImageProcessQueue` to a function named `ImageProcessor` remains in AWS, which looks like a leftover from an earlier design.
+- **Message names don't match function names.** The listeners route messages by a `function` field set by each Lambda (`BiospexImageProcess`, `BiospexLabelReconciliation`, `BiospexZipTrigger`, and so on), not by the deployed function names. Renaming them means changing the Lambdas and the listeners together.
 - **The repository READMEs are partly out of date.**
   - The ZipBatchOrchestrator README says the state machine runs `BiospexBatchCreator`; the deployed definition does not.
   - The BiospexBatchCreator README mentions a `ZooniverseBatchTriggerService`; the trigger is `ZooniverseExportDownloadBatchJob`.

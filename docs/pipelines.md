@@ -48,7 +48,7 @@ export:queue (every minute) → ZooniverseExportQueueService
 ```
 
 - **Failed image fetches go to `{prefix}-image-trigger-dlq`.** `image:listen-dlq` marks those files as failed.
-- **Archive.org images use their own queue,** `{prefix}-ia-image-trigger`, handled by `InternetArchiveImageFetcher` with a lower concurrency. See `LAMBDA_FIX.md`.
+- **Archive.org images use their own queue,** `{prefix}-ia-image-trigger`, handled by `InternetArchiveImageFetcher` with a lower concurrency.
 - **Restarting a failed export:** `app:export-stage` reruns a stage manually, and `export:queue {expeditionId}` resets an expedition.
 
 ## 3. Tesseract OCR

@@ -14,8 +14,6 @@ Other documents in the repository root:
 | --- | --- |
 | `COMMIT_CONVENTIONS.md` | Commit message tags that control versioning and deployment. |
 | `DEPLOYMENT_SETUP.md` | GitHub Actions and deployphp setup in detail. |
-| `LAMBDA_FIX.md` | Plan for splitting image fetching across two Lambdas. |
-| `WEDIGBIO_MIGRATION_RUNBOOK.md` | Deployment order for the WeDigBio migration phases. |
 
 ## Open questions
 

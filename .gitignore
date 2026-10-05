@@ -51,10 +51,7 @@ hooks
 /.junie/
 /boost.json
 laradumps.yaml
-/push-env-params
-/remove-env-params
 /.ai/mcp/
-/generate-env
 /.github/
 /.vscode/
 /clean-logs.sh

@@ -33,7 +33,25 @@ Each function (except `BiospexZipMerger`) has three **aliases**: `prod`, `dev`, 
 
 Reserved concurrency is set on the **function**, not on the alias. All three environments share it. Stopping a function with `app:lambda-control` (concurrency 0) stops it for production, development, and local at the same time.
 
-The SQS triggers for `dev` and `loc` are normally **disabled**. To test a Lambda pipeline on development or locally, enable that alias's event source mapping first. Disable it again afterwards.
+> **Important: always disable the `dev` and `loc` SQS triggers after testing.**
+> An enabled SQS trigger (event source mapping) polls its queue continuously, even when the queue is empty, and every poll counts as SQS requests. Leaving `dev` or `loc` triggers enabled uses up the monthly AWS free tier very quickly. Only the `prod` triggers stay enabled.
+
+To test a Lambda pipeline on development or locally, enable the trigger for that alias, run the test, and disable it again straight away:
+
+```bash
+# List the triggers and their UUIDs
+aws lambda list-event-source-mappings --function-name BiospexImageFetcher:dev --region us-east-2   --query "EventSourceMappings[].[UUID,EventSourceArn,State]" --output table
+
+# Enable for the test, then disable afterwards
+aws lambda update-event-source-mapping --uuid <UUID> --enabled --region us-east-2
+aws lambda update-event-source-mapping --uuid <UUID> --no-enabled --region us-east-2
+```
+
+To check that nothing was left on, this should list only `prod` triggers:
+
+```bash
+aws lambda list-event-source-mappings --region us-east-2   --query "EventSourceMappings[?State=='Enabled'].[FunctionArn,EventSourceArn]" --output table
+```
 
 ## How each function is triggered
 

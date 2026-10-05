@@ -97,4 +97,5 @@ The task order is in `deploy.php`:
 - **MongoDB indexes.** MongoDB can't hold two indexes on the same key with different options. To change one, drop the old index first. Restoring a database dump can bring old indexes back.
 - **Large `distinct` queries** hit MongoDB's 16 MB limit. Use an aggregation (`$group` with `$count`) instead.
 - **Pusher quota.** If Pusher reports error 4004 (over quota), the listener stops reconnecting for an hour.
+- **Disable the `dev` and `loc` Lambda SQS triggers after testing.** Enabled triggers poll SQS constantly and use up the monthly AWS free tier quickly. See [Lambda functions](lambdas.md#environments-aliases-queues-and-buckets).
 - **SQS listeners are started by jobs.** If an export, OCR, or reconcile run stalls, check whether its listener is running and whether its Lambda concurrency is set to 0.

@@ -117,7 +117,7 @@ These are defined in `routes/console.php`:
 | Zooniverse Pusher | Live classification feed for all of Zooniverse. BIOSPEX keeps only its own projects. | `app/Console/Commands/ListenerPanoptesPusherCommand.php` |
 | Zooniverse Talk | Comments. | `app/Services/Api/ZooniverseTalkApiService.php` |
 | GeoLocate | Georeferencing exports and stats. | `app/Services/Actor/GeoLocate` |
-| AWS S3, SQS, Lambda | Files, messages, and heavy processing. | `app/Services/Api/AwsS3ApiService.php`, `app/Services/SqsListenerService.php`, `config/services.php` (`aws`) |
+| AWS S3, SQS, Lambda, Step Functions | Files, messages, and heavy processing. See [Lambda functions](lambdas.md). | `app/Services/Api/AwsS3ApiService.php`, `app/Services/SqsListenerService.php`, `config/services.php` (`aws`) |
 | AWS SSM | Environment variables for each server. | `generate-env`, `push-env-params` |
 | Mail | Notifications and error emails. | `config/mail.php` |
 | Translation.io | Translations. | `tio/laravel` |

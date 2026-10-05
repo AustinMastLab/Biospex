@@ -36,16 +36,16 @@ Reserved concurrency is set on the **function**, not on the alias. All three env
 > **Important: always disable the `dev` and `loc` SQS triggers after testing.**
 > An enabled SQS trigger (event source mapping) polls its queue continuously, even when the queue is empty, and every poll counts as SQS requests. Leaving `dev` or `loc` triggers enabled uses up the monthly AWS free tier very quickly. Only the `prod` triggers stay enabled.
 
-To test a Lambda pipeline on development or locally, enable the trigger for that alias, run the test, and disable it again straight away:
+To test a Lambda pipeline on development or locally, enable the triggers for that alias, run the test, and disable them again straight away:
 
 ```bash
-# List the triggers and their UUIDs
-aws lambda list-event-source-mappings --function-name BiospexImageFetcher:dev --region us-east-2   --query "EventSourceMappings[].[UUID,EventSourceArn,State]" --output table
-
-# Enable for the test, then disable afterwards
-aws lambda update-event-source-mapping --uuid <UUID> --enabled --region us-east-2
-aws lambda update-event-source-mapping --uuid <UUID> --no-enabled --region us-east-2
+php artisan app:lambda-control BiospexImageFetcher start --alias=dev   # enable the dev triggers
+php artisan app:lambda-control BiospexImageFetcher stop --alias=dev    # disable them afterwards
 ```
+
+This only touches that alias's triggers. Production and the function's concurrency are left alone, so it's also the way to halt a runaway test. It works for the functions started from SQS: `BiospexImageFetcher`, `InternetArchiveImageFetcher`, `BiospexZipCreator` and `BiospexBatchCreator`. `BiospexOcrProcessor` is started only by S3 uploads, so `--alias` can't stop it. For `BiospexReconcile312`, `--alias` stops only the manual reconcile queue, not the nightly S3 uploads. `BiospexZipMerger` is called only by the Step Function.
+
+Run it from your machine: it needs `lambda:ListEventSourceMappings` and `lambda:UpdateEventSourceMapping`, which `LocalDeployUser` has but the servers' instance roles don't.
 
 To check that nothing was left on, this should list only `prod` triggers:
 
@@ -119,7 +119,7 @@ The Step Function definition is in `ZipBatchOrchestrator/step-function.json`. It
 
 ## Pausing a function
 
-`php artisan app:lambda-control <function> stop` sets a function's reserved concurrency to 0, and `start` restores it to the value in `config/services.php` → `aws.lambdas`. The function names are that list's keys.
+`php artisan app:lambda-control <function> stop` sets a function's reserved concurrency to 0, and `start` restores it to the value in `config/services.php` → `aws.lambdas`. The function names are that list's keys. Because concurrency belongs to the function, this stops it in **every** environment, production included. To stop only one environment's SQS triggers, add `--alias=prod|dev|loc` (see [Environments](#environments-aliases-queues-and-buckets)).
 
 BIOSPEX checks for paused functions before starting new work, through `AwsLambdaApiService`:
 

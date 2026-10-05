@@ -74,7 +74,8 @@ The task order is in `deploy.php`:
 | Restart queue workers (after code changes) | `php artisan queue:restart` |
 | Start or stop an SQS listener | `php artisan sqs:control <queue-key> --action=start` (or `stop`) |
 | Count jobs in a Beanstalkd queue | `php artisan queue:count` |
-| Stop or restore Lambda concurrency | `php artisan app:lambda-control` |
+| Stop or start a Lambda in every environment | `php artisan app:lambda-control <function> stop` (or `start`) |
+| Stop or start one environment's Lambda triggers | `php artisan app:lambda-control <function> stop --alias=dev` (run from your machine) |
 | Purge the AWS queues for an environment | `php artisan app:awsqueue-purge` |
 
 - **Laravel logs:** `/data/web/biospex/shared/storage/logs`. These are truncated on each deploy.

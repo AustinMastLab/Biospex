@@ -9,7 +9,7 @@ This information was taken from AWS and the repositories on 2026-10-05. Check AW
 | Function | Repository | Runtime | Memory / timeout | Reserved concurrency |
 | --- | --- | --- | --- | --- |
 | `BiospexImageFetcher` | [BiospexImageFetcher](https://github.com/AustinMastLab/BiospexImageFetcher) | Node.js 22 | 1024 MB / 180 s | 100 |
-| `InternetArchiveImageFetcher` | none (see the gaps section) | Python 3.12 | 1024 MB / 180 s | 5 |
+| `InternetArchiveImageFetcher` | [InternetArchiveImageFetcher](https://github.com/AustinMastLab/InternetArchiveImageFetcher) | Python 3.12 | 1024 MB / 180 s | 5 |
 | `BiospexOcrProcessor` | [BiospexOcrProcessor](https://github.com/AustinMastLab/BiospexOcrProcessor) | Node.js 22 | 2048 MB / 120 s | 100 |
 | `BiospexZipCreator` | [BiospexZipCreator](https://github.com/AustinMastLab/BiospexZipCreator) | Node.js 22 | 3072 MB / 900 s | 10 |
 | `BiospexZipMerger` | [BiospexZipMerger](https://github.com/AustinMastLab/BiospexZipMerger) | Node.js 22 | 3072 MB / 900 s | 1 |
@@ -65,7 +65,7 @@ There is only one state machine for all environments, and it calls the functions
 
 ## Deploying a function
 
-Each repository except ZipBatchOrchestrator has a `deploy.sh` that you run from the repository directory:
+Each repository except ZipBatchOrchestrator has a `deploy.sh` that you run from the repository directory. `InternetArchiveImageFetcher` builds its zip inside the `public.ecr.aws/lambda/python:3.12` Docker image, because Pillow needs Lambda-compatible native libraries; start Docker before running its script.
 
 1. It builds `function.zip`, using `npm install --production` for Node.js, or a Python 3.12 build for `BiospexReconcile312`.
 2. It asks before uploading to AWS. The upload uses `us-east-2`, with `biospex-loc` as a temporary bucket.
@@ -80,7 +80,6 @@ The Step Function definition is in `ZipBatchOrchestrator/step-function.json`. It
 
 ## Known gaps
 
-- **`InternetArchiveImageFetcher` has no repository** in `AustinMastLab`. Find its source, or download it from AWS and commit it.
 - **`config/services.php` → `aws.lambdas` still lists `BiospexLabelReconcile`** and not `BiospexReconcile312`. As a result, `app:lambda-control` controls the old function, not the active one.
 - **The pause checks look up function names that no longer exist.** `TesseractOcrQueueService` checks `BiospexTesseractOcr` and `ZooniverseExportQueueService` checks `BiospexImageProcess`. AWS returns "not found", and the code treats that as "ready", so pausing the real functions doesn't hold back new queues.
 - **The automatic stop passes the wrong value.** `TesseractOcrProcessJob` and `ZooniverseExportProcessImagesJob` pass the concurrency value (`100`) instead of the function name to `app:lambda-control`, so it never stops anything.

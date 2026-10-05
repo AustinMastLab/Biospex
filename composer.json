@@ -7,6 +7,13 @@
     "laravel"
   ],
   "license": "MIT",
+  "repositories": [
+    {
+      "type": "vcs",
+      "url": "https://github.com/AustinMastLab/deployer-recipes",
+      "no-api": true
+    }
+  ],
   "require": {
     "php": "^8.5",
     "ext-curl": "*",
@@ -43,6 +50,7 @@
     "tio/laravel": "^1.0"
   },
   "require-dev": {
+    "austinmastlab/deployer-recipes": "^1.0",
     "deployer/deployer": "^8.0",
     "fakerphp/faker": "^1.0",
     "fruitcake/laravel-debugbar": "^4.0",

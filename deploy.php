@@ -3,6 +3,7 @@
 namespace Deployer;
 
 require 'recipe/laravel.php';
+require __DIR__.'/vendor/austinmastlab/deployer-recipes/recipe/ssm-env.php';
 require 'deploy/custom.php';
 
 /*
@@ -22,6 +23,7 @@ require 'deploy/custom.php';
 
 // Deployment Configuration
 set('repository', 'https://github.com/AustinMastLab/Biospex.git');
+set('ssm_app', 'biospex');  // .env is generated from SSM /biospex/{environment} (env:ssm)
 set('base_path', '/data/web');
 set('remote_user', 'ubuntu');
 set('php_fpm_version', '8.3');

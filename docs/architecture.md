@@ -118,6 +118,6 @@ These are defined in `routes/console.php`:
 | Zooniverse Talk | Comments. | `app/Services/Api/ZooniverseTalkApiService.php` |
 | GeoLocate | Georeferencing exports and stats. | `app/Services/Actor/GeoLocate` |
 | AWS S3, SQS, Lambda, Step Functions | Files, messages, and heavy processing. See [Lambda functions](lambdas.md). | `app/Services/Api/AwsS3ApiService.php`, `app/Services/SqsListenerService.php`, `config/services.php` (`aws`) |
-| AWS SSM | Environment variables for each server. | `generate-env`, `push-env-params` |
+| AWS SSM | Environment variables for each server. | `env:ssm` and `vendor/bin/*-env-params`, from [deployer-recipes](https://github.com/AustinMastLab/deployer-recipes) |
 | Mail | Notifications and error emails. | `config/mail.php` |
 | Translation.io | Translations. | `tio/laravel` |

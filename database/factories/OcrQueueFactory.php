@@ -22,11 +22,13 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\Expedition;
 use App\Models\OcrQueue;
+use App\Models\Project;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\OcrQueue>
+ * @extends Factory<OcrQueue>
  */
 final class OcrQueueFactory extends Factory
 {
@@ -43,10 +45,10 @@ final class OcrQueueFactory extends Factory
     public function definition(): array
     {
         return [
-            'project_id' => \App\Models\Project::factory(),
-            'expedition_id' => \App\Models\Expedition::factory(),
+            'project_id' => Project::factory(),
+            'expedition_id' => Expedition::factory(),
             'total' => fake()->randomNumber(),
-            'status' => fake()->randomNumber(),
+            'stage' => 0,
             'error' => fake()->randomNumber(1),
         ];
     }

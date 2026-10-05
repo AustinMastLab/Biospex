@@ -1,5 +1,7 @@
 <?php
 
+use App\Models\User;
+
 $env = env('APP_ENV', 'local');
 
 $prefixMap = [
@@ -44,7 +46,7 @@ return [
     ],
 
     'stripe' => [
-        'model' => App\Models\User::class,
+        'model' => User::class,
         'key' => env('STRIPE_KEY'),
         'secret' => env('STRIPE_SECRET'),
     ],
@@ -78,14 +80,17 @@ return [
         'reconcile_idle_grace' => 1800,
         'zip_threshold' => 8000,
 
+        // Step Function that zips exports above zip_threshold (see ZooniverseZipTriggerService).
+        'zip_state_machine_arn' => env('AWS_ZIP_STATE_MACHINE_ARN', 'arn:aws:states:us-east-2:147899039648:stateMachine:ZipBatchOrchestrator'),
+
         'lambdas' => [
             'BiospexZipMerger' => 1,
-            'BiospexLabelReconcile' => 8,
+            'BiospexReconcile312' => 8,
             'BiospexBatchCreator' => 1,
             'BiospexZipCreator' => 10,
             'BiospexImageFetcher' => 100,
             'BiospexOcrProcessor' => 100,
-            'InternetArchiveImageFetcher' => 5
+            'InternetArchiveImageFetcher' => 5,
         ],
     ],
 ];

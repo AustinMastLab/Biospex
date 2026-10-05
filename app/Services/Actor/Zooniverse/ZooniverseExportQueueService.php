@@ -23,8 +23,7 @@ namespace App\Services\Actor\Zooniverse;
 use App\Jobs\ZooniverseExportBuildCsvJob;
 use App\Jobs\ZooniverseExportProcessImagesJob;
 use App\Models\ExportQueue;
-use Aws\Lambda\LambdaClient;
-use Illuminate\Support\Facades\Log;
+use App\Services\Api\AwsLambdaApiService;
 
 /**
  * Service for managing Zooniverse export queue processing and Lambda function interactions.
@@ -35,11 +34,11 @@ class ZooniverseExportQueueService
      * Create a new ZooniverseExportQueueService instance.
      *
      * @param  ExportQueue  $exportQueue  The export queue model instance
-     * @param  LambdaClient  $lambdaClient  The AWS Lambda client instance
+     * @param  AwsLambdaApiService  $lambdaApiService  Checks whether the image fetcher Lambda can run
      */
     public function __construct(
         protected ExportQueue $exportQueue,
-        protected LambdaClient $lambdaClient
+        protected AwsLambdaApiService $lambdaApiService
     ) {}
 
     /**
@@ -107,7 +106,7 @@ class ZooniverseExportQueueService
         $exportQueue = $this->exportQueue->find($nextQueue->id);
 
         // 4. Perform Checks (Lambda)
-        if (! $this->isLambdaReady()) {
+        if (! $this->lambdaApiService->canRun(['BiospexImageFetcher'])) {
             // Rollback claim if check fails
             $exportQueue->queued = 0;
             $exportQueue->stage = 0; // Or appropriate previous stage
@@ -124,27 +123,5 @@ class ZooniverseExportQueueService
         $exportQueue->save();
 
         ZooniverseExportProcessImagesJob::dispatch($exportQueue);
-    }
-
-    /**
-     * Check if the Lambda function is available for processing.
-     *
-     * @return bool Returns true if Lambda function is ready for processing, false otherwise
-     */
-    private function isLambdaReady(): bool
-    {
-        try {
-            $result = $this->lambdaClient->getFunctionConcurrency([
-                'FunctionName' => 'BiospexImageProcess',
-            ]);
-
-            return ($result['ReservedConcurrentExecutions'] ?? 1) > 0;
-        } catch (\Exception $e) {
-            if (! str_contains($e->getMessage(), 'ResourceNotFoundException')) {
-                Log::warning('Could not check Export Lambda concurrency: '.$e->getMessage());
-            }
-
-            return true; // No limit = safe to run
-        }
     }
 }

@@ -20,10 +20,10 @@
 
 namespace App\Services\Actor\TesseractOcr;
 
+use App\Jobs\TesseractOcrCompleteJob;
 use App\Jobs\TesseractOcrProcessJob;
 use App\Models\OcrQueue;
-use Aws\Lambda\LambdaClient;
-use Illuminate\Support\Facades\Log;
+use App\Services\Api\AwsLambdaApiService;
 
 /**
  * Service for managing OCR queue processing using Tesseract OCR via AWS Lambda.
@@ -35,11 +35,11 @@ class TesseractOcrQueueService
      * Create a new TesseractOcrQueueService instance.
      *
      * @param  OcrQueue  $ocrQueue  The OCR queue model instance
-     * @param  LambdaClient  $lambdaClient  AWS Lambda client instance
+     * @param  AwsLambdaApiService  $lambdaApiService  Checks whether the OCR Lambdas can run
      */
     public function __construct(
         protected OcrQueue $ocrQueue,
-        protected LambdaClient $lambdaClient
+        protected AwsLambdaApiService $lambdaApiService
     ) {}
 
     /**
@@ -64,7 +64,7 @@ class TesseractOcrQueueService
         $isDone = ! $queue->files()->where('processed', 0)->exists();
 
         if ($isDone) {
-            \App\Jobs\TesseractOcrCompleteJob::dispatch($queue);
+            TesseractOcrCompleteJob::dispatch($queue);
         }
     }
 
@@ -102,11 +102,12 @@ class TesseractOcrQueueService
         // Reload the model to ensure we have a fresh state if needed, though ID is enough
         $queue = $this->ocrQueue->find($nextQueue->id);
 
-        if (! $this->isLambdaReady()) {
+        // OCR needs both the image fetcher and the OCR processor.
+        if (! $this->lambdaApiService->canRun(['BiospexImageFetcher', 'BiospexOcrProcessor'])) {
             // Rollback the claim if lambda fails
             $queue->queued = 0;
             $queue->save();
-            throw new \Exception("TesseractOcr Lambda concurrency is 0 — skipping queue #{$queue->id}");
+            throw new \Exception("OCR Lambda concurrency is 0 — skipping queue #{$queue->id}");
         }
 
         TesseractOcrProcessJob::dispatch($queue);
@@ -130,27 +131,5 @@ class TesseractOcrQueueService
             ->where('files_ready', 1)
             ->orderBy('id')
             ->first();
-    }
-
-    /**
-     * Check if AWS Lambda function is ready for processing.
-     *
-     * @return bool True if Lambda function is available, false otherwise
-     */
-    private function isLambdaReady(): bool
-    {
-        try {
-            $result = $this->lambdaClient->getFunctionConcurrency([
-                'FunctionName' => 'BiospexTesseractOcr',
-            ]);
-
-            return ($result['ReservedConcurrentExecutions'] ?? 1) > 0;
-        } catch (\Exception $e) {
-            if (! str_contains($e->getMessage(), 'ResourceNotFoundException')) {
-                Log::warning('Could not check OCR Lambda concurrency: '.$e->getMessage());
-            }
-
-            return true; // No limit = unlimited = safe
-        }
     }
 }

@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "e2c927dfb2ee123a6444e7daf610e9e2",
+    "content-hash": "9f1feead488aaf87cf244cfaf7e7d40b",
     "packages": [
         {
             "name": "anourvalar/eloquent-serialize",
@@ -10926,6 +10926,35 @@
         }
     ],
     "packages-dev": [
+        {
+            "name": "austinmastlab/deployer-recipes",
+            "version": "v1.0.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/AustinMastLab/deployer-recipes",
+                "reference": "d0713fa08b3df4560d1aaf7b038747ea6eaf1904"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/AustinMastLab/deployer-recipes/zipball/d0713fa08b3df4560d1aaf7b038747ea6eaf1904",
+                "reference": "d0713fa08b3df4560d1aaf7b038747ea6eaf1904",
+                "shasum": ""
+            },
+            "require": {
+                "php": ">=8.1"
+            },
+            "suggest": {
+                "deployer/deployer": "The recipes are written for Deployer 7 and 8."
+            },
+            "bin": [
+                "bin/generate-env",
+                "bin/push-env-params",
+                "bin/remove-env-params"
+            ],
+            "type": "library",
+            "description": "Shared Deployer recipes and AWS SSM environment tools for AustinMastLab sites",
+            "time": "2026-10-05T15:21:12+00:00"
+        },
         {
             "name": "brianium/paratest",
             "version": "v7.20.0",

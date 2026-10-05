@@ -10,7 +10,7 @@ Version numbers follow the format `MAJOR.MINOR.PATCH` (e.g., `1.2.3`).
 
 ## How It Works
 
-1. **Development Branch**: Push to `development` → Automatically deploys to development environment (Host: `3.138.217.206`)
+1. **Development Branch**: Pushing to `development` does not deploy. Run the workflow manually on `development` (Actions → Build and Deploy → Run workflow, or `gh workflow run "Build and Deploy" --ref development`) to deploy to the development environment (Host: `3.138.217.206`).
    - Operates using `dev-` prefixed SQS queues.
 2. **Main Branch**: Push to `main` → Creates GitHub release with auto-incremented version → Automatically deploys to
    production (Host: `3.142.169.134`)
@@ -87,12 +87,13 @@ git commit -m "Update docs"                # patch
 git checkout development
 git commit -m "Add user settings page [feature]"
 git push origin development
-# → Automatically deploys to development server
+# → No deploy. Run the workflow manually on development to deploy:
+gh workflow run "Build and Deploy" --ref development
 
 # 2. Test and iterate
 git commit -m "Fix settings validation"
 git push origin development
-# → Automatically deploys updated version to development server
+gh workflow run "Build and Deploy" --ref development
 ```
 
 ### Production Release Workflow
@@ -187,7 +188,7 @@ gh release create 1.5.0 --title "Release 1.5.0" --notes "Manual release"
 
 ## Summary
 
-- **Development**: `git push origin development` → Auto-deploy to dev environment
+- **Development**: `git push origin development`, then run the workflow manually on `development` to deploy
 - **Production**: `git push origin main` → Auto-create release → Auto-deploy to production
 - **Version Control**: Use `[minor]`, `[major]`, or `[breaking]` in commit messages
 - **Skip Deployment**: Use `[skip deploy]` or `[no deploy]` when needed

@@ -1,0 +1,44 @@
+#!/usr/bin/env bash
+
+set -euo pipefail
+
+APP_ENVIRONMENT="${1:?Usage: $0 <development|production>}"
+PATH_TO_DELETE="/biospex/${APP_ENVIRONMENT}"
+
+echo "Deleting all parameters under path: $PATH_TO_DELETE"
+echo "THIS CANNOT BE UNDONE. Press Ctrl+C to abort, or Enter to continue..."
+read -r
+
+# Get all parameter names as JSON array
+NAMES_JSON=$(aws ssm get-parameters-by-path \
+  --region us-east-2 \
+  --path "$PATH_TO_DELETE" \
+  --recursive \
+  --query "Parameters[].Name" \
+  --output json)
+
+if [ "$NAMES_JSON" = "[]" ] || [ -z "$NAMES_JSON" ]; then
+  echo "No parameters found under $PATH_TO_DELETE. Nothing to delete."
+  exit 0
+fi
+
+# Convert to bash array
+mapfile -t ALL_NAMES < <(echo "$NAMES_JSON" | jq -r '.[]')
+
+echo "Found ${#ALL_NAMES[@]} parameters. Deleting in batches of 10..."
+
+# Delete in batches of 10
+for ((i=0; i<${#ALL_NAMES[@]}; i+=10)); do
+  BATCH=("${ALL_NAMES[@]:i:10}")
+
+  echo "Deleting batch of ${#BATCH[@]} parameters:"
+  printf '  %s\n' "${BATCH[@]}"
+
+  aws ssm delete-parameters \
+    --region us-east-2 \
+    --names "${BATCH[@]}"
+
+  echo "Batch deleted."
+done
+
+echo "All parameters under $PATH_TO_DELETE have been successfully deleted."

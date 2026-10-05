@@ -1,0 +1,63 @@
+#!/usr/bin/env bash
+
+################################################################################
+# GENERATE-ENV SCRIPT
+#
+# PURPOSE & USAGE:
+# - Dynamically generates .env files from AWS Systems Manager (SSM) Parameter Store
+# - Called during deployment via deploy/custom.php (task 'env:ssm')
+# - Keeps sensitive credentials out of version control (security best practice)
+# - Supports multiple environments (development, production) via SSM paths
+#
+# INVOCATION:
+# - From deployment: ./generate-env biospex production
+# - Manual usage: ./generate-env biospex development
+# - Custom output: ./generate-env biospex production /custom/path/.env
+#
+# REQUIREMENTS:
+# - AWS SSM parameters must exist at path: /{APP_NAME}/{ENVIRONMENT}
+# - AWS CLI configured with appropriate credentials and region
+# - jq installed for JSON parsing
+# - Script runs on remote server with access to AWS SSM
+################################################################################
+
+set -euo pipefail
+
+APP_NAME="${1:?First argument must be app name, e.g. biospex or digitizationacademy}"
+APP_ENVIRONMENT="${2:-development}"   # development or production
+
+SSM_PATH="/${APP_NAME}/${APP_ENVIRONMENT}"
+OUTPUT_FILE="${3:-/data/web/${APP_NAME}/shared/.env}"
+
+echo "Generating ${OUTPUT_FILE} from SSM path ${SSM_PATH}..."
+
+json=$(aws ssm get-parameters-by-path \
+  --path "${SSM_PATH}" \
+  --with-decryption \
+  --recursive \
+  --output json)
+
+mkdir -p "$(dirname "${OUTPUT_FILE}")"
+
+# Backup existing .env before overwriting to prevent data loss
+if [ -f "${OUTPUT_FILE}" ]; then
+  ts="$(date +%Y%m%d_%H%M%S)"
+  cp -p "${OUTPUT_FILE}" "${OUTPUT_FILE}.backup.${ts}"
+fi
+
+echo "# Generated from SSM ${SSM_PATH} on $(date -Is)" > "${OUTPUT_FILE}"
+
+echo "${json}" | jq -r '.Parameters[] | "\(.Name)\u0001\(.Value)"' \
+  | while IFS=$'\x01' read -r name value; do
+      key="${name#${SSM_PATH}/}"
+
+      # Strip trailing Carriage Returns or Line Feeds that cause "Invalid URI" errors in Laravel
+      clean_value=$(printf '%s' "$value" | tr -d '\r\n')
+
+      # Escape backslashes and double quotes for the .env file
+      esc="$(printf '%s' "$clean_value" | sed -e 's/\\/\\\\/g' -e 's/"/\\"/g')"
+
+      printf '%s=%s\n' "$key" "\"$esc\""
+    done >> "${OUTPUT_FILE}"
+
+echo "✅ Successfully generated ${OUTPUT_FILE}"

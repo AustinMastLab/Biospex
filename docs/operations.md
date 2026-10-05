@@ -49,6 +49,21 @@ The task order is in `deploy.php`:
 5. **Restart processes.** Run `supervisorctl reread` and `supervisorctl update`, then `queue:restart`.
 6. **Publish.** Truncate the logs, switch the `current` symlink, reset OPcache, and verify the structure.
 
+### Shared deploy tooling (deployer-recipes)
+
+`.env` generation lives in the shared [AustinMastLab/deployer-recipes](https://github.com/AustinMastLab/deployer-recipes) Composer package, which every AustinMastLab Deployer site uses:
+
+| Site | Repository | SSM path |
+| --- | --- | --- |
+| BIOSPEX | AustinMastLab/Biospex | `/biospex/<environment>` |
+| Digitization Academy | AustinMastLab/DigitizationAcademy | `/digitizationacademy/<environment>` |
+| WeDigBio reports | AustinMastLab/wedigbio-reports | `/wedigbio-reports/<environment>` |
+
+- **Deployer 8 required.** The package's `env:ssm` task sends its script to the server in a shell heredoc, which Deployer 7 breaks. From v1.0.1 the package refuses to install alongside Deployer 7.
+- **Nothing to install on the servers.** The script is sent with each deploy; there is no longer a `~/generate-env` in the server's home directory (removed 2026-10-05). Each server only needs the AWS CLI and `jq`.
+- **Changing it.** Edit the package, tag a new version (`v1.0.2`, …), then run `composer update austinmastlab/deployer-recipes` in each site and deploy. Test on BIOSPEX or Digitization Academy development first; WeDigBio reports has no development deployment.
+- **First deploy after a change to the output format** rewrites `.env` once (values unchanged) and makes one backup; later deploys report `No changes`.
+
 ### One-off data updates
 
 `app:update-queries {operation}` is an empty dispatcher for one-time data fixes:
@@ -60,7 +75,9 @@ The task order is in `deploy.php`:
 
 ## Environment configuration
 
-- **Where `.env` comes from.** Each server's `.env` is generated from AWS SSM Parameter Store, at the path `/biospex/production` or `/biospex/development`. The `env:ssm` deploy task does this on every deploy. It comes from the shared [deployer-recipes](https://github.com/AustinMastLab/deployer-recipes) package (a dev dependency, set up in `deploy.php` with `set('ssm_app', 'biospex')`). The task streams the package's `generate-env` script to the server and runs it there with the server's IAM role. The script refuses to write an empty file, keeps the file's permissions, and keeps the last 5 `.env.backup.*` files in `shared/`. To change how `.env` is generated, change the package, tag a new version, and run `composer update austinmastlab/deployer-recipes`.
+- **Where `.env` comes from.** Each server's `.env` is generated from AWS SSM Parameter Store, at the path `/biospex/production` or `/biospex/development`, by the `env:ssm` deploy task (see [Shared deploy tooling](#shared-deploy-tooling-deployer-recipes); `set('ssm_app', 'biospex')` in `deploy.php`). The task runs the package's `generate-env` script on the server with the server's IAM role, so secrets never pass through GitHub. The script refuses to write an empty file, writes only after every value has been read, keeps the file's permissions (`600` on BIOSPEX), and keeps the last 5 `.env.backup.*` files in `shared/`.
+- **Server IAM roles.** `ProdEC2Role` and `DevEC2Role` (policies `ProdEC2DeployPolicy` and `DevEC2DeployPolicy`) allow only what the servers use: SSM read and KMS decrypt for the three sites' parameter paths, the site's S3 bucket and SQS queues, Lambda concurrency (read and set), and starting the zip Step Function. Lambda code, alias, and trigger management are done from a developer machine as `LocalDeployUser`, not from the servers.
+- **Rolling back.** `dep rollback <environment>` only switches the `current` symlink; it doesn't regenerate `.env`. If a rollback needs an older `.env`, copy the matching `shared/.env.backup.*` back over `shared/.env`.
 - **Pushing a local file to SSM:** `vendor/bin/push-env-params biospex <environment>` pushes each line of `.env.aws.<environment>` as a `SecureString` parameter. Those files hold real values, and git ignores them through `/.env.*`. `vendor/bin/remove-env-params biospex <environment>` deletes every parameter under `/biospex/<environment>`, after you type the environment name to confirm; it can't be undone.
 - **Supervisor values.** Some variables (`APP_SERVER_USER`, `APP_TAG`, `PANOPTES_LISTENER_ENABLED`, the queue names, and others) are written into the Supervisor configs by `app:deploy-files`. After changing one of them, run `app:deploy-files`, then `supervisorctl reread` and `supervisorctl update`.
 - **`env.example` is out of date.** It still lists `NOVA_LICENSE_KEY` and `LADA_CACHE_*`, and it uses `OCR_DISABLE` instead of `OCR_ENABLED`. For the real list, compare it with SSM.
@@ -98,5 +115,6 @@ The task order is in `deploy.php`:
 - **MongoDB indexes.** MongoDB can't hold two indexes on the same key with different options. To change one, drop the old index first. Restoring a database dump can bring old indexes back.
 - **Large `distinct` queries** hit MongoDB's 16 MB limit. Use an aggregation (`$group` with `$count`) instead.
 - **Pusher quota.** If Pusher reports error 4004 (over quota), the listener stops reconnecting for an hour.
+- **Upgrade packages that extend framework commands together with Laravel.** On 2026-10-05, Digitization Academy's Horizon workers crashed after a Laravel update because `horizon:work` extends `queue:work`, Laravel added a new option to `queue:work`, and Horizon was pinned to an old version (`5.35.*`) that didn't declare it. After a `composer update`, check `composer outdated --direct` for packages held back by tight constraints, and after deploying check that queue workers stay up, not just that Supervisor shows RUNNING.
 - **Disable the `dev` and `loc` Lambda SQS triggers after testing.** Enabled triggers poll SQS constantly and use up the monthly AWS free tier quickly. See [Lambda functions](lambdas.md#environments-aliases-queues-and-buckets).
 - **SQS listeners are started by jobs.** If an export, OCR, or reconcile run stalls, check whether its listener is running and whether its Lambda concurrency is set to 0.

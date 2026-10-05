@@ -72,9 +72,30 @@ Each repository except ZipBatchOrchestrator has a `deploy.sh` that you run from 
 
 `BiospexReconcile312`'s script targets the function name in the `FUNCTION_NAME` environment variable, defaulting to `BiospexReconcile312`.
 
-A deploy updates `$LATEST`. Check in AWS how each alias (`prod`, `dev`, `loc`) points at a version before you assume a deploy is live in production.
+### Releasing a new version
 
-> TODO: record the release procedure for publishing a version and moving the `prod` alias, if one is used.
+Every `deploy.sh` walks through the same steps, asking before each one:
+
+1. **Build** `function.zip`.
+2. **Upload** it, which updates `$LATEST`. Zips over 50 MB go through the `biospex-loc` bucket.
+3. **Publish a version,** a numbered snapshot of `$LATEST`.
+4. **Move aliases** (`loc`, `dev`, `prod`, or `all`) to that version.
+
+The rule: `loc` and `dev` can follow new versions while you test, but `prod` only ever points at a published version that has been checked on `loc` or `dev` first. Uploading code changes nothing in production until the `prod` alias is moved, because the production triggers call the `prod` alias.
+
+Two exceptions:
+
+- **`BiospexZipMerger`** has no aliases in AWS, and the Step Function calls `BiospexZipCreator` and `BiospexZipMerger` without an alias. An upload to either one takes effect immediately for large exports in every environment.
+- **Docker for `InternetArchiveImageFetcher`.** Its build runs in Docker. Start Docker before deploying (`sudo service docker start`) and stop it afterwards.
+
+### Trigger settings
+
+When adding or changing an SQS trigger:
+
+- Set the queue's visibility timeout to at least twice the Lambda timeout, so a message isn't delivered again while it's still being processed.
+- Use a small batch size (1 for the Internet Archive fetcher) to avoid bursts against the image host.
+- Keep reserved concurrency set on each function. It protects the image hosts and BIOSPEX's own listeners, and `app:lambda-control` relies on it.
+- Watch Lambda errors and throttles, the SQS age of oldest message, and the depth of `{prefix}-image-trigger-dlq` in CloudWatch.
 
 The Step Function definition is in `ZipBatchOrchestrator/step-function.json`. It is updated in the AWS console or with `aws stepfunctions update-state-machine`.
 

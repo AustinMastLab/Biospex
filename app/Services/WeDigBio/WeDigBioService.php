@@ -62,10 +62,12 @@ class WeDigBioService
             return null;
         }
 
-        $key = "wedigbio_event_transcriptions:{$activeEvent->id}";
+        // Refresh on the same five-minute boundaries as the rate chart.
+        $window = now('UTC')->floorMinutes(5)->timestamp;
+        $key = "wedigbio_event_transcriptions:{$activeEvent->id}:{$window}";
         $tags = ['wedigbio_events', 'transcriptions', 'projects'];
 
-        return Cache::tags($tags)->remember($key, 3600, function () use ($activeEvent) {
+        return Cache::tags($tags)->remember($key, 300, function () use ($activeEvent) {
             return $this->weDigBioEvent->withCount('transcriptions')->with([
                 'transcriptions' => function ($q) {
                     $q->select('*', DB::raw('count(project_id) as total'))

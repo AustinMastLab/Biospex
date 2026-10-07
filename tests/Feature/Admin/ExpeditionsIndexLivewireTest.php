@@ -155,3 +155,21 @@ it('sorts admin expeditions by project and resets the loaded page', function () 
         ->assertSeeInOrder(['Alpha Expedition', 'Zebra Expedition'])
         ->assertSet('page', 1);
 });
+
+it('renders an unused load-more trigger each time sorting restarts the list', function () {
+    $project = Project::factory()->for(Group::factory())->create();
+    $admin = User::factory()->create();
+    $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
+    foreach (range(1, 13) as $number) {
+        makeAdminExpedition($project, ['completed' => 0, 'created_at' => now()->addSeconds($number)]);
+    }
+    $this->actingAs($admin->fresh());
+
+    $component = Livewire::test(ExpeditionsIndex::class);
+    $keys = [loadMoreTriggerKey($component)];
+    foreach (['title', 'project', 'date'] as $field) {
+        $keys[] = loadMoreTriggerKey($component->call('sortBy', $field));
+    }
+
+    expect(collect($keys)->filter()->unique())->toHaveCount(4);
+});

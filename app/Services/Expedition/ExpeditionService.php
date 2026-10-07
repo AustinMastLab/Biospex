@@ -25,7 +25,6 @@ use App\Models\Project;
 use App\Models\User;
 use App\Notifications\ZooniverseNewExpedition;
 use App\Services\Subject\SubjectService;
-use App\Services\Trait\ExpeditionPartitionTrait;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
@@ -37,8 +36,6 @@ use Illuminate\Support\Facades\Notification;
 
 class ExpeditionService
 {
-    use ExpeditionPartitionTrait;
-
     /**
      * Create a new instance of ExpeditionService.
      */
@@ -89,26 +86,6 @@ class ExpeditionService
     }
 
     /**
-     * Get expeditions for admin index.
-     */
-    public function getAdminIndex(User $user, array $request = []): Collection
-    {
-        $query = $this->expedition->with([
-            'project.group', 'stat', 'panoptesProject', 'workflowManager', 'zooniverseExport',
-        ]);
-
-        if (! $user->isAdmin()) {
-            $query->whereHas('project.group.users', function ($query) use ($user) {
-                $query->where('user_id', $user->id);
-            });
-        }
-
-        $sortedRecords = $this->sortRecords($query, $request);
-
-        return $this->partitionExpeditions($sortedRecords);
-    }
-
-    /**
      * Get one authorization-scoped page of expeditions for the admin index.
      */
     public function getAdminIndexPage(User $user, array $request = [], int $page = 1): Paginator
@@ -151,27 +128,6 @@ class ExpeditionService
     }
 
     /**
-     * Cache key for the DATA collection of public expeditions (both partitions).
-     */
-    protected function publicIndexDataCacheKey(array $request = []): string
-    {
-        $version = (int) Cache::get('public_sort:expeditions:version', 1);
-
-        $sort = (string) ($request['sort'] ?? 'date');
-        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
-        $projectId = $request['projectId'] ?? $request['id'] ?? null;
-
-        return sprintf(
-            'public_sort:expeditions_data:v%d:locale=%s:sort=%s:order=%s:project=%s',
-            $version,
-            app()->getLocale(),
-            $sort,
-            $order,
-            empty($projectId) ? 'all' : (string) $projectId,
-        );
-    }
-
-    /**
      * Cache key for one page of public expeditions.
      */
     protected function publicIndexPageCacheKey(array $request, int $page): string
@@ -192,47 +148,6 @@ class ExpeditionService
             empty($projectId) ? 'all' : (string) $projectId,
             $page,
         );
-    }
-
-    /**
-     * Get cached DATA (Collection of partitions) for the public expedition index.
-     * Must call the existing public query method and not duplicate it.
-     */
-    public function getPublicIndexCachedData(array $params = []): Collection
-    {
-        // Normalize projectId for consistency (UI may send 'id')
-        if (isset($params['id']) && ! isset($params['projectId'])) {
-            $params['projectId'] = $params['id'];
-        }
-
-        $cacheKey = $this->publicIndexDataCacheKey($params);
-
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($params) {
-            return $this->getPublicIndex($params);
-        });
-    }
-
-    /**
-     * Get expeditions for public index (SQL-sorted).
-     */
-    public function getPublicIndex(array $request = []): Collection
-    {
-        $sort = (string) ($request['sort'] ?? 'date');
-        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
-        $projectId = $request['projectId'] ?? null;
-
-        $query = $this->publicIndexQuery($projectId);
-
-        if ($sort === 'title') {
-            $query->orderBy('expeditions.title', $order);
-        } else {
-            // date (default)
-            $query->orderBy('expeditions.created_at', $order);
-        }
-
-        $records = $query->get();
-
-        return $this->partitionExpeditions($records);
     }
 
     /**
@@ -281,28 +196,6 @@ class ExpeditionService
         }
 
         return $query;
-    }
-
-    /**
-     * Sort results for expedition indexes.
-     */
-    protected function sortRecords(Builder $query, array $request = []): \Illuminate\Database\Eloquent\Collection
-    {
-        $records = ! isset($request['projectId']) ? $query->get() : $query->where('project_id',
-            $request['projectId'])->get();
-
-        if (! isset($request['order'])) {
-            return $records;
-        }
-
-        match ($request['sort']) {
-            'title' => $records = $request['order'] === 'desc' ? $records->sortByDesc('title') : $records->sortBy('title'),
-            'project' => $records = $request['order'] === 'desc' ? $records->sortByDesc(fn ($expedition
-            ) => $expedition->project->title) : $records->sortBy(fn ($expedition) => $expedition->project->title),
-            'date' => $records = $request['order'] === 'desc' ? $records->sortByDesc('created_at') : $records->sortBy('created_at'),
-        };
-
-        return $records;
     }
 
     /**
@@ -450,14 +343,6 @@ class ExpeditionService
                 $query->where('expedition_id', $expedition->id);
             },
         ]);
-    }
-
-    /**
-     * Find expedition having workflow manager by id.
-     */
-    public function findExpeditionHavingWorkflowManager($expeditionId): ?Expedition
-    {
-        return $this->expedition->has('workflowManager')->find($expeditionId);
     }
 
     /**

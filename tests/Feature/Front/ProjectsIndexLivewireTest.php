@@ -111,3 +111,16 @@ it('renders a project from the paged public query', function () {
         ->assertSee('Mocked Project')
         ->assertSet('hasMore', false);
 });
+
+it('renders an unused load-more trigger each time sorting restarts the list', function () {
+    Project::factory()->count(10)->create()
+        ->each(fn (Project $project) => PanoptesProject::factory()->create(['project_id' => $project->id]));
+
+    $component = Livewire::test(ProjectsIndex::class);
+    $keys = [loadMoreTriggerKey($component)];
+    foreach (['group', 'date', 'title', 'title'] as $field) {
+        $keys[] = loadMoreTriggerKey($component->call('sortBy', $field));
+    }
+
+    expect(collect($keys)->filter()->unique())->toHaveCount(5);
+});

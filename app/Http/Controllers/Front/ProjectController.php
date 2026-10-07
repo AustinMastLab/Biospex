@@ -59,8 +59,6 @@ class ProjectController extends Controller
             return Redirect::route('front.projects.index')->with('danger', t('Unable to locate project. Please alert the Admin.'));
         }
 
-        [$expeditions, $expeditionsCompleted] = $this->projectService->partitionExpeditions($project->expeditions);
-
         $years = ! isset($project->amChart) || is_null($project->amChart->data) ?
             null : array_keys($project->amChart->data);
 
@@ -74,6 +72,6 @@ class ProjectController extends Controller
             'project' => $project->id,
         ]);
 
-        return View::make('front.project.home', compact('project', 'years', 'expeditions', 'expeditionsCompleted'));
+        return View::make('front.project.home', compact('project', 'years'));
     }
 }

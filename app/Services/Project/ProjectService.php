@@ -23,28 +23,18 @@ namespace App\Services\Project;
 use App\Models\Project;
 use App\Models\ProjectAsset;
 use App\Models\User;
-use App\Services\Helpers\CountService;
-use App\Services\Helpers\DateService;
-use App\Services\Trait\EventPartitionTrait;
-use App\Services\Trait\ExpeditionPartitionTrait;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\Paginator;
-use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class ProjectService
 {
-    use EventPartitionTrait;
-    use ExpeditionPartitionTrait;
-
     /**
      * ProjectService constructor.
      */
     public function __construct(
         protected Project $project,
         protected ProjectAsset $projectAsset,
-        protected CountService $countService,
-        protected DateService $dateService,
     ) {}
 
     /**
@@ -185,22 +175,6 @@ class ProjectService
     }
 
     /**
-     * Get projects for admin index page.
-     */
-    public function getAdminIndex(User $user, array $request = []): Collection
-    {
-        $query = $this->projectIndexQuery();
-
-        if (! $user->isAdmin()) {
-            $query->whereHas('group.users', function (Builder $query) use ($user) {
-                $query->where('users.id', $user->id);
-            });
-        }
-
-        return $this->sortResults($query->get(), $request);
-    }
-
-    /**
      * Get one authorization-scoped page of projects for the admin index.
      */
     public function getAdminIndexPage(User $user, array $request = [], int $page = 1): Paginator
@@ -220,54 +194,6 @@ class ProjectService
         return $query
             ->orderBy('projects.id', $order)
             ->simplePaginate(9, ['*'], 'projectPage', $page);
-    }
-
-    /**
-     * Cache key for the DATA collection of public projects.
-     */
-    protected function publicIndexDataCacheKey(array $request = []): string
-    {
-        $version = (int) Cache::get('public_sort:projects:version', 1);
-
-        $sort = (string) ($request['sort'] ?? 'date');
-        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
-
-        return sprintf(
-            'public_sort:projects_data:v%d:locale=%s:sort=%s:order=%s',
-            $version,
-            app()->getLocale(),
-            $sort,
-            $order,
-        );
-    }
-
-    /**
-     * Get cached DATA (Collection) for the public project index.
-     * Must call the existing public query method and not duplicate it.
-     */
-    public function getPublicIndexCachedData(array $params = []): Collection
-    {
-        $cacheKey = $this->publicIndexDataCacheKey($params);
-
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($params) {
-            return $this->getPublicIndex($params);
-        });
-    }
-
-    /**
-     * Get a public project index page (SQL-sorted).
-     */
-    public function getPublicIndex(array $request = []): Collection
-    {
-        $sort = $this->projectSortField($request['sort'] ?? 'date');
-        $order = $this->projectSortOrder($request['order'] ?? 'asc');
-        $query = $this->publicProjectIndexQuery();
-
-        $this->applyProjectOrdering($query, $sort, $order);
-
-        return $query
-            ->orderBy('projects.id', $order)
-            ->get();
     }
 
     /**
@@ -374,15 +300,7 @@ class ProjectService
                 'assets',
                 'lastPanoptesProject',
                 'bingos',
-                'expeditions' => function ($query) {
-                    $query->has('panoptesProject')->whereHas('actors', function ($q) {
-                        $q->zooniverse();
-                    })->with('panoptesProject', 'stat', 'zooActorExpedition');
-                },
-                'events' => function ($q) {
-                    $q->with('teams');
-                    $q->orderBy('start_date', 'desc');
-                }])->where('slug', '=', $slug)->first();
+            ])->where('slug', '=', $slug)->first();
     }
 
     /**
@@ -433,30 +351,6 @@ class ProjectService
         $record->save();
 
         return true;
-    }
-
-    /**
-     * Sort results from index pages.
-     */
-    protected function sortResults(Collection $records, array $request = []): Collection
-    {
-        if (! isset($request['order'])) {
-            return $records->sortBy('created_at');
-        }
-
-        match ($request['sort']) {
-            'title' => $results = $request['order'] === 'desc' ?
-                $records->sortByDesc('title') :
-                $records->sortBy('title'),
-            'group' => $results = $request['order'] === 'desc' ?
-                $records->sortByDesc(fn ($project) => $project->group->title) :
-                $records->sortBy(fn ($project) => $project->group->title),
-            'date' => $results = $request['order'] === 'desc' ?
-                $records->sortByDesc('created_at') :
-                $records->sortBy('created_at'),
-        };
-
-        return $results;
     }
 
     /**

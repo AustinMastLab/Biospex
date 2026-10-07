@@ -126,3 +126,17 @@ it('loads another authorization-scoped page of projects without duplicates', fun
 
     $component->assertSet('hasMore', false);
 });
+
+it('renders an unused load-more trigger each time sorting restarts the list', function () {
+    $group = Group::factory()->create();
+    Project::factory()->for($group)->count(10)->create();
+    $this->actingAs(makeAdminUserWithGroups([$group]));
+
+    $component = Livewire::test(ProjectsIndex::class);
+    $keys = [loadMoreTriggerKey($component)];
+    foreach (['group', 'date', 'title'] as $field) {
+        $keys[] = loadMoreTriggerKey($component->call('sortBy', $field));
+    }
+
+    expect(collect($keys)->filter()->unique())->toHaveCount(4);
+});

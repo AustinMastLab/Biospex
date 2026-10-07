@@ -18,11 +18,8 @@
                 <span>{{ get_project_transcriber_count($project->id) }} {{ t('Participants') }}</span>
             </div>
         </div>
-        <div id="active-expeditions-main" class="col-sm-12 show">
+        <div class="col-sm-12">
             <livewire:admin.expeditions-index type="active" :project-id="$project->id" />
-        </div>
-        <div id="completed-expeditions-main" class="col-sm-12 collapse">
-            <livewire:admin.expeditions-index type="completed" :project-id="$project->id" />
         </div>
     </div>
 @endsection

@@ -24,15 +24,12 @@ use App\Models\Event;
 use App\Models\EventTeam;
 use App\Models\User;
 use App\Services\Helpers\DateService;
-use App\Services\Trait\EventPartitionTrait;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 
 class EventService
 {
-    use EventPartitionTrait;
-
     /**
      * EventService constructor.
      */
@@ -40,22 +37,6 @@ class EventService
         protected Event $event,
         protected EventTeam $eventTeam,
         protected DateService $dateService) {}
-
-    /**
-     * Get events for admin index.
-     *
-     * @return array{0: Collection, 1: Collection}
-     */
-    public function getAdminIndex(User $user, array $request = []): array
-    {
-        $records = $user->isAdmin()
-            ? $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])->get()
-            : $this->event->with(['project.lastPanoptesProject', 'teams:id,title,event_id'])->where('owner_id', $user->id)->get();
-
-        $sortedRecords = $this->sortRecords($records, $request);
-
-        return $this->partitionEvents($sortedRecords);
-    }
 
     /**
      * Get one authorization-scoped page of events for the admin index.
@@ -82,27 +63,6 @@ class EventService
     }
 
     /**
-     * Cache key for the DATA collection of public events.
-     */
-    protected function publicIndexDataCacheKey(array $request = []): string
-    {
-        $version = (int) Cache::get('public_sort:events:version', 1);
-
-        $sort = (string) ($request['sort'] ?? 'date');
-        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
-        $projectId = $request['projectId'] ?? $request['id'] ?? null;
-
-        return sprintf(
-            'public_sort:events_data:v%d:locale=%s:sort=%s:order=%s:project=%s',
-            $version,
-            app()->getLocale(),
-            $sort,
-            $order,
-            empty($projectId) ? 'all' : (string) $projectId,
-        );
-    }
-
-    /**
      * Cache key for one public event page, limited to the current minute.
      */
     protected function publicIndexPageCacheKey(array $request, int $page): string
@@ -124,63 +84,6 @@ class EventService
             now()->format('YmdHi'),
             $page,
         );
-    }
-
-    /**
-     * Get cached DATA (Collection of partitions) for the public event index.
-     * Must call the existing public query method and not duplicate it.
-     *
-     * @return array{0: Collection, 1: Collection}
-     */
-    public function getPublicIndexCachedData(array $params = []): array
-    {
-        // Normalize projectId
-        if (isset($params['id']) && ! isset($params['projectId'])) {
-            $params['projectId'] = $params['id'];
-        }
-
-        $cacheKey = $this->publicIndexDataCacheKey($params);
-
-        return Cache::remember($cacheKey, now()->addMinutes(30), function () use ($params) {
-            return $this->getPublicIndex($params);
-        });
-    }
-
-    /**
-     * Get events for public index.
-     *
-     * @return array{0: Collection, 1: Collection}
-     */
-    public function getPublicIndex(array $request = []): array
-    {
-        $sort = (string) ($request['sort'] ?? 'date');
-        $order = strtolower((string) ($request['order'] ?? 'asc')) === 'desc' ? 'desc' : 'asc';
-        $projectId = $request['projectId'] ?? null;
-
-        $query = $this->event
-            ->newQuery()
-            ->with(['project.lastPanoptesProject', 'teams:id,title,event_id']);
-
-        if (! empty($projectId)) {
-            $query->where('project_id', $projectId);
-        }
-
-        // Sort in SQL
-        if ($sort === 'project') {
-            $query
-                ->join('projects', 'projects.id', '=', 'events.project_id')
-                ->select('events.*')
-                ->orderBy('projects.title', $order);
-        } elseif ($sort === 'title') {
-            $query->orderBy('events.title', $order);
-        } else {
-            // date (default)
-            $query->orderBy('events.start_date', $order);
-        }
-
-        $records = $query->get();
-
-        return $this->partitionEvents($records);
     }
 
     /**
@@ -237,27 +140,6 @@ class EventService
     protected function eventSortOrder(mixed $order): string
     {
         return strtolower((string) $order) === 'desc' ? 'desc' : 'asc';
-    }
-
-    /**
-     * Sort results for index pages.
-     */
-    protected function sortRecords(Collection $records, array $request = []): Collection
-    {
-        if (! isset($request['order'])) {
-            return $records;
-        }
-
-        return match ($request['sort']) {
-            'title' => $request['order'] === 'desc' ? $records->sortByDesc('title') : $records->sortBy('title'),
-            'project' => $request['order'] === 'desc' ? $records->sortByDesc(function ($event) {
-                return $event->project->title;
-            }) : $records->sortBy(function ($event) {
-                return $event->project->title;
-            }),
-            'date' => $request['order'] === 'desc' ? $records->sortByDesc('start_date') : $records->sortBy('start_date'),
-            default => $records->sortByDesc('start_date'),
-        };
     }
 
     /**

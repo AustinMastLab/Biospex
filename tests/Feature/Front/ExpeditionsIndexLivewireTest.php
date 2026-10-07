@@ -208,3 +208,18 @@ it('resets to the first page when sorting changes', function () {
         ->assertSet('page', 1)
         ->assertSet('hasMore', true);
 });
+
+it('renders an unused load-more trigger each time sorting or type restarts the list', function () {
+    foreach (range(1, 13) as $number) {
+        makeExpedition(['completed' => 0, 'created_at' => now()->addSeconds($number)]);
+        makeExpedition(['completed' => 1, 'created_at' => now()->addSeconds($number)]);
+    }
+
+    $component = Livewire::test(ExpeditionsIndex::class);
+    $keys = [loadMoreTriggerKey($component)];
+    $keys[] = loadMoreTriggerKey($component->call('sortBy', 'title'));
+    $keys[] = loadMoreTriggerKey($component->call('sortBy', 'date'));
+    $keys[] = loadMoreTriggerKey($component->call('setType', 'completed'));
+
+    expect(collect($keys)->filter()->unique())->toHaveCount(4);
+});

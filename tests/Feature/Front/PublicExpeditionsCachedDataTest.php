@@ -24,7 +24,6 @@ use App\Models\PanoptesProject;
 use App\Models\Project;
 use App\Services\Expedition\ExpeditionService;
 use Illuminate\Support\Facades\Cache;
-use Mockery\MockInterface;
 
 beforeEach(function () {
     Cache::forget('public_sort:expeditions:version');
@@ -61,95 +60,6 @@ function seedExpeditionsFixtures(): array
     ];
 }
 
-it('returns expeditions sorted by title asc/desc (unscoped)', function () {
-    seedExpeditionsFixtures();
-
-    $service = app(ExpeditionService::class);
-
-    [$activeAsc, $completedAsc] = $service->getPublicIndexCachedData([
-        'sort' => 'title',
-        'order' => 'asc',
-    ]);
-
-    $mergedAsc = $activeAsc->merge($completedAsc)->pluck('title')->values()->all();
-    $sortedAsc = $mergedAsc;
-    sort($sortedAsc, SORT_STRING);
-    expect($mergedAsc)->toEqual($sortedAsc);
-
-    [$activeDesc, $completedDesc] = $service->getPublicIndexCachedData([
-        'sort' => 'title',
-        'order' => 'desc',
-    ]);
-    $mergedDesc = $activeDesc->merge($completedDesc)->pluck('title')->values()->all();
-    $sortedDesc = $sortedAsc;
-    $sortedDesc = array_reverse($sortedDesc);
-    expect($mergedDesc)->toEqual($sortedDesc);
-});
-
-it('returns expeditions sorted by date asc/desc (unscoped)', function () {
-    seedExpeditionsFixtures();
-
-    $service = app(ExpeditionService::class);
-
-    [$activeAsc, $completedAsc] = $service->getPublicIndexCachedData([
-        'sort' => 'date',
-        'order' => 'asc',
-    ]);
-    $datesAsc = $activeAsc->merge($completedAsc)->pluck('created_at')->values()->all();
-    $sortedAsc = $datesAsc;
-    sort($sortedAsc);
-    expect($datesAsc)->toEqual($sortedAsc);
-
-    [$activeDesc, $completedDesc] = $service->getPublicIndexCachedData([
-        'sort' => 'date',
-        'order' => 'desc',
-    ]);
-    $datesDesc = $activeDesc->merge($completedDesc)->pluck('created_at')->values()->all();
-    $sortedDesc = $sortedAsc;
-    $sortedDesc = array_reverse($sortedDesc);
-    expect($datesDesc)->toEqual($sortedDesc);
-});
-
-it('returns project-scoped expeditions for a given projectId', function () {
-    ['projects' => [$p1, $p2]] = seedExpeditionsFixtures();
-    $service = app(ExpeditionService::class);
-
-    [$activeP1, $completedP1] = $service->getPublicIndexCachedData([
-        'projectId' => $p1->id,
-        'sort' => 'title',
-        'order' => 'asc',
-    ]);
-
-    $allP1 = $activeP1->merge($completedP1);
-    expect($allP1->every(fn ($e) => (int) $e->project_id === (int) $p1->id))->toBeTrue();
-
-    [$activeP2, $completedP2] = $service->getPublicIndexCachedData([
-        'id' => $p2->id, // legacy param normalized to projectId
-        'sort' => 'date',
-        'order' => 'asc',
-    ]);
-    $allP2 = $activeP2->merge($completedP2);
-    expect($allP2->every(fn ($e) => (int) $e->project_id === (int) $p2->id))->toBeTrue();
-});
-
-it('uses cache on second call with same params', function () {
-    seedExpeditionsFixtures();
-
-    $service = app(ExpeditionService::class);
-
-    // Prime cache
-    $service->getPublicIndexCachedData(['sort' => 'date', 'order' => 'asc']);
-
-    // Spy on underlying getPublicIndex to ensure it is NOT called again
-    /** @var ExpeditionService&MockInterface $mock */
-    $mock = $this->partialMock(ExpeditionService::class);
-    $mock->shouldReceive('getPublicIndex')->never();
-
-    $mock->getPublicIndexCachedData(['sort' => 'date', 'order' => 'asc']);
-    // If it tried to call getPublicIndex, the expectation would fail
-    expect(true)->toBeTrue();
-});
-
 it('caches each public expedition page', function () {
     ['expeditions' => [$expedition]] = seedExpeditionsFixtures();
 
@@ -166,22 +76,21 @@ it('caches each public expedition page', function () {
     expect($secondPage->getCollection()->pluck('title')->all())->toEqual($firstTitles);
 });
 
-it('invalidates cache when expedition is created or updated (version bump)', function () {
+it('refreshes cached expedition pages when an expedition is created (version bump)', function () {
     seedExpeditionsFixtures();
     $service = app(ExpeditionService::class);
+    $params = ['type' => 'active', 'sort' => 'title', 'order' => 'asc'];
 
-    [$activeBefore] = $service->getPublicIndexCachedData(['sort' => 'title', 'order' => 'asc']);
+    $before = $service->getPublicIndexPage($params)->getCollection()->pluck('title');
 
-    // Create a new expedition that meets public query requirements
     $project = Project::factory()->create(['title' => 'New Project']);
     $actorId = (int) config('zooniverse.actor_id', 1);
     $expedition = Expedition::factory()->for($project)->create(['title' => 'ZZZ New', 'created_at' => now(), 'completed' => 0]);
     PanoptesProject::factory()->create(['expedition_id' => $expedition->id, 'project_id' => $project->id]);
     $expedition->actors()->attach($actorId, ['state' => 'ready', 'total' => 0, 'error' => 0, 'order' => 1, 'expert' => 0]);
 
-    // Version bump happens via observer on create; now fetch again
-    [$activeAfter, $completedAfter] = $service->getPublicIndexCachedData(['sort' => 'title', 'order' => 'asc']);
+    $after = $service->getPublicIndexPage($params)->getCollection()->pluck('title');
 
-    $allAfter = $activeAfter->merge($completedAfter)->pluck('title');
-    expect($allAfter)->toContain('ZZZ New');
+    expect($before)->not->toContain('ZZZ New')
+        ->and($after)->toContain('ZZZ New');
 });

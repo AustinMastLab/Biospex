@@ -118,3 +118,24 @@ it('loads completed events only after changing type', function () {
         ->assertSee('Completed Event')
         ->assertDontSee('Active Event');
 });
+
+it('renders an unused load-more trigger each time sorting restarts the list', function () {
+    $admin = User::factory()->create();
+    $admin->assignGroup(Group::factory()->create(['title' => config('config.admin.group')]));
+    $project = Project::factory()->create();
+    foreach (range(1, 10) as $number) {
+        Event::factory()->for($project)->create([
+            'start_date' => now()->addDays($number),
+            'end_date' => now()->addDays($number + 1),
+        ]);
+    }
+    $this->actingAs($admin->fresh());
+
+    $component = Livewire::test(EventsIndex::class);
+    $keys = [loadMoreTriggerKey($component)];
+    foreach (['title', 'project', 'date'] as $field) {
+        $keys[] = loadMoreTriggerKey($component->call('sortBy', $field));
+    }
+
+    expect(collect($keys)->filter()->unique())->toHaveCount(4);
+});

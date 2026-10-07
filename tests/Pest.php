@@ -54,6 +54,16 @@ function something()
 }
 
 /**
+ * Read the wire:key of the rendered infinite-scroll trigger, or null when none is rendered.
+ */
+function loadMoreTriggerKey(Testable $component): ?string
+{
+    preg_match('/wire:key="([a-z-]*load-more-[^"]+)"/', $component->html(), $matches);
+
+    return $matches[1] ?? null;
+}
+
+/**
  * Call loadMore the way the browser does: through the `cards` island in append mode.
  *
  * Returns only the HTML appended for the new page; earlier pages stay in the

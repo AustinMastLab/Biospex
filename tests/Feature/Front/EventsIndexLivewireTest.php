@@ -158,3 +158,19 @@ it('loads completed events only after changing type', function () {
         ->assertDontSee('Active Event')
         ->assertDispatched('event-type-changed');
 });
+
+it('renders an unused load-more trigger each time sorting or type restarts the list', function () {
+    foreach (range(1, 10) as $number) {
+        makeEvent(['start_date' => now()->addDays($number), 'end_date' => now()->addDays($number + 1)]);
+        makeEvent(['start_date' => now()->subDays($number + 2), 'end_date' => now()->subDays($number + 1)]);
+    }
+
+    $component = Livewire::test(EventsIndex::class);
+    $keys = [loadMoreTriggerKey($component)];
+    foreach (['title', 'project', 'date'] as $field) {
+        $keys[] = loadMoreTriggerKey($component->call('sortBy', $field));
+    }
+    $keys[] = loadMoreTriggerKey($component->call('setType', 'completed'));
+
+    expect(collect($keys)->filter()->unique())->toHaveCount(5);
+});

@@ -19,6 +19,14 @@ trait WithIncrementalIndex
 
     public bool $hasMore = false;
 
+    /**
+     * Increases each time the list restarts from the first page (sorting or
+     * switching type). Views include it in the load-more trigger's wire:key,
+     * so a restarted list gets a new trigger instead of reusing one whose
+     * wire:intersect.once has already fired, which would stop infinite scroll.
+     */
+    public int $listVersion = 0;
+
     public Collection $records;
 
     public function mount(?string $type = null, ?int $projectId = null): void
@@ -80,6 +88,7 @@ trait WithIncrementalIndex
 
     protected function resetRecords(): void
     {
+        $this->listVersion++;
         $this->page = 1;
         $records = $this->getPage();
 

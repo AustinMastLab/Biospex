@@ -78,7 +78,7 @@
                 <h2 class="mx-auto pt-4">{{ t('No Events exist.') }}</h2>
             @endforelse
             @if($hasMore)
-                <span wire:key="admin-event-load-more-{{ $page }}"
+                <span wire:key="admin-event-load-more-{{ $listVersion }}-{{ $page }}"
                       wire:intersect.once="loadMore"
                       wire:island.append="cards"
                       aria-hidden="true"></span>

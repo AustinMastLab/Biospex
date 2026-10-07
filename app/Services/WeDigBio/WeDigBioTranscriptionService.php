@@ -68,7 +68,6 @@ class WeDigBioTranscriptionService
         $values = array_merge($attributes, ['created_at' => $timestamp->toDateTimeString(), 'updated_at' => $timestamp->toDateTimeString()]);
 
         $this->weDigBioService->weDigBioEventTranscription->create($values);
-        \Cache::forget('wedigbio-event-transcription');
 
         WeDigBioEventProgressJob::dispatch($event);
     }

@@ -74,7 +74,7 @@
                 <h2 class="mx-auto pt-4">{{ t('No Expeditions exist.') }}</h2>
             @endforelse
             @if($hasMore)
-                <span wire:key="admin-expedition-load-more-{{ $page }}"
+                <span wire:key="admin-expedition-load-more-{{ $listVersion }}-{{ $page }}"
                       wire:intersect.once="loadMore"
                       wire:island.append="cards"
                       aria-hidden="true"></span>

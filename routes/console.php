@@ -40,6 +40,9 @@ if ($this->app->environment('production')) {
     // Trigger workflow manager to handle csv creation and updating expedition/project
     Schedule::command('workflow:manage')->daily();
 
+    // Alert when queue workers, Reverb or the Panoptes listener stop (and ping Healthchecks.io)
+    Schedule::command('app:health-check')->everyFiveMinutes()->withoutOverlapping();
+
     // Clean efs directories for files over 72 hours old.
     // Schedule::command('app:clean-efs-dirs')->daily();
 }

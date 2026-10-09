@@ -46,7 +46,7 @@ return [
             'driver' => 'beanstalkd',
             'host' => 'localhost',
             'queue' => 'default',
-            'retry_after' => 36000,
+            'retry_after' => 7800, // longer than the longest worker --timeout (7500)
             'block_for' => 0,
             'after_commit' => false,
         ],

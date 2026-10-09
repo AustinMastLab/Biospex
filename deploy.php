@@ -126,9 +126,6 @@ task('deploy', [
     'artisan:optimize',        // Run Laravel optimization
     'artisan:filament:optimize',   // Optimize Filament resources and assets
 
-    // Phase 7: Domain-Specific Supervisor Management
-    'supervisor:reload', // Update configs only
-
     // Phase 8: Finalization
     'truncate:logs',           // Truncate shared logs before publish
     'deploy:clear_paths',      // Remove unnecessary files/directories
@@ -137,8 +134,10 @@ task('deploy', [
     // Phase 6: OpCache Management (Now moved after publish)
     'opcache:reset',           // <--- NOW IT WILL FIND THE ROUTE
 
-    // Restart long-running processes after the symlink switch, so Supervisor
-    // starts them from the new release instead of the one being replaced.
+    // Phase 7: Supervisor and long-running processes, after the symlink switch,
+    // so Supervisor starts them from the new release instead of the one being
+    // replaced. A changed config makes `supervisorctl update` restart the group.
+    'supervisor:reload',
     'artisan:queue:restart',
     'artisan:reverb:restart',
     'supervisor:restart-panoptes-listener',

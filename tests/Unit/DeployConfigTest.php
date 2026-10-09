@@ -36,6 +36,7 @@ it('restarts long-running processes after the release is published', function (s
     expect($order)->toHaveKeys(['deploy:publish', $restartTask])
         ->and($order[$restartTask])->toBeGreaterThan($order['deploy:publish']);
 })->with([
+    'Supervisor config reload' => 'supervisor:reload',
     'queue workers' => 'artisan:queue:restart',
     'Reverb' => 'artisan:reverb:restart',
     'Panoptes listener' => 'supervisor:restart-panoptes-listener',

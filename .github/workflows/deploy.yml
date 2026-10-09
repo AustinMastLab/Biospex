@@ -1,8 +1,9 @@
 # CI/CD Deployment Workflow with Semantic Versioning
 #
 # WORKFLOW:
-# - Manual run on 'development' branch → Deploys to DEVELOPMENT
-# - Push to 'main' branch → Calculates version → Deploys to PRODUCTION → Creates GitHub release (only on success)
+# - Manual run on 'development' branch → Tests → Deploys to DEVELOPMENT
+# - Push to 'main' branch → Tests → Calculates version → Deploys to PRODUCTION → Creates GitHub release (only on success)
+# - Pull requests run the tests on their own (tests.yml)
 #
 # VERSION CONTROL:
 # Use commit message tags to control version bumps:
@@ -28,8 +29,19 @@ permissions:
   id-token: write
   contents: read
 
+# One run at a time per branch, so two quick merges can't deploy at once or
+# calculate the same version. A queued run waits; it is never cancelled mid-deploy.
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
+  tests:
+    if: "github.event_name == 'workflow_dispatch' || !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
+    uses: ./.github/workflows/tests.yml
+
   calculate-version:
+    needs: tests
     runs-on: ubuntu-latest
     if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     outputs:
@@ -114,296 +126,48 @@ jobs:
 
   build-and-deploy-production:
     needs: calculate-version
-    runs-on: ubuntu-latest
-    environment: production
-    if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Get Runner IP
-        id: ip
-        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: arn:aws:iam::147899039648:role/GitHubActionsDeployRole
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Whitelist Runner IP in AWS Security Group
-        run: |
-          aws ec2 authorize-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
-
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v5
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
-
-      - name: Install Composer dependencies for deployment runner
-        run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-scripts
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'yarn'
-
-      - name: Install Yarn dependencies
-        run: yarn install --frozen-lockfile --ignore-engines
-
-      - name: Build assets for Production
-        run: npm run production
-        env:
-          MIX_REVERB_APP_KEY: ${{ vars.PROD_REVERB_APP_KEY }}
-          MIX_REVERB_HOST: ${{ vars.PROD_REVERB_HOST }}
-          MIX_REVERB_PORT: ${{ vars.PROD_REVERB_PORT }}
-          MIX_REVERB_SCHEME: ${{ vars.PROD_REVERB_SCHEME }}
-
-      - name: Create deployment package
-        run: |
-          # Clean any prior
-          rm -rf deployment-package || true
-
-          # Create isolated temp dir
-          TEMP_DIR=$(mktemp -d)
-
-          # Sync repo files to temp (exclusions prevent bloat/self-ref)
-          rsync -av \
-            --exclude=node_modules \
-            --exclude=.git \
-            --exclude=.github \
-            --exclude=tests \
-            --exclude=storage/logs \
-            --exclude=vendor \
-            . "$TEMP_DIR/"
-
-          # Copy assets into temp/public/ (these are already built via npm run production)
-          cp -r public/css public/js public/fonts public/images public/svg public/mix-manifest.json "$TEMP_DIR/public/" || true
-
-          # Rename to package name
-          mv "$TEMP_DIR" deployment-package
-
-      - name: Upload deployment artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: biospex-${{ github.sha }}
-          path: deployment-package/
-          retention-days: 30
-
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.10.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-
-      - name: Configure SSH host key checking
-        run: |
-          mkdir -p ~/.ssh
-          cat > ~/.ssh/config <<'EOF'
-          Host *
-            StrictHostKeyChecking no
-            UserKnownHostsFile=/dev/null
-          EOF
-          chmod 700 ~/.ssh
-          chmod 600 ~/.ssh/config
-
-      - name: Deploy with Deployer
-        run: vendor/bin/dep deploy production -o release_name=${{ github.run_number }}-${{ github.run_attempt }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_REPO: ${{ github.repository }}
-          API_TOKEN: ${{ secrets.API_TOKEN }}
-          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
-
-      - name: Revoke Runner IP from AWS Security Group
-        if: always()
-        run: |
-          aws ec2 revoke-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+    uses: ./.github/workflows/deploy-environment.yml
+    with:
+      environment: production
+      vars_prefix: PROD
+    secrets: inherit
 
   create-release:
     needs: [calculate-version, build-and-deploy-production]
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    if: "github.event_name == 'push' && github.ref == 'refs/heads/main' && !contains(github.event.head_commit.message, '[skip deploy]') && !contains(github.event.head_commit.message, '[no deploy]')"
     steps:
-      - uses: actions/checkout@v6
-        with:
-          fetch-depth: 0
-
       - name: Create Release
         run: |
           VERSION="${{ needs.calculate-version.outputs.new_version }}"
+          PREVIOUS="${{ needs.calculate-version.outputs.current_version }}"
 
-          if gh release view "$VERSION" >/dev/null 2>&1; then
+          if gh release view "$VERSION" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
             echo "Release $VERSION already exists; skipping creation."
             exit 0
           fi
 
-          NOTES_FILE="$(mktemp)"
-
-          cat > "$NOTES_FILE" <<'EOF'
-          ## What's Changed
-
-          Auto-generated release from main branch.
-
-          **Commits included:**
-          ```
-          __COMMITS_HERE__
-          ```
-
-          **Full Changelog**: https://github.com/${{ github.repository }}/compare/${{ needs.calculate-version.outputs.current_version }}...${{ needs.calculate-version.outputs.new_version }}
-          EOF
-
-          # Replace placeholder with the commit message safely (no shell expansion)
-          perl -0777 -pe 's/__COMMITS_HERE__/\Q$ENV{COMMIT_MESSAGE}\E/g' -i "$NOTES_FILE"
+          # Notes list every pull request merged since the previous release.
+          START_TAG=()
+          if gh release view "$PREVIOUS" --repo "$GITHUB_REPOSITORY" >/dev/null 2>&1; then
+            START_TAG=(--notes-start-tag "$PREVIOUS")
+          fi
 
           gh release create "$VERSION" \
+            --repo "$GITHUB_REPOSITORY" \
+            --target "$GITHUB_SHA" \
             --title "Release $VERSION" \
-            --notes-file "$NOTES_FILE"
+            --generate-notes \
+            "${START_TAG[@]}"
         env:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          COMMIT_MESSAGE: ${{ github.event.head_commit.message }}
 
   build-and-deploy-development:
-    runs-on: ubuntu-latest
-    environment: development
+    needs: tests
     if: "github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/development'"
-    steps:
-      - uses: actions/checkout@v6
-
-      - name: Get Runner IP
-        id: ip
-        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
-
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v6
-        with:
-          role-to-assume: arn:aws:iam::147899039648:role/GitHubActionsDeployRole
-          aws-region: ${{ secrets.AWS_REGION }}
-
-      - name: Whitelist Runner IP in AWS Security Group
-        run: |
-          aws ec2 authorize-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
-
-      - name: Setup PHP
-        uses: shivammathur/setup-php@v2
-        with:
-          php-version: '8.5'
-          extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
-
-      - name: Cache Composer packages
-        id: composer-cache
-        uses: actions/cache@v5
-        with:
-          path: vendor
-          key: ${{ runner.os }}-php-${{ hashFiles('**/composer.lock') }}
-          restore-keys: |
-            ${{ runner.os }}-php-
-
-      - name: Install Composer dependencies for deployment runner
-        run: composer install --prefer-dist --no-progress --no-suggest --optimize-autoloader --no-scripts
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: '24'
-          cache: 'yarn'
-
-      - name: Install Yarn dependencies
-        run: yarn install --frozen-lockfile --ignore-engines
-
-      - name: Build assets for Development
-        run: npm run production
-        env:
-          MIX_REVERB_APP_KEY: ${{ vars.DEV_REVERB_APP_KEY }}
-          MIX_REVERB_HOST: ${{ vars.DEV_REVERB_HOST }}
-          MIX_REVERB_PORT: ${{ vars.DEV_REVERB_PORT }}
-          MIX_REVERB_SCHEME: ${{ vars.DEV_REVERB_SCHEME }}
-
-      - name: Create deployment package
-        run: |
-          # Clean any prior
-          rm -rf deployment-package || true
-
-          # Create isolated temp dir
-          TEMP_DIR=$(mktemp -d)
-
-          # Sync repo files to temp (exclusions prevent bloat/self-ref)
-          rsync -av \
-            --exclude=node_modules \
-            --exclude=.git \
-            --exclude=.github \
-            --exclude=tests \
-            --exclude=storage/logs \
-            --exclude=vendor \
-            . "$TEMP_DIR/"
-
-          # Copy assets into temp/public/ (these are already built via npm run production)
-          cp -r public/css public/js public/fonts public/images public/svg public/mix-manifest.json "$TEMP_DIR/public/" || true
-
-          # Rename to package name
-          mv "$TEMP_DIR" deployment-package
-
-      - name: Upload deployment artifact
-        uses: actions/upload-artifact@v7
-        with:
-          name: biospex-${{ github.sha }}
-          path: deployment-package/
-          retention-days: 30
-
-      - name: Setup SSH key
-        uses: webfactory/ssh-agent@v0.10.0
-        with:
-          ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
-
-      - name: Configure SSH host key checking
-        run: |
-          mkdir -p ~/.ssh
-          cat > ~/.ssh/config <<'EOF'
-          Host *
-            StrictHostKeyChecking no
-            UserKnownHostsFile=/dev/null
-          EOF
-          chmod 700 ~/.ssh
-          chmod 600 ~/.ssh/config
-
-      - name: Deploy with Deployer
-        run: vendor/bin/dep deploy development -o release_name=${{ github.run_number }}-${{ github.run_attempt }}
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          GITHUB_SHA: ${{ github.sha }}
-          GITHUB_REPO: ${{ github.repository }}
-          API_TOKEN: ${{ secrets.API_TOKEN }}
-          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
-
-      - name: Revoke Runner IP from AWS Security Group
-        if: always()
-        run: |
-          aws ec2 revoke-security-group-ingress \
-            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
-            --protocol tcp \
-            --port 22 \
-            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+    uses: ./.github/workflows/deploy-environment.yml
+    with:
+      environment: development
+      vars_prefix: DEV
+    secrets: inherit

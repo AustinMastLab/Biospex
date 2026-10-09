@@ -1,0 +1,154 @@
+# Build and deploy one environment
+#
+# Called by deploy.yml for production and development. It builds the assets,
+# uploads the deployment package as an artifact, and runs Deployer, which
+# downloads that artifact on the server (deploy:ci-artifacts).
+
+name: Deploy environment
+
+on:
+  workflow_call:
+    inputs:
+      environment:
+        description: 'GitHub environment and Deployer host: production or development'
+        required: true
+        type: string
+      vars_prefix:
+        description: 'Prefix of the Reverb repository variables: PROD or DEV'
+        required: true
+        type: string
+
+permissions:
+  id-token: write
+  contents: read
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Get Runner IP
+        id: ip
+        run: echo "ipv4=$(curl -s https://checkip.amazonaws.com)" >> "$GITHUB_OUTPUT"
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: arn:aws:iam::147899039648:role/GitHubActionsDeployRole
+          aws-region: ${{ secrets.AWS_REGION }}
+
+      - name: Whitelist Runner IP in AWS Security Group
+        run: |
+          aws ec2 authorize-security-group-ingress \
+            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, bcmath, ctype, json, tokenizer, pdo, pdo_mysql
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies for deployment runner
+        run: composer install --prefer-dist --no-progress --no-interaction --optimize-autoloader --no-scripts
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install Yarn dependencies
+        run: yarn install --frozen-lockfile --ignore-engines
+        env:
+          PUPPETEER_SKIP_DOWNLOAD: 'true'  # Chromium is only needed for pa11y, not the build
+
+      - name: Build assets
+        run: npm run production
+        env:
+          MIX_REVERB_APP_KEY: ${{ vars[format('{0}_REVERB_APP_KEY', inputs.vars_prefix)] }}
+          MIX_REVERB_HOST: ${{ vars[format('{0}_REVERB_HOST', inputs.vars_prefix)] }}
+          MIX_REVERB_PORT: ${{ vars[format('{0}_REVERB_PORT', inputs.vars_prefix)] }}
+          MIX_REVERB_SCHEME: ${{ vars[format('{0}_REVERB_SCHEME', inputs.vars_prefix)] }}
+
+      - name: Create deployment package
+        run: |
+          # Clean any prior
+          rm -rf deployment-package || true
+
+          # Create isolated temp dir
+          TEMP_DIR=$(mktemp -d)
+
+          # Sync repo files to temp (exclusions prevent bloat/self-ref)
+          rsync -av \
+            --exclude=node_modules \
+            --exclude=.git \
+            --exclude=.github \
+            --exclude=tests \
+            --exclude=storage/logs \
+            --exclude=vendor \
+            . "$TEMP_DIR/"
+
+          # Copy assets into temp/public/ (these are already built via npm run production)
+          cp -r public/css public/js public/fonts public/images public/svg public/mix-manifest.json "$TEMP_DIR/public/" || true
+
+          # Rename to package name
+          mv "$TEMP_DIR" deployment-package
+
+      - name: Upload deployment artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: biospex-${{ github.sha }}
+          path: deployment-package/
+          retention-days: 30
+
+      - name: Setup SSH key
+        uses: webfactory/ssh-agent@v0.10.0
+        with:
+          ssh-private-key: ${{ secrets.DEPLOY_PRIVATE_KEY }}
+
+      - name: Trust the deploy servers' SSH host keys
+        run: |
+          mkdir -p ~/.ssh
+          cat .github/known_hosts >> ~/.ssh/known_hosts  # append; ssh-agent may already have added entries
+          cat > ~/.ssh/config <<'EOF'
+          Host *
+            StrictHostKeyChecking yes
+          EOF
+          chmod 700 ~/.ssh
+          chmod 600 ~/.ssh/config ~/.ssh/known_hosts
+
+      - name: Deploy with Deployer
+        run: vendor/bin/dep deploy ${{ inputs.environment }} -o release_name=${{ github.run_number }}-${{ github.run_attempt }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_SHA: ${{ github.sha }}
+          GITHUB_REPO: ${{ github.repository }}
+          API_TOKEN: ${{ secrets.API_TOKEN }}
+          OPCACHE_WEBHOOK_TOKEN: ${{ secrets.OPCACHE_WEBHOOK_TOKEN }}
+
+      - name: Revoke Runner IP from AWS Security Group
+        if: always()
+        run: |
+          aws ec2 revoke-security-group-ingress \
+            --group-id ${{ secrets.AWS_SECURITY_GROUP_ID }} \
+            --protocol tcp \
+            --port 22 \
+            --cidr ${{ steps.ip.outputs.ipv4 }}/32

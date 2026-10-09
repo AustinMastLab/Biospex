@@ -52,7 +52,7 @@ hooks
 /boost.json
 laradumps.yaml
 /.ai/mcp/
-/.github/
+/.github/copilot-instructions.md
 /.vscode/
 /clean-logs.sh
 /tasks.md

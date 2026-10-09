@@ -38,9 +38,7 @@ Schedule::command('app:check-lambda-reconcile')->dailyAt('6:00');
 
 if ($this->app->environment('production')) {
     // Trigger workflow manager to handle csv creation and updating expedition/project
-    Schedule::command('workflow:manage')->daily()->before(function () {
-        Cache::flush();
-    });
+    Schedule::command('workflow:manage')->daily();
 
     // Clean efs directories for files over 72 hours old.
     // Schedule::command('app:clean-efs-dirs')->daily();

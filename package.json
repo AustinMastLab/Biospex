@@ -8,7 +8,6 @@
     "hot": "mix watch --hot",
     "prod": "npm run production",
     "production": "mix --production",
-    "postinstall": "yarn cache clean",
     "pa11y": "pa11y-ci",
     "pa11y:json": "pa11y-ci --config .pa11yci.front.json --json > .pa11y-report.json",
     "pa11y:admin:json": "pa11y-ci --config .pa11yci.admin.json --json > .pa11y-admin-report.json",

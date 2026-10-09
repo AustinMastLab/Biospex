@@ -1,0 +1,85 @@
+# Tests and checks
+#
+# Runs on every pull request into main or development, and is called by
+# deploy.yml before each deploy, so a failing test stops the deploy.
+#
+# - test:  Pest (with a MongoDB service) and, on pull requests, Pint on the changed files.
+# - audit: composer audit, on pull requests only. It reports vulnerable packages
+#          but never blocks a deploy.
+
+name: Tests
+
+on:
+  pull_request:
+    branches:
+      - main
+      - development
+  workflow_call:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    services:
+      mongodb:
+        image: mongo:7.0
+        ports:
+          - 27017:27017
+
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0  # Pint --diff compares against the base branch
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          extensions: mbstring, xml, bcmath, ctype, json, tokenizer, curl, dom, fileinfo, intl, gd, pdo, pdo_sqlite, sqlite3, mongodb, redis, memcached
+          coverage: none
+
+      - name: Get Composer cache directory
+        id: composer-cache
+        run: echo "dir=$(composer config cache-files-dir)" >> "$GITHUB_OUTPUT"
+
+      - name: Cache Composer downloads
+        uses: actions/cache@v5
+        with:
+          path: ${{ steps.composer-cache.outputs.dir }}
+          key: ${{ runner.os }}-composer-${{ hashFiles('composer.lock') }}
+          restore-keys: |
+            ${{ runner.os }}-composer-
+
+      - name: Install Composer dependencies
+        run: composer install --prefer-dist --no-progress --no-interaction --no-scripts
+
+      - name: Prepare the application
+        run: |
+          # phpunit.xml provides the test settings; an empty .env stops phpdotenv warnings.
+          touch .env
+          php artisan package:discover --ansi
+
+      - name: Check code style of changed files (Pint)
+        if: github.event_name == 'pull_request'
+        run: vendor/bin/pint --test --diff=origin/${{ github.base_ref }}
+
+      - name: Run tests
+        run: vendor/bin/pest --compact
+
+  audit:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+
+      - name: Setup PHP
+        uses: shivammathur/setup-php@v2
+        with:
+          php-version: '8.5'
+          coverage: none
+
+      - name: Audit Composer packages
+        run: composer audit --locked

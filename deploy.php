@@ -128,7 +128,6 @@ task('deploy', [
 
     // Phase 7: Domain-Specific Supervisor Management
     'supervisor:reload', // Update configs only
-    'artisan:queue:restart',
 
     // Phase 8: Finalization
     'truncate:logs',           // Truncate shared logs before publish
@@ -137,6 +136,12 @@ task('deploy', [
 
     // Phase 6: OpCache Management (Now moved after publish)
     'opcache:reset',           // <--- NOW IT WILL FIND THE ROUTE
+
+    // Restart long-running processes after the symlink switch, so Supervisor
+    // starts them from the new release instead of the one being replaced.
+    'artisan:queue:restart',
+    'artisan:reverb:restart',
+    'supervisor:restart-panoptes-listener',
 
     'deploy:verify-structure', // Verify flat structure post-deploy
 ]);

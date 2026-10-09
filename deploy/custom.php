@@ -141,6 +141,25 @@ task('supervisor:reload', function () {
     run(withUmask('sudo supervisorctl update'));
 });
 
+desc('Restart the Panoptes listener so it runs the new release');
+task('supervisor:restart-panoptes-listener', function () {
+    cd('{{release_or_current_path}}');
+
+    // Supervisor names the program from config, e.g. "biospex:prod-panoptes-pusher".
+    $program = trim(run("php artisan tinker --execute 'echo config(\"app.tag\").\":\".config(\"config.panoptes_listener\");'"));
+    $status = run("sudo supervisorctl status {$program} || true");
+
+    // Leave it alone when it isn't running (disabled with PANOPTES_LISTENER_ENABLED, or stopped by hand).
+    if (! str_contains($status, 'RUNNING')) {
+        writeln("⚠️  Skipping Panoptes listener restart: {$program} is not running.");
+
+        return;
+    }
+
+    run("sudo supervisorctl restart {$program}");
+    writeln("✅ Restarted {$program}");
+});
+
 /*
  * =============================================================================
  * CI/CD ARTIFACT DEPLOYMENT - CORE OF OPTION 1 IMPLEMENTATION

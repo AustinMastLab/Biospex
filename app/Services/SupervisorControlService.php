@@ -20,7 +20,9 @@
 
 namespace App\Services;
 
+use fXmlRpc\Transport\PsrTransport;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
 use Supervisor\Supervisor;
 
 /**
@@ -43,13 +45,7 @@ class SupervisorControlService
     {
         $group = config('app.tag', ''); // e.g. "biospex" or "listeners"
 
-        $guzzle = new Client([
-            'curl' => [CURLOPT_UNIX_SOCKET_PATH => '/var/run/supervisor.sock'],
-        ]);
-
-        $transport = new \fXmlRpc\Transport\PsrTransport(new \GuzzleHttp\Psr7\HttpFactory, $guzzle);
-        $client = new \fXmlRpc\Client('http://localhost/RPC2', $transport);
-        $supervisor = new Supervisor($client);
+        $supervisor = $this->supervisor();
 
         foreach ($programs as $program) {
             // Add group prefix if set
@@ -73,6 +69,35 @@ class SupervisorControlService
 
             \Log::info("Supervisor: {$action}ed program {$fullProgramName} (was {$state})");
         }
+    }
+
+    /**
+     * State of every program in this app's Supervisor group, e.g. ['default_00' => 'RUNNING'].
+     *
+     * @return array<string, string>
+     */
+    public function processStates(): array
+    {
+        $group = config('app.tag', '');
+
+        return collect($this->supervisor()->getAllProcessInfo())
+            ->filter(fn (array $process) => $process['group'] === $group)
+            ->mapWithKeys(fn (array $process) => [$process['name'] => $process['statename']])
+            ->all();
+    }
+
+    /**
+     * Supervisor XML-RPC client on the local Unix socket.
+     */
+    protected function supervisor(): Supervisor
+    {
+        $guzzle = new Client([
+            'curl' => [CURLOPT_UNIX_SOCKET_PATH => '/var/run/supervisor.sock'],
+        ]);
+
+        $transport = new PsrTransport(new HttpFactory, $guzzle);
+
+        return new Supervisor(new \fXmlRpc\Client('http://localhost/RPC2', $transport));
     }
 
     /**

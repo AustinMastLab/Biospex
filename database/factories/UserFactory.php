@@ -25,7 +25,7 @@ use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Str;
 
 /**
- * @extends Factory<\App\Models\User>
+ * @extends Factory<User>
  */
 final class UserFactory extends Factory
 {
@@ -43,7 +43,7 @@ final class UserFactory extends Factory
     {
         return [
             'uuid' => fake()->uuid,
-            'email' => fake()->safeEmail,
+            'email' => fake()->unique()->safeEmail(),
             'password' => 'password',
             'email_verified_at' => fake()->optional()->datetime(),
             'notification' => fake()->randomNumber(1),

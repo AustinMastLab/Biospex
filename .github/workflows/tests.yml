@@ -58,8 +58,10 @@ jobs:
 
       - name: Prepare the application
         run: |
-          # phpunit.xml provides the test settings; an empty .env stops phpdotenv warnings.
-          touch .env
+          # phpunit.xml provides the test settings. The app key is generated for each run,
+          # so no key is committed (locally, .env.testing provides one).
+          echo 'APP_KEY=' > .env
+          php artisan key:generate --force --ansi
           php artisan package:discover --ansi
 
       - name: Check code style of changed files (Pint)

@@ -105,9 +105,12 @@ These are defined in `routes/console.php`:
 | `export:queue` | Every minute | Advances the Zooniverse export queue. |
 | `tesseract:ocr-process` | Every minute | Advances the OCR queue. |
 | `cache:prune-stale-tags` | Hourly | Cache maintenance. |
+| `queue:prune-batches --hours=48 --unfinished=72` | Daily | Removes old rows from `job_batches`. |
 | `bingo:clean` | Daily at 10:05 | Removes expired bingo users. |
 | `app:check-lambda-reconcile` | Daily at 6:00 | Checks the Lambda reconciliation directory. |
-| `workflow:manage` | Daily, production only | Flushes the cache, then runs the actors for every active expedition. |
+| `workflow:manage` | Daily, production only | Runs the actors for every active expedition. |
+| `app:health-check` | Every 5 minutes, production only | Checks Supervisor and Reverb, emails alerts, and pings Healthchecks.io. |
+| `app:clean-efs-dirs` | Daily, production only | Deletes files older than 72 hours under `/efs` (never directories). Skipped while an import, export, OCR run or GeoLocate job is in progress. |
 
 ## External services
 

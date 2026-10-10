@@ -17,18 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
-use Illuminate\Foundation\Inspiring;
-use Illuminate\Support\Facades\Artisan;
 use Illuminate\Support\Facades\Schedule;
-
-Artisan::command('inspire', function () {
-    $this->comment(Inspiring::quote());
-})->purpose('Display an inspiring quote');
 
 Schedule::command('export:queue')->everyMinute()->withoutOverlapping();
 Schedule::command('tesseract:ocr-process')->everyMinute()->withoutOverlapping();
 Schedule::command('cache:prune-stale-tags')->hourly()->withoutOverlapping();
-// Schedule::command('queue:prune-batches --hours=48 --unfinished=72')->daily();
+Schedule::command('queue:prune-batches --hours=48 --unfinished=72')->daily();
 
 // Clean bingo maps
 Schedule::command('bingo:clean')->dailyAt('10:05');
@@ -44,5 +38,5 @@ if ($this->app->environment('production')) {
     Schedule::command('app:health-check')->everyFiveMinutes()->withoutOverlapping();
 
     // Clean efs directories for files over 72 hours old.
-    // Schedule::command('app:clean-efs-dirs')->daily();
+    Schedule::command('app:clean-efs-dirs')->daily();
 }

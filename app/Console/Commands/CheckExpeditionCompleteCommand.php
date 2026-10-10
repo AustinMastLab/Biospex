@@ -39,7 +39,7 @@ class CheckExpeditionCompleteCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Recovery tool: sets every actor of each 100% complete expedition to Processing and runs workflow:manage for it';
 
     /**
      * Execute the console command.

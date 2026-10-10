@@ -13,7 +13,6 @@ Other documents in the repository root:
 | File | What it covers |
 | --- | --- |
 | `COMMIT_CONVENTIONS.md` | Commit message tags that control versioning and deployment. |
-| `DEPLOYMENT_SETUP.md` | GitHub Actions and deployphp setup in detail. |
 
 ## Open questions
 

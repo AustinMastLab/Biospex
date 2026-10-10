@@ -46,7 +46,7 @@ set('shared_dirs', [
     'public/fonts',     // Web fonts
     'public/images',    // Static images
     'public/svg',       // SVG assets
-    'public/vendor',    // Vendor assets (Nova, etc.)
+    'public/vendor',    // Vendor assets (Livewire, etc.)
 ]);
 
 // Files/Directories to Remove After Deployment

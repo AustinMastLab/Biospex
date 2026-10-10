@@ -80,7 +80,7 @@ The task order is in `deploy.php`:
 - **Rolling back.** `dep rollback <environment>` only switches the `current` symlink; it doesn't regenerate `.env`. If a rollback needs an older `.env`, copy the matching `shared/.env.backup.*` back over `shared/.env`.
 - **Pushing a local file to SSM:** `vendor/bin/push-env-params biospex <environment>` pushes each line of `.env.aws.<environment>` as a `SecureString` parameter. Those files hold real values, and git ignores them through `/.env.*`. `vendor/bin/remove-env-params biospex <environment>` deletes every parameter under `/biospex/<environment>`, after you type the environment name to confirm; it can't be undone.
 - **Supervisor values.** Some variables (`APP_SERVER_USER`, `APP_TAG`, `PANOPTES_LISTENER_ENABLED`, the queue names, and others) are written into the Supervisor configs by `app:deploy-files`. After changing one of them, run `app:deploy-files`, then `supervisorctl reread` and `supervisorctl update`.
-- **`env.example` is out of date.** It still lists `NOVA_LICENSE_KEY`, and it uses `OCR_DISABLE` instead of `OCR_ENABLED`. For the real list, compare it with SSM.
+- **`env.example`** lists the settings SSM sets, with local placeholder values, plus a few local-only keys (AWS keys, cache and session drivers). When you add a setting to SSM, add it there too.
 
 ## Processes and logs
 

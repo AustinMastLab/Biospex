@@ -66,7 +66,7 @@ tesseract:ocr-process (every minute) → TesseractOcrQueueService
   when every file is processed → TesseractOcrCompleteJob
 ```
 
-OCR can be turned off with `OCR_ENABLED=false` (`config/config.php` → `ocr_enabled`). `env.example` still lists the old name, `OCR_DISABLE`. `app:clear-subjects` clears OCR data from subjects that are assigned to expeditions.
+OCR can be turned off with `OCR_ENABLED=false` (`config/config.php` → `ocr_enabled`). `app:clear-subjects` clears OCR data from subjects that are assigned to expeditions.
 
 ## 4. Zooniverse CSV, reconciliation, and nightly backfill
 

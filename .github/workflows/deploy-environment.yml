@@ -77,8 +77,6 @@ jobs:
 
       - name: Install Yarn dependencies
         run: yarn install --frozen-lockfile --ignore-engines
-        env:
-          PUPPETEER_SKIP_DOWNLOAD: 'true'  # Chromium is only needed for pa11y, not the build
 
       - name: Build assets
         run: npm run production

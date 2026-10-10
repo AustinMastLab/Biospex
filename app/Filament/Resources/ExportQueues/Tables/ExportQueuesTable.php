@@ -21,7 +21,6 @@ class ExportQueuesTable
                 TextColumn::make('actor.title')
                     ->searchable(),
                 TextColumn::make('stage')
-                    ->numeric(thousandsSeparator: '')
                     ->sortable(),
                 IconColumn::make('queued')
                     ->boolean(),

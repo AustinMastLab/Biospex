@@ -20,6 +20,7 @@
 
 namespace App\Services\Expedition;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Expedition;
 use App\Models\Project;
 use App\Models\User;
@@ -254,7 +255,7 @@ class ExpeditionService
             } else {
                 return [
                     $actor->id => [
-                        'state' => 0, 'order' => $actor->pivot->order, 'total' => $subjectCount,
+                        'state' => ActorExpeditionState::NotStarted->value, 'order' => $actor->pivot->order, 'total' => $subjectCount,
                     ],
                 ];
             }

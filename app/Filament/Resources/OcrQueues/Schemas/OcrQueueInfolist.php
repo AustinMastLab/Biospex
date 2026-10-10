@@ -19,8 +19,7 @@ class OcrQueueInfolist
                     ->placeholder('-'),
                 TextEntry::make('total')
                     ->numeric(thousandsSeparator: ''),
-                TextEntry::make('status')
-                    ->numeric(thousandsSeparator: ''),
+                TextEntry::make('stage'),
                 IconEntry::make('error')
                     ->boolean(),
                 TextEntry::make('created_at')

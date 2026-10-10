@@ -20,6 +20,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\LambdaStatus;
 use App\Jobs\ZooniverseExportBatchResultJob;
 use App\Services\SqsListenerService;
 use Illuminate\Console\Command;
@@ -141,7 +142,7 @@ class SqsListenerBatchUpdate extends Command
         $status = $data['status'] ?? throw new InvalidArgumentException('Missing status');
         $downloadId = $data['downloadId'] ?? throw new InvalidArgumentException('Missing downloadId');
 
-        if ($status === 'failed') {
+        if (LambdaStatus::tryFrom($status) === LambdaStatus::Failed) {
             $error = $data['error'] ?? 'Unknown error';
             Log::error('BiospexBatchCreator failed', $data);
             throw new RuntimeException("Batch export failed for download #{$downloadId}: {$error}");

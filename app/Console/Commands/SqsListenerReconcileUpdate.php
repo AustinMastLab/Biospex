@@ -20,6 +20,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\LambdaStatus;
 use App\Jobs\LabelReconciliationJob;
 use App\Services\SqsListenerService;
 use Illuminate\Console\Command;
@@ -142,7 +143,7 @@ class SqsListenerReconcileUpdate extends Command
         $status = $data['status'] ?? throw new InvalidArgumentException('Missing status');
         $expeditionId = $data['expeditionId'] ?? throw new InvalidArgumentException('Missing expeditionId');
 
-        if ($status === 'failed') {
+        if (LambdaStatus::tryFrom($status) === LambdaStatus::Failed) {
             $error = $data['error'] ?? 'Unknown error';
             Log::error('BiospexLabelReconciliation failed', $data);
 

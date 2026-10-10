@@ -18,6 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Enums\ExportQueueStage;
 use App\Jobs\ZooniverseExportProcessImagesJob;
 use App\Models\ExportQueue;
 use App\Services\Actor\Zooniverse\ZooniverseExportQueueService;
@@ -28,7 +29,7 @@ use Illuminate\Support\Facades\Queue;
 use function Pest\Laravel\mock;
 
 beforeEach(function () {
-    $this->exportQueue = ExportQueue::factory()->create(['queued' => 0, 'stage' => 0, 'error' => 0, 'files_ready' => 1]);
+    $this->exportQueue = ExportQueue::factory()->create(['queued' => 0, 'stage' => ExportQueueStage::Waiting, 'error' => 0, 'files_ready' => 1]);
 });
 
 it('leaves the next export queue waiting while the image fetcher is paused', function () {
@@ -44,7 +45,7 @@ it('leaves the next export queue waiting while the image fetcher is paused', fun
 
     expect($this->exportQueue->fresh())
         ->queued->toBe(0)
-        ->stage->toBe(0);
+        ->stage->toBe(ExportQueueStage::Waiting);
     Queue::assertNothingPushed();
 });
 
@@ -60,7 +61,7 @@ it('starts the listeners and dispatches the next export queue when the image fet
 
     expect($this->exportQueue->fresh())
         ->queued->toBe(1)
-        ->stage->toBe(1);
+        ->stage->toBe(ExportQueueStage::ProcessingImages);
     Queue::assertPushed(QueuedCommand::class, 1);
     Queue::assertPushed(ZooniverseExportProcessImagesJob::class, 1);
     Queue::assertCount(2);

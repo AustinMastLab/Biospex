@@ -35,6 +35,8 @@ Things to know:
 
 An export turns an expedition's subjects into a Zooniverse-ready zip of images plus a manifest CSV. State is tracked in `ExportQueue` (`stage`) and `ExportQueueFile` (`processed`).
 
+The numbers below are enum values: `ActorExpedition.state` is `App\Enums\ActorExpeditionState` (1 `Exported`, 2 `Processing`, 3 `Complete`), and `ExportQueue.stage` is `App\Enums\ExportQueueStage` (1 `ProcessingImages`, 2 `BuildingCsv`, 3 `CreatingArchive`, 4 `CreatingReport`, 5 `DeletingFiles`). The process monitor shows each stage's label.
+
 ```
 workflow:manage → Zooniverse actor (ActorExpedition state 1) → ZooniverseExportBuildQueueJob   creates ExportQueue and its files
 export:queue (every minute) → ZooniverseExportQueueService
@@ -49,7 +51,7 @@ export:queue (every minute) → ZooniverseExportQueueService
 
 - **Failed image fetches go to `{prefix}-image-trigger-dlq`.** `image:listen-dlq` marks those files as failed.
 - **Archive.org images use their own queue,** `{prefix}-ia-image-trigger`, handled by `InternetArchiveImageFetcher` with a lower concurrency.
-- **Restarting a failed export:** `app:export-stage` reruns a stage manually, and `export:queue {expeditionId}` resets an expedition.
+- **Restarting a failed export:** `app:export-stage {queueId} --stage=N` reruns stage 1–5 manually (without `--stage`, the queue's current stage), and `export:queue {expeditionId}` resets an expedition.
 
 ## 3. Tesseract OCR
 

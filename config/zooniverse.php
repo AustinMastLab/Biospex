@@ -62,15 +62,6 @@ return [
         '#expeditionTitle' => '',
     ],
 
-    'export_stages' => [
-        'Waiting for Export to start', // 0
-        'Processing Images', // 1
-        'Building CSV', // 2
-        'Creating Archive', // 3
-        'Creating Report', // 4
-        'Deleting Working Files', // 5
-    ],
-
     'panoptes' => [
         'client_id' => env('ZOONIVERSE_PANOPTES_CLIENT_ID'),
         'client_secret' => env('ZOONIVERSE_PANOPTES_CLIENT_SECRET'),

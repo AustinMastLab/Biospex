@@ -20,6 +20,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ExportQueueStage;
 use App\Jobs\ZooniverseExportBuildCsvJob;
 use App\Jobs\ZooniverseExportCreateReportJob;
 use App\Jobs\ZooniverseExportDeleteFilesJob;
@@ -69,17 +70,12 @@ class ExportQueueStageCommand extends Command
             return CommandAlias::FAILURE;
         }
 
-        // Validate stage option if provided
-        if ($stageOption !== null) {
-            $stageOption = (int) $stageOption;
-            if ($stageOption < 1 || $stageOption > 5) {
-                $this->error('Stage must be between 1 and 5');
+        $stage = $stageOption !== null ? ExportQueueStage::tryFrom((int) $stageOption) : $queue->stage;
 
-                return CommandAlias::FAILURE;
-            }
-            $stage = $stageOption;
-        } else {
-            $stage = $queue->stage;
+        if ($stage === null || $stage === ExportQueueStage::Waiting) {
+            $this->error('Stage must be between 1 and 5');
+
+            return CommandAlias::FAILURE;
         }
 
         $queue->stage = $stage;
@@ -90,28 +86,28 @@ class ExportQueueStageCommand extends Command
         // Start both the specific update listener and the shared DLQ listener
         \Artisan::call('sqs:control export_update image_trigger_dlq --action=start');
         try {
-            match ($queue->stage) {
-                1 => ZooniverseExportProcessImagesJob::dispatch($queue),
-                2 => ZooniverseExportBuildCsvJob::dispatch($queue),
-                3 => $this->sendBiospexZipTrigger($queue),
-                4 => ZooniverseExportCreateReportJob::dispatch($queue),
-                5 => ZooniverseExportDeleteFilesJob::dispatch($queue),
-                default => throw new \InvalidArgumentException('Invalid stage'),
+            match ($stage) {
+                ExportQueueStage::ProcessingImages => ZooniverseExportProcessImagesJob::dispatch($queue),
+                ExportQueueStage::BuildingCsv => ZooniverseExportBuildCsvJob::dispatch($queue),
+                ExportQueueStage::CreatingArchive => $this->sendBiospexZipTrigger($queue),
+                ExportQueueStage::CreatingReport => ZooniverseExportCreateReportJob::dispatch($queue),
+                ExportQueueStage::DeletingFiles => ZooniverseExportDeleteFilesJob::dispatch($queue),
+                ExportQueueStage::Waiting => throw new \InvalidArgumentException('Invalid stage'),
             };
 
-            $this->info("Successfully processed stage {$queue->stage} for queue ID {$queue->id}");
+            $this->info("Successfully processed stage {$stage->value} ({$stage->getLabel()}) for queue ID {$queue->id}");
 
             return CommandAlias::SUCCESS;
 
         } catch (\Exception $e) {
-            $this->error("Error processing stage {$queue->stage}: ".$e->getMessage());
+            $this->error("Error processing stage {$stage->value}: ".$e->getMessage());
 
             return CommandAlias::FAILURE;
         }
     }
 
     /**
-     * Send ZIP trigger to AWS SQS for stage 2 processing.
+     * Send ZIP trigger to AWS SQS for stage 3 (creating the archive).
      *
      * @throws \Exception
      */
@@ -123,7 +119,7 @@ class ExportQueueStageCommand extends Command
         $exportData = $this->zipTriggerService->processZipTrigger($queue);
 
         // Update queue stage to indicate zip creation is in progress
-        $queue->stage = 3;
+        $queue->stage = ExportQueueStage::CreatingArchive;
         $queue->save();
 
         $this->info("ZIP trigger sent successfully - {$exportData['fileCount']} files ({$exportData['totalSize']} bytes)");

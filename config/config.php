@@ -67,11 +67,6 @@ return [
         'site-assets' => env('UPLOAD_SITE_ASSETS', 'uploads/site-assets'),
     ],
 
-    'ocr_stages' => [
-        'Waiting for OCR to start', // 0
-        'Processing Images', // 1
-    ],
-
     'project_chart_series' => resource_path('json/projectChartSeries.json'),
     'project_chart_config' => resource_path('json/projectChartConfig.json'),
 

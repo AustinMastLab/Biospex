@@ -13,21 +13,21 @@
                 @forelse($ocrQueues as $queue)
                     @php
                         $title = $queue->expedition?->title ?? $queue->project?->title ?? '—';
-                        $key = "ocr-{$queue->id}-{$queue->stage}-{$queue->processed_files}";
+                        $key = "ocr-{$queue->id}-{$queue->stage->value}-{$queue->processed_files}";
                     @endphp
 
                     <div wire:key="{{ $key }}">
                         @if($loop->first)
                             @include('common.process-active', [
                                'title' => $title,
-                               'stage' => config('config.ocr_stages')[$queue->stage] ?? 'Unknown stage',
+                               'stage' => $queue->stage->getLabel(),
                                'processedCount' => $queue->processed_files,
                                'totalCount' => $queue->total
                            ])
                         @else
                             @include('common.process-queued', [
                                 'title' => $title,
-                                'stage' => config('config.ocr_stages')[$queue->stage] ?? 'Unknown stage',
+                                'stage' => $queue->stage->getLabel(),
                                 'queuePosition' => $loop->index === 1
                                     ? __('Next in queue.')
                                     : trans_choice(':count processes remain...', $loop->index)
@@ -47,14 +47,14 @@
                 @forelse($exportQueues as $queue)
                     @php
                         $title = $queue->expedition?->title ?? '—';
-                        $key = "export-{$queue->id}-{$queue->stage}-{$queue->processed_files}-{$queue->queued}";
+                        $key = "export-{$queue->id}-{$queue->stage->value}-{$queue->processed_files}-{$queue->queued}";
                     @endphp
 
                     <div wire:key="{{ $key }}">
                         @if(! $queue->queued)
                             @include('common.process-queued', [
                                 'title' => $title,
-                                'stage' => config('zooniverse.export_stages')[0] ?? 'Building Queue',
+                                'stage' => \App\Enums\ExportQueueStage::Waiting->getLabel(),
                                 'queuePosition' => $loop->index === 0
                                     ? __('Next in queue.')
                                     : trans_choice(':count exports in queue...', $loop->index)
@@ -62,7 +62,7 @@
                         @else
                             @include('common.process-active', [
                                    'title' => $title,
-                                   'stage' => config('zooniverse.export_stages')[$queue->stage] ?? 'Unknown',
+                                   'stage' => $queue->stage->getLabel(),
                                    'processedCount' => $queue->processed_files,
                                    'totalCount' => $queue->total
                                ])

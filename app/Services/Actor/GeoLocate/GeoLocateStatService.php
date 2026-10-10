@@ -20,10 +20,12 @@
 
 namespace App\Services\Actor\GeoLocate;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Expedition;
 use App\Models\GeoLocateCommunity;
 use App\Models\GeoLocateDataSource;
 use App\Services\Api\GeoLocateApi;
+use GuzzleHttp\Exception\GuzzleException;
 
 /**
  * Class GeoLocateStatService
@@ -47,7 +49,7 @@ class GeoLocateStatService
      * @param  array  $data  An associative array containing the community and data source details.
      * @param  Expedition  $expedition  The expedition instance associated with the community and data source.
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function saveCommunityDataSource(array $data, Expedition $expedition): void
     {
@@ -65,7 +67,7 @@ class GeoLocateStatService
         $this->updateOrCreateDataSource($expedition, $community->id, $data['data_source']);
 
         $expedition->actors()->updateExistingPivot(config('geolocate.actor_id'), [
-            'state' => 2,
+            'state' => ActorExpeditionState::Processing->value,
         ]);
     }
 
@@ -74,7 +76,7 @@ class GeoLocateStatService
      *
      * @param  int  $projectId  The ID of the project to which the community belongs.
      * @param  string  $community  The name of the community to be updated or created.
-     * @return \App\Models\GeoLocateCommunity The updated or newly created GeoLocateCommunity instance.
+     * @return GeoLocateCommunity The updated or newly created GeoLocateCommunity instance.
      */
     public function updateOrCreateCommunity(int $projectId, string $community): GeoLocateCommunity
     {
@@ -146,7 +148,7 @@ class GeoLocateStatService
      * @param  string|null  $dname  The optional name of the data source to retrieve specific details.
      * @return array An associative array containing the retrieved community and data source data.
      *
-     * @throws \Exception|\GuzzleHttp\Exception\GuzzleException If an error is returned in the API response.
+     * @throws \Exception|GuzzleException If an error is returned in the API response.
      */
     public function getCommunityDataSource(string $cname, ?string $dname = null): array
     {

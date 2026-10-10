@@ -2,6 +2,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\LambdaStatus;
 use App\Models\ExportQueueFile;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
@@ -77,7 +78,7 @@ class ZooniverseExportImageUpdateJob implements ShouldQueue
         }
 
         // If the fetcher reported a failure, log the error message
-        if ($this->status !== 'success') {
+        if (LambdaStatus::tryFrom($this->status) !== LambdaStatus::Success) {
             $file->message = $this->error ?? 'Processing failed';
         }
 

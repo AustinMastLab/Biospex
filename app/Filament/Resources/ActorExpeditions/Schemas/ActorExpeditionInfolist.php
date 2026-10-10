@@ -15,8 +15,7 @@ class ActorExpeditionInfolist
                     ->label('Expedition'),
                 TextEntry::make('actor.title')
                     ->label('Actor'),
-                TextEntry::make('state')
-                    ->numeric(thousandsSeparator: ''),
+                TextEntry::make('state'),
                 TextEntry::make('total')
                     ->numeric(thousandsSeparator: ''),
                 TextEntry::make('error')

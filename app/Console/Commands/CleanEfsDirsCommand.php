@@ -20,10 +20,15 @@
 
 namespace App\Console\Commands;
 
+use App\Models\ExportQueue;
+use App\Models\Import;
+use App\Models\OcrQueue;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Queue;
+use Throwable;
 
 class CleanEfsDirsCommand extends Command
 {
@@ -39,18 +44,59 @@ class CleanEfsDirsCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Deletes files older than 72 hours from the /efs directory, leaving empty directories intact';
+    protected $description = 'Deletes files older than 72 hours from the /efs directory, leaving empty directories intact. Skipped while an import, export, OCR run or GeoLocate job is in progress.';
 
     /**
      * Execute the console command.
      */
     public function handle(): void
     {
-        $directory = '/efs';
+        $running = $this->runningProcesses();
 
-        $deletedFiles = $this->cleanDirectory($directory);
+        if ($running !== []) {
+            $message = 'Skipped /efs cleanup: '.implode(', ', $running).' in progress.';
+            Log::info($message);
+            $this->info($message);
+
+            return;
+        }
+
+        $deletedFiles = $this->cleanDirectory(config('filesystems.disks.efs.root'));
 
         Log::info("Cleanup completed. Files deleted: $deletedFiles");
+    }
+
+    /**
+     * Get the processes that may be using files under /efs.
+     *
+     * Failed imports, exports and OCR runs don't count, so one stuck failure can't stop the cleanup for good.
+     *
+     * @return list<string>
+     */
+    private function runningProcesses(): array
+    {
+        $checks = [
+            'import' => fn (): bool => Import::where('error', 0)->exists() || $this->queueHasJobs('import'),
+            'export' => fn (): bool => ExportQueue::where('error', 0)->exists() || $this->queueHasJobs('export'),
+            'OCR' => fn (): bool => OcrQueue::where('error', 0)->exists() || $this->queueHasJobs('ocr'),
+            'GeoLocate' => fn (): bool => $this->queueHasJobs('geolocate'),
+        ];
+
+        return array_keys(array_filter($checks, fn (callable $check): bool => $check()));
+    }
+
+    /**
+     * Whether a queue has waiting, delayed or running jobs. If the queue can't be read, assume it has.
+     */
+    private function queueHasJobs(string $queue): bool
+    {
+        try {
+            return Queue::size(config("config.queue.$queue")) > 0;
+        } catch (Throwable $throwable) {
+            Log::warning("app:clean-efs-dirs could not read the $queue queue: {$throwable->getMessage()}");
+
+            return true;
+        }
     }
 
     /**

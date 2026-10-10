@@ -21,6 +21,7 @@
 namespace App\Services\Asset;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Intervention\Image\Laravel\Facades\Image;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
@@ -92,7 +93,7 @@ class ImageUploadService
             return $originalPath;
 
         } catch (\Exception $e) {
-            \Log::error('Image upload failed: '.$e->getMessage());
+            Log::error('Image upload failed: '.$e->getMessage());
 
             return null;
         }
@@ -142,7 +143,7 @@ class ImageUploadService
 
             } catch (\Exception $e) {
                 // Log error but don't fail the main upload
-                \Log::warning("Failed to create {$variant} variant: ".$e->getMessage());
+                Log::warning("Failed to create {$variant} variant: ".$e->getMessage());
             }
         }
     }
@@ -172,7 +173,7 @@ class ImageUploadService
             }
 
         } catch (\Exception $e) {
-            \Log::warning("Failed to delete image {$filePath}: ".$e->getMessage());
+            Log::warning("Failed to delete image {$filePath}: ".$e->getMessage());
         }
     }
 

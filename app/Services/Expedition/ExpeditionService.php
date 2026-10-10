@@ -431,7 +431,7 @@ class ExpeditionService
             }
         } catch (\Exception $e) {
             // Log error but don't fail the update
-            \Log::error("Failed to remove old logo for expedition {$expedition->id}: ".$e->getMessage());
+            Log::error("Failed to remove old logo for expedition {$expedition->id}: ".$e->getMessage());
         }
     }
 }

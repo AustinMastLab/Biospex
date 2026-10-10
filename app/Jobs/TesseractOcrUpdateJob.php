@@ -27,6 +27,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -35,7 +36,7 @@ use Throwable;
  * This job handles updating the OCR text results for subjects after processing,
  * managing the OCR queue status, and tracking completion of OCR batches.
  *
- * @implements \Illuminate\Contracts\Queue\ShouldQueue
+ * @implements ShouldQueue
  */
 class TesseractOcrUpdateJob implements ShouldQueue
 {
@@ -87,7 +88,7 @@ class TesseractOcrUpdateJob implements ShouldQueue
                 ->first();
 
         if (! $file) {
-            \Log::warning('TesseractOcrUpdateJob: File not found', [
+            Log::warning('TesseractOcrUpdateJob: File not found', [
                 'file_id' => $this->fileId,
                 'subject_id' => $this->subjectId,
             ]);

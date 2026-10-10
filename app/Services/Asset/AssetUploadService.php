@@ -21,6 +21,7 @@
 namespace App\Services\Asset;
 
 use Illuminate\Http\UploadedFile;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Livewire\Features\SupportFileUploads\TemporaryUploadedFile;
 
@@ -65,7 +66,7 @@ class AssetUploadService
             return $filePath;
 
         } catch (\Exception $e) {
-            \Log::error('Asset upload failed: '.$e->getMessage());
+            Log::error('Asset upload failed: '.$e->getMessage());
 
             return null;
         }
@@ -84,7 +85,7 @@ class AssetUploadService
             }
 
         } catch (\Exception $e) {
-            \Log::warning("Failed to delete asset file {$filePath}: ".$e->getMessage());
+            Log::warning("Failed to delete asset file {$filePath}: ".$e->getMessage());
         }
     }
 
@@ -97,7 +98,7 @@ class AssetUploadService
 
         // Verify file exists on S3
         if (! Storage::disk($disk)->exists($filePath)) {
-            \Log::warning("{$modelType} file does not exist on S3: {$filePath} for {$modelType} ID: {$modelId}");
+            Log::warning("{$modelType} file does not exist on S3: {$filePath} for {$modelType} ID: {$modelId}");
         }
     }
 

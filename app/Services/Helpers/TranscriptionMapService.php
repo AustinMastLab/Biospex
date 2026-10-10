@@ -22,6 +22,7 @@ namespace App\Services\Helpers;
 
 use App\Models\PanoptesTranscription;
 use App\Models\PusherTranscription;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Class TranscriptionMapService
@@ -59,7 +60,7 @@ class TranscriptionMapService
 
             return $pusherTranscription->transcriptionContent[$type] ?? '';
         } catch (\Throwable $e) {
-            \Log::error('Error in mapTranscriptionField method', [
+            Log::error('Error in mapTranscriptionField method', [
                 'type' => $type,
                 'panoptes_transcription_id' => $panoptesTranscription->id ?? 'unknown',
                 'pusher_transcription_id' => $pusherTranscription->id ?? 'unknown',

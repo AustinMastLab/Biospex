@@ -40,6 +40,13 @@ use View;
 class ExpeditionController extends Controller
 {
     /**
+     * Fields only the Filament admin panel may set.
+     *
+     * @var array<int, string>
+     */
+    private const array ADMIN_ONLY_FIELDS = ['skip_api', 'skip_reconcile'];
+
+    /**
      * ExpeditionController constructor.
      */
     public function __construct(
@@ -85,7 +92,7 @@ class ExpeditionController extends Controller
                 return Redirect::route('admin.projects.index');
             }
 
-            $expedition = $this->expeditionService->store($project, $request->all());
+            $expedition = $this->expeditionService->store($project, $request->except(self::ADMIN_ONLY_FIELDS));
         } catch (Throwable $throwable) {
             return Redirect::route('admin.projects.show', [$project])->with('danger', t('An error occurred when saving record. Please contact the administrator.'));
         }
@@ -149,7 +156,7 @@ class ExpeditionController extends Controller
         }
 
         try {
-            $this->expeditionService->update($expedition, $request->all());
+            $this->expeditionService->update($expedition, $request->except(self::ADMIN_ONLY_FIELDS));
         } catch (Throwable $throwable) {
             return Redirect::route('admin.expeditions.edit', [$expedition])
                 ->with('danger', t('An error occurred when saving record. Please contact the administrator.'));

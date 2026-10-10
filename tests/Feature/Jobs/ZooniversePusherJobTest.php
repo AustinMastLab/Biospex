@@ -117,8 +117,8 @@ it('records a classification once when the job runs again', function () {
         ->and(WeDigBioEventTranscription::where('classification_id', 1001)->count())->toBe(1);
 });
 
-it('skips expeditions listed in skip_reconcile', function () {
-    config(['zooniverse.skip_reconcile' => [$this->expedition->id]]);
+it('skips expeditions marked skip_reconcile', function () {
+    $this->expedition->update(['skip_reconcile' => true]);
     reconciledTranscription($this->expedition, 1001, '2026-10-07 12:00:00');
 
     runPusherJob($this->expedition);

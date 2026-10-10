@@ -159,3 +159,18 @@ it('rejects more subjects than an expedition allows without saving anything', fu
 
     expect(Expedition::count())->toBe(0);
 });
+
+it('ignores the admin-only skip flags in the expedition form', function () {
+    $expedition = existingExpedition($this->project, ['skip_reconcile' => true]);
+
+    mockSubjects([], 0)
+        ->shouldReceive('detachSubjects', 'attachSubjects');
+
+    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['skip_api' => 1, 'skip_reconcile' => 0]))
+        ->assertSessionHas('success', t('Record was updated successfully.'));
+
+    $expedition->refresh();
+
+    expect($expedition->skip_api)->toBeFalse()
+        ->and($expedition->skip_reconcile)->toBeTrue();
+});

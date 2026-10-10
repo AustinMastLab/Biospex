@@ -8,10 +8,6 @@ return [
     'talk_api_uri' => 'https://talk.zooniverse.org/comments?http_cache=true&section=project-PROJECT_ID&focus_id=SUBJECT_ID&focus_type=Subject&page=1&sort=-created_at',
     'new_expedition_notification' => [2 => 'ZooniverseNewExpedition'],
     'participate_url' => 'https://www.zooniverse.org/projects/PROJECT_SLUG/classify?workflow=WORKFLOW_ID',
-    // Skip api calls for expedition ids that cause issues
-    'skip_api' => [55],
-    // Skip reconcile for expedition ids that cause issues
-    'skip_reconcile' => [27, 45, 223, 194],
     'pusher' => [
         'id' => env('ZOONIVERSE_PUSHER_ID'),
         'cluster' => 'mt1',

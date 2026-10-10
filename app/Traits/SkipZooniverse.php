@@ -20,36 +20,26 @@
 
 namespace App\Traits;
 
+use App\Models\Expedition;
+
 /**
- * Trait SkipZooniverse
+ * Checks the expedition's skip flags, set in the admin panel.
  */
 trait SkipZooniverse
 {
     /**
-     * Used to skip reconcile process.
-     *
-     * @return bool
+     * Whether the expedition is excluded from reconciliation and expert review.
      */
-    protected function skipReconcile($expeditionId)
+    protected function skipReconcile(int|string $expeditionId): bool
     {
-        if (in_array($expeditionId, config('zooniverse.skip_reconcile'), false)) {
-            return true;
-        }
-
-        return false;
+        return Expedition::whereKey($expeditionId)->where('skip_reconcile', true)->exists();
     }
 
     /**
-     * Skip expedition for panoptes api.
-     *
-     * @return bool
+     * Whether the expedition is excluded from Panoptes API calls.
      */
-    protected function skipApi($expeditionId)
+    protected function skipApi(int|string $expeditionId): bool
     {
-        if (in_array($expeditionId, config('zooniverse.skip_api'), false)) {
-            return true;
-        }
-
-        return false;
+        return Expedition::whereKey($expeditionId)->where('skip_api', true)->exists();
     }
 }

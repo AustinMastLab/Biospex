@@ -8,6 +8,7 @@ use Filament\Actions\EditAction;
 use Filament\Actions\ViewAction;
 use Filament\Tables\Columns\IconColumn;
 use Filament\Tables\Columns\TextColumn;
+use Filament\Tables\Filters\TernaryFilter;
 use Filament\Tables\Table;
 
 class ExpeditionsTable
@@ -36,7 +37,10 @@ class ExpeditionsTable
                     ->toggleable(isToggledHiddenByDefault: true),
             ])
             ->filters([
-                //
+                TernaryFilter::make('skip_api')
+                    ->label('Skip Panoptes API'),
+                TernaryFilter::make('skip_reconcile')
+                    ->label('Skip reconcile'),
             ])
             ->recordActions([
                 ViewAction::make(),

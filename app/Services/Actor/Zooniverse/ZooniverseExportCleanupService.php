@@ -20,6 +20,7 @@
 
 namespace App\Services\Actor\Zooniverse;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Download;
 use App\Models\Expedition;
 use App\Services\Actor\ActorFactory;
@@ -71,12 +72,12 @@ class ZooniverseExportCleanupService
         $this->deleteExportFiles($expedition->id);
 
         $attributes = [
-            'state' => $expedition->zooActorExpedition->state === 0 ? 1 : $expedition->zooActorExpedition->state,
+            'state' => $expedition->zooActorExpedition->state === ActorExpeditionState::NotStarted ? ActorExpeditionState::Exported : $expedition->zooActorExpedition->state,
             'total' => $expedition->stat->local_subject_count,
         ];
 
         $expedition->zooActorExpedition->update($attributes);
-        $expedition->zooActorExpedition->state = 1;
+        $expedition->zooActorExpedition->state = ActorExpeditionState::Exported;
 
         ActorFactory::create($expedition->zooActorExpedition->actor->class)->process($expedition->zooActorExpedition);
     }

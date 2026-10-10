@@ -20,8 +20,11 @@
 
 namespace App\Services\Workflow;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Expedition;
 use App\Models\WorkflowManager;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 
 class WorkflowManagerService
 {
@@ -59,7 +62,7 @@ class WorkflowManagerService
         } else {
             // Only start process for Zooniverse Actor.
             $expedition->zooActorExpedition->state =
-                $expedition->zooActorExpedition->state === 1 ? 2 : $expedition->zooActorExpedition->state;
+                $expedition->zooActorExpedition->state === ActorExpeditionState::Exported ? ActorExpeditionState::Processing : $expedition->zooActorExpedition->state;
             $expedition->zooActorExpedition->save();
             $this->create(['expedition_id' => $expedition->id]);
 
@@ -70,12 +73,12 @@ class WorkflowManagerService
     /**
      * Get workflow managers for overnight process.
      *
-     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     * @return Builder[]|Collection
      */
-    public function getWorkflowManagersForProcessing($expeditionId = null, array $attributes = ['*']): \Illuminate\Database\Eloquent\Collection|array
+    public function getWorkflowManagersForProcessing($expeditionId = null, array $attributes = ['*']): Collection|array
     {
         $model = $this->model->with(['expedition.stat', 'expedition.actorExpeditions' => function ($query) {
-            $query->with('actor')->where('state', '>', 0)->where('error', 0);
+            $query->with('actor')->where('state', '>', ActorExpeditionState::NotStarted->value)->where('error', 0);
         }])->where('stopped', 0);
 
         return $expeditionId === null ?

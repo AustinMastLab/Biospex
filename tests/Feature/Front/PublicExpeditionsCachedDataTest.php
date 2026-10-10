@@ -18,6 +18,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Actor;
 use App\Models\Expedition;
 use App\Models\PanoptesProject;
@@ -51,7 +52,7 @@ function seedExpeditionsFixtures(): array
     foreach ([$e1, $e2, $e3, $e4, $e5, $e6] as $e) {
         PanoptesProject::factory()->create(['expedition_id' => $e->id, 'project_id' => $e->project_id]);
         // Attach the configured Zooniverse actor
-        $e->actors()->attach($actorId, ['state' => 'ready', 'total' => 0, 'error' => 0, 'order' => 1, 'expert' => 0]);
+        $e->actors()->attach($actorId, ['state' => ActorExpeditionState::Processing->value, 'total' => 0, 'error' => 0, 'order' => 1, 'expert' => 0]);
     }
 
     return [
@@ -87,7 +88,7 @@ it('refreshes cached expedition pages when an expedition is created (version bum
     $actorId = (int) config('zooniverse.actor_id', 1);
     $expedition = Expedition::factory()->for($project)->create(['title' => 'ZZZ New', 'created_at' => now(), 'completed' => 0]);
     PanoptesProject::factory()->create(['expedition_id' => $expedition->id, 'project_id' => $project->id]);
-    $expedition->actors()->attach($actorId, ['state' => 'ready', 'total' => 0, 'error' => 0, 'order' => 1, 'expert' => 0]);
+    $expedition->actors()->attach($actorId, ['state' => ActorExpeditionState::Processing->value, 'total' => 0, 'error' => 0, 'order' => 1, 'expert' => 0]);
 
     $after = $service->getPublicIndexPage($params)->getCollection()->pluck('title');
 

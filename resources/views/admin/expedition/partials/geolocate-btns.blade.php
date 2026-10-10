@@ -1,3 +1,4 @@
+@use('App\Enums\ActorExpeditionState')
 <hr class="header mx-auto" style="width:300px;">
 <h4>{{ $actor->title }}</h4>
 
@@ -27,7 +28,7 @@
        class="btn btn-primary rounded-0 mb-1">{{ t('Manage GeoLocate Forms') }}</a>
 @endif
 
-@if($actor->pivot->state > 0)
+@if($actor->pivot->state > ActorExpeditionState::NotStarted->value)
     <a href="" class="prevent-default btn btn-primary rounded-0 mb-1"
        data-dismiss="modal"
        data-toggle="modal"
@@ -37,7 +38,7 @@
        data-title="{{ t('GeoLocate Community & Data Source Form') }}"> {{ t('GeoLocate Community & Data Source Form') }}</a>
 @endif
 
-@if($actor->pivot->state > 1)
+@if($actor->pivot->state > ActorExpeditionState::Exported->value)
     <button
             class="btn btn-primary rounded-0 mb-1"
             data-dismiss="modal"
@@ -48,7 +49,7 @@
             data-title="{{ t('GeoLocate Stats') }}">{{ t('GeoLocate Stats') }}</button>
 @endif
 
-@if($actor->pivot->state === 3)
+@if($actor->pivot->state === ActorExpeditionState::Complete->value)
     <a href="{{ route('admin.geolocate-stat.update', [$expedition]) }}"
        class="prevent-default btn btn-primary rounded-0 mb-1"
        data-dismiss="modal"

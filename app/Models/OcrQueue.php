@@ -20,9 +20,12 @@
 
 namespace App\Models;
 
+use App\Enums\OcrQueueStage;
 use Illuminate\Database\Eloquent\Attributes\Scope;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class OcrQueue
@@ -48,6 +51,18 @@ class OcrQueue extends BaseEloquentModel
         'total',
         'error',
     ];
+
+    /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'stage' => OcrQueueStage::class,
+        ];
+    }
 
     /**
      * Scope a query to only include queue.
@@ -79,7 +94,7 @@ class OcrQueue extends BaseEloquentModel
     /**
      * Project relation
      */
-    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
@@ -95,7 +110,7 @@ class OcrQueue extends BaseEloquentModel
     /**
      * OcrQueueFiles relation.
      */
-    public function files(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function files(): HasMany
     {
         return $this->hasMany(OcrQueueFile::class, 'queue_id', 'id');
     }

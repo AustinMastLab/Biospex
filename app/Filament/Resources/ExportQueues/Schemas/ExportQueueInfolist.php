@@ -16,8 +16,7 @@ class ExportQueueInfolist
                     ->label('Expedition'),
                 TextEntry::make('actor.title')
                     ->label('Actor'),
-                TextEntry::make('stage')
-                    ->numeric(thousandsSeparator: ''),
+                TextEntry::make('stage'),
                 IconEntry::make('queued')
                     ->boolean(),
                 TextEntry::make('total')

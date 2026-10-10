@@ -20,10 +20,12 @@
 
 namespace App\Jobs;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\ActorExpedition;
 use App\Models\User;
 use App\Notifications\Generic;
 use App\Services\Actor\GeoLocate\GeoLocateStatService;
+use GuzzleHttp\Exception\GuzzleException;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
@@ -59,7 +61,7 @@ class GeoLocateStatsJob implements ShouldQueue
      *
      * @param  GeoLocateStatService  $geoLocateStatService  The service used for processing GeoLocate statistics and updates.
      *
-     * @throws \GuzzleHttp\Exception\GuzzleException
+     * @throws GuzzleException
      */
     public function handle(GeoLocateStatService $geoLocateStatService): void
     {
@@ -93,7 +95,7 @@ class GeoLocateStatsJob implements ShouldQueue
 
         // If completed and notify user.
         if ($dataSourceStats['stats']['correctedLocalityRecords'] >= $dataSourceStats['stats']['localityRecords']) {
-            $this->actorExpedition->state = 3;
+            $this->actorExpedition->state = ActorExpeditionState::Complete;
             $this->actorExpedition->save();
 
             $attributes = [

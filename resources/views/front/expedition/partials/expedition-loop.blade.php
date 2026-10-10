@@ -1,3 +1,4 @@
+@use('App\Enums\ActorExpeditionState')
 <div wire:key="expedition-{{ $expedition->id }}" class="mx-auto mb-4">
     <div class="card black box-shadow h-100">
         <div class="card-top m-0 p-0">
@@ -27,7 +28,7 @@
             <div class="d-flex align-items-start justify-content-between mt-4 mx-auto">
                 {!! isset($project) ? $project->present()->project_page_icon : $expedition->project->present()->project_page_icon !!}
                 @isset($expedition->panoptesProject)
-                    @if ($expedition->zooActorExpedition->state === 2)
+                    @if ($expedition->zooActorExpedition->state === ActorExpeditionState::Processing)
                         {!! $expedition->panoptesProject->present()->url !!}
                     @endif
                 @endisset

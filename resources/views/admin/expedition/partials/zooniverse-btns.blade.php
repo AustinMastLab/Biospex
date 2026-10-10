@@ -1,3 +1,4 @@
+@use('App\Enums\ActorExpeditionState')
 <hr class="header mx-auto" style="width:300px;">
 <h4>{{ $actor->title }}</h4>
 @if($expedition->stat->local_subject_count > 0)
@@ -39,7 +40,7 @@
         @endif
     @endif
 @endif
-@if($actor->pivot->state === 3  && $actor->id === 2)
+@if($actor->pivot->state === ActorExpeditionState::Complete->value && $actor->id === 2)
     <a class="btn btn-primary rounded-0 mb-1{{ $actor->pivot->expert ? ' green' : '' }}"
        href="{{ route($actor->pivot->expert ? 'admin.reconciles.index' : 'admin.reconciles.create', [$expedition]) }}">
         {{ t('Expert Review Ambiguities') }}</a>

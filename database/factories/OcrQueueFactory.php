@@ -22,6 +22,7 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\OcrQueueStage;
 use App\Models\Expedition;
 use App\Models\OcrQueue;
 use App\Models\Project;
@@ -48,7 +49,7 @@ final class OcrQueueFactory extends Factory
             'project_id' => Project::factory(),
             'expedition_id' => Expedition::factory(),
             'total' => fake()->randomNumber(),
-            'stage' => 0,
+            'stage' => OcrQueueStage::Waiting,
             'error' => fake()->randomNumber(1),
         ];
     }

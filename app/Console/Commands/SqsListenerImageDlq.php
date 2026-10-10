@@ -20,6 +20,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\LambdaStatus;
 use App\Jobs\TesseractOcrUpdateJob;
 use App\Jobs\ZooniverseExportImageUpdateJob;
 use App\Models\ExportQueue; // Added
@@ -105,7 +106,7 @@ class SqsListenerImageDlq extends Command
             $data = [
                 'taskType' => 'ocr',
                 'subjectId' => $subjectId,
-                'status' => 'failed',
+                'status' => LambdaStatus::Failed->value,
                 'error' => 'DLQ: Lambda System Crash (Timeout/OOM) during OCR processing',
             ];
         }
@@ -114,7 +115,7 @@ class SqsListenerImageDlq extends Command
 
         // 2. Inject failure metadata if not already set (for standard SQS triggers)
         if (! isset($data['status'])) {
-            $data['status'] = 'failed';
+            $data['status'] = LambdaStatus::Failed->value;
             $data['error'] = 'DLQ: Message exceeded maximum retries in SQS';
         }
 

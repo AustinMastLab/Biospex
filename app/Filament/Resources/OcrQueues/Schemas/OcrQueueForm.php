@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\OcrQueues\Schemas;
 
+use App\Enums\OcrQueueStage;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -22,10 +23,10 @@ class OcrQueueForm
                     ->required()
                     ->numeric()
                     ->default(0),
-                TextInput::make('status')
+                Select::make('stage')
+                    ->options(OcrQueueStage::class)
                     ->required()
-                    ->numeric()
-                    ->default(0),
+                    ->default(OcrQueueStage::Waiting),
                 Toggle::make('error')
                     ->required(),
             ]);

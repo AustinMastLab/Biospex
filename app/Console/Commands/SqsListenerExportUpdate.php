@@ -20,6 +20,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\LambdaStatus;
 use App\Jobs\ZooniverseExportImageUpdateJob;
 use App\Jobs\ZooniverseExportZipResultJob;
 use App\Models\ExportQueue;
@@ -157,7 +158,7 @@ class SqsListenerExportUpdate extends Command
         // Dispatch the job for BOTH success and failure
         ZooniverseExportImageUpdateJob::dispatch($data);
 
-        if ($status === 'failed') {
+        if (LambdaStatus::tryFrom($status) === LambdaStatus::Failed) {
             $error = $data['error'] ?? 'Unknown error';
             $this->error("[export:listen] Image FAILED #{$id}: {$error}");
             Log::error("Image processing failed for image #{$id}: {$error}", $data);
@@ -179,7 +180,7 @@ class SqsListenerExportUpdate extends Command
         $status = $data['status'] ?? throw new \InvalidArgumentException('Missing status');
         $queueId = $data['queueId'] ?? throw new \InvalidArgumentException('Missing queueId');
 
-        if ($status === 'zip-failed') {
+        if (LambdaStatus::tryFrom($status) === LambdaStatus::ZipFailed) {
             $error = $data['error'] ?? 'Unknown error';
 
             // Ignore harmless empty-batch noise
@@ -202,7 +203,7 @@ class SqsListenerExportUpdate extends Command
         }
 
         // Don't proceed if the data is from batching large export.
-        if ($status === 'partial-zip-ready') {
+        if (LambdaStatus::tryFrom($status) === LambdaStatus::PartialZipReady) {
             return;
         }
 

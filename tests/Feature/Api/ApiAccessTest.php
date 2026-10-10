@@ -18,6 +18,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Http\Controllers\Api\IndexController;
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 
-Route::post('/opcache/reset', [IndexController::class, 'resetOpcache'])->name('api.v1.opcache.reset');
+it('rate limits API requests', function () {
+    config(['config.api.rate_limit' => 2]);
+    Sanctum::actingAs(User::factory()->create(), ['wedigbio-dashboard:read']);
+
+    $this->getJson(route('api.v1.wedigbio-dashboard.index'));
+    $this->getJson(route('api.v1.wedigbio-dashboard.index'));
+
+    $this->getJson(route('api.v1.wedigbio-dashboard.index'))->assertTooManyRequests();
+});
+
+it('checks the Reverb server certificate', function () {
+    expect(config('broadcasting.connections.reverb.client_options.verify', true))->not->toBeFalse();
+});

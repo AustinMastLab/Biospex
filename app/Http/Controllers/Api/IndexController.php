@@ -20,9 +20,6 @@
 
 namespace App\Http\Controllers\Api;
 
-use Illuminate\Http\Request;
-use Illuminate\Http\Response;
-
 /**
  * Class IndexController
  */
@@ -31,21 +28,5 @@ class IndexController extends ApiController
     public function index(): string
     {
         return \View::make('front.api-index');
-    }
-
-    /**
-     * Reset OpCache
-     */
-    public function resetOpcache(Request $request): Response
-    {
-        if (function_exists('opcache_reset')) {
-            if (opcache_reset()) {
-                return $this->respondWithArray(['message' => 'OpCache reset successful']);
-            }
-
-            return $this->errorInternalError('OpCache reset failed');
-        }
-
-        return $this->errorInternalError('OpCache extension not loaded');
     }
 }

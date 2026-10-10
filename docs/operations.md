@@ -46,8 +46,8 @@ The task order is in `deploy.php`:
 2. **Set up Laravel.** Run `storage:link`, `package:discover`, and `filament:assets`. Then run `app:deploy-files --current-path=…`, which renders the Supervisor configs into `storage/app/supervisor`.
 3. **Update the database.** Run `migrate`, then `app:update-queries` (see below).
 4. **Rebuild caches.** Clear and rebuild the config, route, view, and event caches, plus `filament:optimize`.
-5. **Restart processes.** Run `supervisorctl reread` and `supervisorctl update`, then `queue:restart`.
-6. **Publish.** Truncate the logs, switch the `current` symlink, reset OPcache, and verify the structure.
+5. **Publish.** Switch the `current` symlink. No OPcache reset is needed: nginx passes PHP the real release path (`$realpath_root`), so each release is new to OPcache.
+6. **Restart processes.** Run `supervisorctl reread` and `supervisorctl update`, then `queue:restart`, `reverb:restart`, and restart the Panoptes listener if it's running. Then verify the structure.
 
 ### Shared deploy tooling (deployer-recipes)
 

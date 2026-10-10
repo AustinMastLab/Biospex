@@ -32,6 +32,7 @@ return [
 
     'api' => [
         'domain' => env('API_DOMAIN'),
+        'rate_limit' => (int) env('API_RATE_LIMIT', 300), // requests per minute per client IP
     ],
 
     'admin' => [

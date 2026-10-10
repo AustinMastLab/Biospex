@@ -89,12 +89,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ]
         );
 
-        // API middleware group (applied to routes/api.php)
+        // API middleware group (applied to routes/api.php), rate limited by the 'api' limiter in AppServiceProvider
         $middleware->api(
             append: [
                 EnsureFrontendRequestsAreStateful::class,
-            ], remove: ['throttle:api']
+            ]
         );
+        $middleware->throttleApi();
 
         // Middleware aliases (for use in route definitions)
         $middleware->alias([

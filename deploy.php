@@ -26,7 +26,6 @@ set('repository', 'https://github.com/AustinMastLab/Biospex.git');
 set('ssm_app', 'biospex');  // .env is generated from SSM /biospex/{environment} (env:ssm)
 set('base_path', '/data/web');
 set('remote_user', 'ubuntu');
-set('php_fpm_version', '8.3');
 set('ssh_multiplexing', true);
 set('writable_mode', 'chmod');
 set('keep_releases', 3);  // Keep only 3 recent releases
@@ -129,9 +128,6 @@ task('deploy', [
     // Phase 8: Finalization
     'deploy:clear_paths',      // Remove unnecessary files/directories
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
-
-    // Phase 6: OpCache Management (Now moved after publish)
-    'opcache:reset',           // <--- NOW IT WILL FIND THE ROUTE
 
     // Phase 7: Supervisor and long-running processes, after the symlink switch,
     // so Supervisor starts them from the new release instead of the one being

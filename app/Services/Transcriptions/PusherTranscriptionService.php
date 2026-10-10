@@ -44,7 +44,7 @@ class PusherTranscriptionService
      * @param  string  $column  Column to search
      * @param  string  $value  Value to match
      */
-    public function findBy(string $column, string $value): ?PusherTranscription
+    public function findBy(string $column, mixed $value): ?PusherTranscription
     {
         return $this->model->where($column, $value)->first();
     }

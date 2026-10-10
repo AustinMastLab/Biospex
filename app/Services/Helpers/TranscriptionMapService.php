@@ -57,8 +57,7 @@ class TranscriptionMapService
                 return '';
             }
 
-            return $type === 'taxon' ?
-                $pusherTranscription->taxon : $pusherTranscription->transcriptionContent[$type];
+            return $pusherTranscription->transcriptionContent[$type] ?? '';
         } catch (\Throwable $e) {
             \Log::error('Error in mapTranscriptionField method', [
                 'type' => $type,

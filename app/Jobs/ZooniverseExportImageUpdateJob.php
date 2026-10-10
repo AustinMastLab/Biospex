@@ -8,6 +8,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Job to update the status of image export processing and trigger CSV build when complete.
@@ -66,7 +67,7 @@ class ZooniverseExportImageUpdateJob implements ShouldQueue
                 ->first();
 
         if (! $file) {
-            \Log::warning('ZooniverseExportImageUpdateJob: File not found', [
+            Log::warning('ZooniverseExportImageUpdateJob: File not found', [
                 'file_id' => $this->fileId,
                 'queue_id' => $this->queueId,
                 'subject_id' => $this->subjectId,

@@ -34,6 +34,7 @@ use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\Middleware\WithoutOverlapping;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Carbon;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -94,8 +95,8 @@ class ZooniversePusherJob implements ShouldQueue
                 }
 
                 $weDigBioTranscriptionService->createEventTranscription($transcription->classification_id, $this->expedition->project_id, $transcription->classification_finished_at);
-            } catch (\Throwable $e) {
-                \Log::error('Failed to process individual transcription in ZooniversePusherJob', [
+            } catch (Throwable $e) {
+                Log::error('Failed to process individual transcription in ZooniversePusherJob', [
                     'expedition_id' => $this->expedition->id,
                     'classification_id' => $transcription->classification_id ?? 'unknown',
                     'user_name' => $transcription->user_name ?? 'unknown',
@@ -113,7 +114,7 @@ class ZooniversePusherJob implements ShouldQueue
     /**
      * Prevent job overlap using expeditionId.
      *
-     * @return \Illuminate\Queue\Middleware\WithoutOverlapping[]
+     * @return WithoutOverlapping[]
      */
     public function middleware(): array
     {

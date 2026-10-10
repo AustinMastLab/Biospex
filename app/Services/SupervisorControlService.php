@@ -23,6 +23,7 @@ namespace App\Services;
 use fXmlRpc\Transport\PsrTransport;
 use GuzzleHttp\Client;
 use GuzzleHttp\Psr7\HttpFactory;
+use Illuminate\Support\Facades\Log;
 use Supervisor\Supervisor;
 
 /**
@@ -57,7 +58,7 @@ class SupervisorControlService
             } catch (\Throwable $e) {
                 // Program might not exist yet — treat as STOPPED
                 $state = 'STOPPED';
-                \Log::info("Supervisor: Program {$fullProgramName} not found in Supervisor — assuming STOPPED");
+                Log::info("Supervisor: Program {$fullProgramName} not found in Supervisor — assuming STOPPED");
             }
 
             match ($action) {
@@ -67,7 +68,7 @@ class SupervisorControlService
                 default => throw new \InvalidArgumentException("Invalid action: {$action}"),
             };
 
-            \Log::info("Supervisor: {$action}ed program {$fullProgramName} (was {$state})");
+            Log::info("Supervisor: {$action}ed program {$fullProgramName} (was {$state})");
         }
     }
 
@@ -112,7 +113,7 @@ class SupervisorControlService
         if (in_array($state, ['STOPPED', 'BACKOFF', 'EXITED', 'FATAL', 'UNKNOWN'])) {
             $supervisor->startProcess($program);
         } else {
-            \Log::info("Supervisor: {$program} already running — skipping start");
+            Log::info("Supervisor: {$program} already running — skipping start");
         }
     }
 
@@ -128,7 +129,7 @@ class SupervisorControlService
         if ($state === 'RUNNING') {
             $supervisor->stopProcess($program);
         } else {
-            \Log::info("Supervisor: {$program} not running — skipping stop");
+            Log::info("Supervisor: {$program} not running — skipping stop");
         }
     }
 

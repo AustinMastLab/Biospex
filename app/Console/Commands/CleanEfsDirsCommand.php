@@ -23,6 +23,7 @@ namespace App\Console\Commands;
 use Carbon\Carbon;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 
 class CleanEfsDirsCommand extends Command
 {
@@ -49,7 +50,7 @@ class CleanEfsDirsCommand extends Command
 
         $deletedFiles = $this->cleanDirectory($directory);
 
-        \Log::info("Cleanup completed. Files deleted: $deletedFiles");
+        Log::info("Cleanup completed. Files deleted: $deletedFiles");
     }
 
     /**

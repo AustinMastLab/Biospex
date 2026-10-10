@@ -26,6 +26,7 @@ use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
 
 class ProjectService
 {
@@ -170,7 +171,7 @@ class ProjectService
 
         } catch (\Exception $e) {
             // Log error but don't fail the update
-            \Log::error("Failed to remove old logo for project {$project->id}: ".$e->getMessage());
+            Log::error("Failed to remove old logo for project {$project->id}: ".$e->getMessage());
         }
     }
 

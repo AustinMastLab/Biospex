@@ -30,6 +30,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Storage;
 use Throwable;
 
@@ -69,10 +70,10 @@ class DeleteExpeditionJob implements ShouldQueue
                 if (Storage::disk('s3')->exists($path)) {
                     Storage::disk('s3')->delete($path);
                 }
-            } catch (\Throwable $e) {
+            } catch (Throwable $e) {
                 // If the file is already gone or inaccessible, we continue.
                 // This prevents the "UnableToDeleteFile" exception from failing the job.
-                \Log::warning('S3 Delete failed but continuing: '.$path);
+                Log::warning('S3 Delete failed but continuing: '.$path);
             }
         });
 

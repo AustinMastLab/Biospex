@@ -29,6 +29,12 @@ use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Listens to the reconcile update queue for results from the reconcile Lambda.
+ *
+ * Messages are routed by their `function` field: `BiospexLabelReconciliation`, sent by the
+ * BiospexReconcile312 Lambda.
+ */
 class SqsListenerReconcileUpdate extends Command
 {
     /** @var string Command signature */

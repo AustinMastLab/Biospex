@@ -83,7 +83,7 @@ There is only one state machine for all environments, and it calls the functions
 
 ## Deploying a function
 
-Each repository except ZipBatchOrchestrator has a `deploy.sh` that you run from the repository directory. `InternetArchiveImageFetcher` builds its zip inside the `public.ecr.aws/lambda/python:3.12` Docker image, because Pillow needs Lambda-compatible native libraries; start Docker before running its script.
+Each Lambda repository has a `deploy.sh` that you run from the repository directory; the ZipBatchOrchestrator state machine is updated with `aws stepfunctions update-state-machine` or in the AWS console. `InternetArchiveImageFetcher` builds its zip inside the `public.ecr.aws/lambda/python:3.12` Docker image, because Pillow needs Lambda-compatible native libraries; start Docker before running its script.
 
 1. It builds `function.zip`, using `npm install --production` for Node.js, or a Python 3.12 build for `BiospexReconcile312`.
 2. It asks before uploading to AWS. The upload uses `us-east-2`, with `biospex-loc` as a temporary bucket.
@@ -134,7 +134,31 @@ If the concurrency can't be read (for example an AWS error), BIOSPEX logs a warn
 
 ## Known gaps
 
-- **Message names don't match function names.** The listeners route messages by a `function` field set by each Lambda (`BiospexImageProcess`, `BiospexLabelReconciliation`, `BiospexZipTrigger`, and so on), not by the deployed function names. Renaming them means changing the Lambdas and the listeners together.
-- **The repository READMEs are partly out of date.**
-  - The ZipBatchOrchestrator README says the state machine runs `BiospexBatchCreator`; the deployed definition does not.
-  - The BiospexBatchCreator README mentions a `ZooniverseBatchTriggerService`; the trigger is `ZooniverseExportDownloadBatchJob`.
+### Message names don't match function names
+
+The listeners route each SQS message by its `function` field, which the Lambda sets. Some Lambdas send a name other than their own:
+
+| Listener | `function` value | Sent by |
+| --- | --- | --- |
+| `export:listen` (`SqsListenerExportUpdate`) | `BiospexImageProcess` | `BiospexImageFetcher`, `InternetArchiveImageFetcher` |
+| `export:listen` | `BiospexZipCreator`, `BiospexZipMerger` | the functions of the same name |
+| `reconcile:listen` (`SqsListenerReconcileUpdate`) | `BiospexLabelReconciliation` | `BiospexReconcile312` |
+| `batch:listen` (`SqsListenerBatchUpdate`) | `BiospexBatchCreator` | the function of the same name |
+
+`BiospexZipTrigger` isn't a Lambda or a message name; it's only the method `ExportQueueStageCommand::sendBiospexZipTrigger()`, which sends work to `BiospexZipCreator`.
+
+To fix the names eventually, without losing messages during the change:
+
+1. Make each listener accept both the old and the new name, and deploy BIOSPEX to every environment.
+2. Change each Lambda to send its own function name, one at a time, and deploy it.
+3. Once no old names arrive, remove them from the listeners.
+
+### Large exports run the latest Lambda code
+
+The ZipBatchOrchestrator state machine calls `BiospexZipCreator` and `BiospexZipMerger` without an alias, so every environment runs `$LATEST`. A Lambda uploaded for testing reaches production exports straight away. Issue #514 has the plan to pass an environment alias.
+
+The state machine also splits files into four fixed ranges that end at 19,999, so an expedition can't exceed 20,000 files (`config.expedition_size`). `tests/Unit/ZipBatchOrchestratorLimitTest.php` fails if the limit is raised without changing the state machine first.
+
+### Repository READMEs
+
+The ZipBatchOrchestrator and BiospexBatchCreator READMEs were out of date; [ZipBatchOrchestrator#1](https://github.com/AustinMastLab/ZipBatchOrchestrator/pull/1) and [BiospexBatchCreator#1](https://github.com/AustinMastLab/BiospexBatchCreator/pull/1) correct them.

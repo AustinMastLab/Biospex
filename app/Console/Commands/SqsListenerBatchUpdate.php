@@ -29,6 +29,11 @@ use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Listens to the batch update queue for results from the BiospexBatchCreator Lambda.
+ *
+ * Messages are routed by their `function` field: `BiospexBatchCreator`.
+ */
 class SqsListenerBatchUpdate extends Command
 {
     /** @var string Command signature */

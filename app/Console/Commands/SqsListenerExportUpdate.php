@@ -30,6 +30,13 @@ use Illuminate\Support\Facades\Log;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Listens to the export update queue for results from the export Lambdas.
+ *
+ * Messages are routed by their `function` field, which isn't always the sending Lambda's name:
+ * - `BiospexImageProcess`: sent by BiospexImageFetcher and InternetArchiveImageFetcher.
+ * - `BiospexZipCreator`, `BiospexZipMerger`: sent by the Lambdas of the same name.
+ */
 class SqsListenerExportUpdate extends Command
 {
     /** @var string Command signature */

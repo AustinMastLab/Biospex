@@ -16,7 +16,6 @@ storage/app/imports/*
 storage/app/images/*
 storage/app/reports/*
 storage/app/scratch/*
-storage/nova-resource-generator.json
 storage/oauth-private.key
 storage/oauth-public.key
 storage/routes.json
@@ -56,11 +55,5 @@ laradumps.yaml
 /.vscode/
 /clean-logs.sh
 /tasks.md
-/pa11y-orig.json
-/.pa11y-admin-report.json
-/.pa11y-report.json
-/.pa11yci.admin.json
-/.pa11yci.front.json
-/.pa11yci.front.mobile.json
 /.mcp.json
 /.claude/

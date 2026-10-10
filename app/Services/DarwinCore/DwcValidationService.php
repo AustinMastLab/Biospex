@@ -147,12 +147,13 @@ class DwcValidationService
 
     /**
      * Validate a batch of media rows.
-     * Returns array with 'valid' and 'rejected' keys.
+     * Returns array with 'valid', 'rejected' and 'duplicates' keys.
      */
     public function validateBatch(array $batch, array $header, array $metaFields, int $projectId): array
     {
         $valid = [];
         $rejected = [];
+        $duplicates = [];
         $seenImageIds = [];
 
         foreach ($batch as $row) {
@@ -163,7 +164,7 @@ class DwcValidationService
 
                 // Check for duplicates within batch
                 if (isset($seenImageIds[$imageId])) {
-                    $rejected[] = ['Reason' => t('Duplicate imageId within batch.')] + $row;
+                    $duplicates[] = ['Reason' => t('Duplicate imageId within batch.')] + $row;
 
                     continue;
                 }
@@ -185,7 +186,7 @@ class DwcValidationService
                 $validFiltered = [];
                 foreach ($valid as $item) {
                     if (in_array($item['imageId'], $dbDuplicates)) {
-                        $rejected[] = ['Reason' => t('Duplicate imageId in database.')] + $item;
+                        $duplicates[] = ['Reason' => t('Duplicate imageId in database.')] + $item;
                     } else {
                         $validFiltered[] = $item;
                     }
@@ -197,6 +198,7 @@ class DwcValidationService
         return [
             'valid' => $valid,
             'rejected' => $rejected,
+            'duplicates' => $duplicates,
         ];
     }
 

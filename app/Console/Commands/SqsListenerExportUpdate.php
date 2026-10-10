@@ -65,7 +65,7 @@ class SqsListenerExportUpdate extends Command
     /**
      * Validate required AWS configuration settings.
      *
-     * @throws \RuntimeException When the required configuration is missing
+     * @throws RuntimeException When the required configuration is missing
      */
     private function validateConfiguration(): void
     {
@@ -99,17 +99,17 @@ class SqsListenerExportUpdate extends Command
      *
      * @param  array  $data  Message data
      *
-     * @throws \InvalidArgumentException|\Throwable When function is missing or unknown
+     * @throws \InvalidArgumentException|Throwable When function is missing or unknown
      */
-    private function routeMessage(array $data): void
+    public function routeMessage(array $data): void
     {
         if (! isset($data['function'])) {
             throw new \InvalidArgumentException('Message missing required "function" field');
         }
 
         $function = $data['function'];
-        $status   = $data['status'] ?? 'unknown';
-        $id       = $data['fileId'] ?? $data['subjectId'] ?? $data['queueId'] ?? '?';
+        $status = $data['status'] ?? 'unknown';
+        $id = $data['fileId'] ?? $data['subjectId'] ?? $data['queueId'] ?? '?';
 
         $this->info("[export:listen] Received: function={$function} status={$status} id={$id}");
 
@@ -165,7 +165,7 @@ class SqsListenerExportUpdate extends Command
      * @param  array  $data  Message data containing zip processing results
      *
      * @throws \InvalidArgumentException When required fields are missing
-     * @throws \RuntimeException When zip processing failed
+     * @throws RuntimeException When zip processing failed
      */
     private function dispatchZipCreatorJob(array $data): void
     {

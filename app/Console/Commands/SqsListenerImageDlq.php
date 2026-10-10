@@ -93,7 +93,7 @@ class SqsListenerImageDlq extends Command
     /**
      * Route DLQ message to the appropriate Update Job.
      */
-    private function routeMessage(array $data): void
+    public function routeMessage(array $data): void
     {
         // 1. Detect S3 Event (OCR Hard Crash)
         if (isset($data['Records'][0]['s3'])) {

@@ -64,7 +64,7 @@ class SqsListenerReconcileUpdate extends Command
     /**
      * Validate required AWS configuration settings.
      *
-     * @throws \RuntimeException When the required configuration is missing
+     * @throws RuntimeException When the required configuration is missing
      */
     private function validateConfiguration(): void
     {
@@ -98,9 +98,9 @@ class SqsListenerReconcileUpdate extends Command
      *
      * @param  array  $data  Message data
      *
-     * @throws \InvalidArgumentException|\Throwable When a function is missing or unknown
+     * @throws InvalidArgumentException|Throwable When a function is missing or unknown
      */
-    private function routeMessage(array $data): void
+    public function routeMessage(array $data): void
     {
         if (! isset($data['function'])) {
             throw new InvalidArgumentException('Message missing required "function" field');
@@ -128,8 +128,8 @@ class SqsListenerReconcileUpdate extends Command
      *
      * @param  array  $data  Message data containing reconciliation results
      *
-     * @throws \InvalidArgumentException When required fields are missing
-     * @throws \RuntimeException When reconciliation failed
+     * @throws InvalidArgumentException When required fields are missing
+     * @throws RuntimeException When reconciliation failed
      */
     private function dispatchLabelReconciliationJob(array $data): void
     {

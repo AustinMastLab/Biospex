@@ -1,0 +1,5 @@
+coreid,identifier,accessURI,thumbnailAccessURI,goodQualityAccessURI,rights,creator,caption,comments,providerManagedID,MetadataDate,format,associatedSpecimenReference,type,subtype,metadataLanguage
+1001,a1b2c3d4-0001-4000-8000-000000000001,https://images.example.org/test/1001.jpg,,,,,,,,,image/jpeg,,StillImage,,
+1001,a1b2c3d4-0001-4000-8000-000000000002,https://images.example.org/test/1001-b.jpg,,,,,,,,,image/jpeg,,StillImage,,
+1002,,https://images.example.org/test/1002.jpg,,,,,,,urn:uuid:a1b2c3d4-0002-4000-8000-000000000003,,image/jpeg,,StillImage,,
+1003,https://images.example.org/test/1003.jpg,https://images.example.org/test/1003.jpg,,,,,,,,,image/jpeg,,StillImage,,

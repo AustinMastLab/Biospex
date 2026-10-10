@@ -85,7 +85,7 @@ workflow:manage → Zooniverse actor (ActorExpedition state 2, zooniverse.enable
 ```
 
 - **Rerunning by hand:** `zooniverse:reconcile-chain {ids?}` sends expeditions straight to `{prefix}-reconcile-trigger`, which also runs `BiospexReconcile312`. `zooniverse:explained` does the same for "explained" reconciliation, which `ReconcileProcessExplained` handles.
-- **Skipping expeditions:** expedition IDs listed in `config/zooniverse.php` under `skip_api` and `skip_reconcile` are skipped. These lists are hard-coded in the config file, not read from the environment.
+- **Skipping expeditions:** an expedition's **Skip Panoptes API** (`skip_api`) and **Skip reconcile** (`skip_reconcile`) toggles, under Zooniverse Processing on its Filament edit page, exclude it from these steps. Only the admin panel can set them; the project owners' expedition form ignores them.
 - **Expert review** (`expert:review`, `ExpertReview*Job`) builds review records from reconciled data, and `ExpertReconcileReviewPublishJob` publishes them.
 
 ## 5. Download batches

@@ -26,6 +26,12 @@ class ExpeditionInfolist
                     ->boolean(),
                 IconEntry::make('locked')
                     ->boolean(),
+                IconEntry::make('skip_api')
+                    ->label('Skip Panoptes API')
+                    ->boolean(),
+                IconEntry::make('skip_reconcile')
+                    ->label('Skip reconcile')
+                    ->boolean(),
                 ImageEntry::make('logo_display')
                     ->label('Logo')
                     ->height(150)

@@ -1,0 +1,6 @@
+coreid,identifier,accessURI
+occ-1,1b4e28ba-2fa1-11d2-883f-0016d3cca427,https://images.example.org/occ-1.jpg
+occ-2,2c5f39cb-3ab2-12e3-994a-0027e4ddb538,https://images.example.org/occ-2.jpg
+occ-3,,https://images.example.org/occ-3a.jpg
+occ-3,4e7a51ed-5cd4-14a5-bb6c-0049a6ffd75a,
+occ-3,3d6a40dc-4bc3-13f4-aa5b-0038f5eec649,https://images.example.org/occ-3b.jpg

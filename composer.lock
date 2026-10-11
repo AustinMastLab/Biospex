@@ -11074,32 +11074,33 @@
     "packages-dev": [
         {
             "name": "austinmastlab/deployer-recipes",
-            "version": "v1.0.0",
+            "version": "v1.1.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AustinMastLab/deployer-recipes",
-                "reference": "d0713fa08b3df4560d1aaf7b038747ea6eaf1904"
+                "reference": "6b1d741b3911863b6562ff28c7e9354ae688aeba"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AustinMastLab/deployer-recipes/zipball/d0713fa08b3df4560d1aaf7b038747ea6eaf1904",
-                "reference": "d0713fa08b3df4560d1aaf7b038747ea6eaf1904",
+                "url": "https://api.github.com/repos/AustinMastLab/deployer-recipes/zipball/6b1d741b3911863b6562ff28c7e9354ae688aeba",
+                "reference": "6b1d741b3911863b6562ff28c7e9354ae688aeba",
                 "shasum": ""
             },
             "require": {
-                "php": ">=8.1"
+                "php": ">=8.3"
             },
-            "suggest": {
-                "deployer/deployer": "The recipes are written for Deployer 7 and 8."
+            "conflict": {
+                "deployer/deployer": "<8.0"
             },
             "bin": [
+                "bin/delete-env-param",
                 "bin/generate-env",
                 "bin/push-env-params",
                 "bin/remove-env-params"
             ],
             "type": "library",
             "description": "Shared Deployer recipes and AWS SSM environment tools for AustinMastLab sites",
-            "time": "2026-10-05T15:21:12+00:00"
+            "time": "2026-10-11T17:41:30+00:00"
         },
         {
             "name": "brianium/paratest",

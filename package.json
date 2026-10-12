@@ -19,7 +19,7 @@
     "clipboard": "^2.0.11",
     "codemirror": "^6.0.1",
     "confetti-js": "^0.0.18",
-    "cross-env": "^7.0.3",
+    "cross-env": "^10.1.0",
     "free-jqgrid": "^4.15.5",
     "hamburgers": "^1.2.1",
     "jquery": "^3.7.1",

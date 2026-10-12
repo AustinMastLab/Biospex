@@ -36,7 +36,7 @@
     "webpack": "^5.91.0"
   },
   "dependencies": {
-    "axios": "^1.9.0",
+    "axios": "^1.20.0",
     "laravel-echo": "^1.19.0",
     "pusher-js": "^8.4.0"
   },

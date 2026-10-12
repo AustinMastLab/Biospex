@@ -56,14 +56,14 @@ class ExpertReconcileController extends Controller
         $expedition->load(['project.group.owner', 'panoptesProject']);
 
         if (! CheckPermission::handle('updateProject', $expedition->project->group)) {
-            return Redirect::route('admin.expeditions.show', [$expedition->project_id, $expedition->id]);
+            return Redirect::route('admin.expeditions.show', [$expedition]);
         }
 
         $reconciles = $this->expertReconcileService->getPagination((int) $expedition->id);
 
         if ($reconciles->isEmpty()) {
 
-            return Redirect::route('admin.expeditions.show', [$expedition->project_id, $expedition->id])
+            return Redirect::route('admin.expeditions.show', [$expedition])
                 ->with('danger', t('Reconcile data for processing is missing.'));
         }
 
@@ -87,7 +87,7 @@ class ExpertReconcileController extends Controller
         $expedition->load('project.group.owner');
 
         if (! CheckPermission::handle('updateProject', $expedition->project->group)) {
-            return Redirect::route('admin.expeditions.show', [$expedition->project_id, $expedition->id]);
+            return Redirect::route('admin.expeditions.show', [$expedition]);
         }
 
         if ($this->skipReconcile($expedition->id)) {

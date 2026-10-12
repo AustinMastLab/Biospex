@@ -22,14 +22,15 @@ namespace App\Events;
 
 use App\Models\Bingo;
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
 use Illuminate\Queue\SerializesModels;
 
 /**
  * Class BingoEvent
  */
-class BingoEvent implements ShouldBroadcast
+class BingoEvent implements ShouldBroadcastNow, ShouldRescue
 {
     use Dispatchable, SerializesModels;
 
@@ -44,14 +45,6 @@ class BingoEvent implements ShouldBroadcast
     {
         $this->bingo = $bingo->withoutRelations();
         $this->data = $data;
-    }
-
-    /**
-     * The name of the queue on which to place the broadcasting job.
-     */
-    public function broadcastQueue(): string
-    {
-        return config('config.queue.event');
     }
 
     /**

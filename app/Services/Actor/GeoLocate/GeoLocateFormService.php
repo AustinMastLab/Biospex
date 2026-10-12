@@ -20,11 +20,13 @@
 
 namespace App\Services\Actor\GeoLocate;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Download;
 use App\Models\Expedition;
 use App\Models\GeoLocateForm;
 use App\Services\Csv\AwsS3CsvService;
 use App\Services\Helpers\GeneralService;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\File;
 use Storage;
@@ -95,7 +97,7 @@ class GeoLocateFormService
      * @param  array  $request  Optional request parameters for additional data handling.
      * @return array The resulting form data.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function getFormData(Expedition $expedition, array $request = []): array
     {
@@ -148,7 +150,7 @@ class GeoLocateFormService
      * @param  Expedition  $expedition  The expedition instance used to generate the form structure.
      * @return array An associative array representing the new form structure.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function newForm(Expedition $expedition): array
     {
@@ -161,7 +163,7 @@ class GeoLocateFormService
             'user_reconciled' => $this->userReconciledFileExists,
             'expert_reconciled' => $this->expertReconciledFileExists,
             'expert_review' => $this->expertReviewExists,
-            'exported' => $expedition->geoActorExpedition->state >= 1,
+            'exported' => $expedition->geoActorExpedition->state !== ActorExpeditionState::NotStarted,
             'geo' => $this->getGeoLocateFields(),
             'csv' => $this->getCsvHeader($expedition),
             'created_at' => '',
@@ -175,7 +177,7 @@ class GeoLocateFormService
      * @param  array  $request  An optional array containing request parameters, including the formId.
      * @return array An associative array with data about the geo-location form and its related fields.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     public function existingForm(Expedition $expedition, array $request = []): array
     {
@@ -194,7 +196,7 @@ class GeoLocateFormService
             'user_reconciled' => $this->userReconciledFileExists,
             'expert_reconciled' => $this->expertReconciledFileExists,
             'expert_review' => $this->expertReviewExists,
-            'exported' => $expedition->geoActorExpedition->state >= 1,
+            'exported' => $expedition->geoActorExpedition->state !== ActorExpeditionState::NotStarted,
             'geo' => $this->getGeoLocateFields(),
             'csv' => $this->getCsvHeader($expedition),
             'created_at' => $form->created_at,
@@ -206,7 +208,7 @@ class GeoLocateFormService
      *
      * @return array The decoded geolocate fields as an associative array.
      *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
     private function getGeoLocateFields(): array
     {

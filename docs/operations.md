@@ -46,8 +46,8 @@ The task order is in `deploy.php`:
 2. **Set up Laravel.** Run `storage:link`, `package:discover`, and `filament:assets`. Then run `app:deploy-files --current-path=…`, which renders the Supervisor configs into `storage/app/supervisor`.
 3. **Update the database.** Run `migrate`, then `app:update-queries` (see below).
 4. **Rebuild caches.** Clear and rebuild the config, route, view, and event caches, plus `filament:optimize`.
-5. **Restart processes.** Run `supervisorctl reread` and `supervisorctl update`, then `queue:restart`.
-6. **Publish.** Truncate the logs, switch the `current` symlink, reset OPcache, and verify the structure.
+5. **Publish.** Switch the `current` symlink. No OPcache reset is needed: nginx passes PHP the real release path (`$realpath_root`), so each release is new to OPcache.
+6. **Restart processes.** Run `supervisorctl reread` and `supervisorctl update`, then `queue:restart`, `reverb:restart`, and restart the Panoptes listener if it's running. Then verify the structure.
 
 ### Shared deploy tooling (deployer-recipes)
 
@@ -80,7 +80,7 @@ The task order is in `deploy.php`:
 - **Rolling back.** `dep rollback <environment>` only switches the `current` symlink; it doesn't regenerate `.env`. If a rollback needs an older `.env`, copy the matching `shared/.env.backup.*` back over `shared/.env`.
 - **Pushing a local file to SSM:** `vendor/bin/push-env-params biospex <environment>` pushes each line of `.env.aws.<environment>` as a `SecureString` parameter. Those files hold real values, and git ignores them through `/.env.*`. `vendor/bin/remove-env-params biospex <environment>` deletes every parameter under `/biospex/<environment>`, after you type the environment name to confirm; it can't be undone.
 - **Supervisor values.** Some variables (`APP_SERVER_USER`, `APP_TAG`, `PANOPTES_LISTENER_ENABLED`, the queue names, and others) are written into the Supervisor configs by `app:deploy-files`. After changing one of them, run `app:deploy-files`, then `supervisorctl reread` and `supervisorctl update`.
-- **`env.example` is out of date.** It still lists `NOVA_LICENSE_KEY` and `LADA_CACHE_*`, and it uses `OCR_DISABLE` instead of `OCR_ENABLED`. For the real list, compare it with SSM.
+- **`env.example`** lists the settings SSM sets, with local placeholder values, plus a few local-only keys (AWS keys, cache and session drivers). When you add a setting to SSM, add it there too.
 
 ## Processes and logs
 

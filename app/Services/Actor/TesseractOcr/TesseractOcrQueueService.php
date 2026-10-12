@@ -20,6 +20,7 @@
 
 namespace App\Services\Actor\TesseractOcr;
 
+use App\Enums\OcrQueueStage;
 use App\Jobs\TesseractOcrCompleteJob;
 use App\Jobs\TesseractOcrProcessJob;
 use App\Models\OcrQueue;
@@ -51,7 +52,7 @@ class TesseractOcrQueueService
         // Find the single active, error-free queue currently in progress
         $queue = $this->ocrQueue
             ->where('queued', 1)
-            ->where('stage', 1)
+            ->where('stage', OcrQueueStage::ProcessingImages->value)
             ->where('error', 0)
             ->first();
 

@@ -23,10 +23,11 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\Group;
+use App\Models\User;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\Group>
+ * @extends Factory<Group>
  */
 final class GroupFactory extends Factory
 {
@@ -44,8 +45,8 @@ final class GroupFactory extends Factory
     {
         return [
             'uuid' => fake()->uuid,
-            'user_id' => \App\Models\User::factory(),
-            'title' => fake()->words(2, true),
+            'user_id' => User::factory(),
+            'title' => fake()->unique()->words(2, true),
         ];
     }
 }

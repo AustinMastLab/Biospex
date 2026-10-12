@@ -20,6 +20,7 @@
 
 namespace App\Services\Actor\Zooniverse;
 
+use App\Enums\ExportQueueStage;
 use App\Jobs\ZooniverseExportBuildCsvJob;
 use App\Jobs\ZooniverseExportProcessImagesJob;
 use App\Models\ExportQueue;
@@ -48,7 +49,7 @@ class ZooniverseExportQueueService
     {
         $queue = $this->exportQueue
             ->where('queued', 1)
-            ->where('stage', 1)
+            ->where('stage', ExportQueueStage::ProcessingImages->value)
             ->where('error', 0)
             ->first();
 
@@ -60,7 +61,7 @@ class ZooniverseExportQueueService
         $isDone = ! $queue->files()->where('processed', 0)->exists();
 
         if ($isDone) {
-            $queue->stage = 2;
+            $queue->stage = ExportQueueStage::BuildingCsv;
             $queue->save();
 
             // Trigger the next stage (CSV Build)
@@ -96,7 +97,7 @@ class ZooniverseExportQueueService
         $affected = $this->exportQueue
             ->where('id', $nextQueue->id)
             ->where('queued', 0) // Ensure it's still unqueued
-            ->update(['queued' => 1, 'stage' => 1]);
+            ->update(['queued' => 1, 'stage' => ExportQueueStage::ProcessingImages->value]);
 
         if ($affected === 0) {
             return; // Someone else claimed it milliseconds ago
@@ -109,7 +110,7 @@ class ZooniverseExportQueueService
         if (! $this->lambdaApiService->canRun(['BiospexImageFetcher'])) {
             // Rollback claim if check fails
             $exportQueue->queued = 0;
-            $exportQueue->stage = 0; // Or appropriate previous stage
+            $exportQueue->stage = ExportQueueStage::Waiting;
             $exportQueue->save();
             throw new \Exception("Export Lambda concurrency is 0 — skipping queue #{$exportQueue->id}");
         }
@@ -119,7 +120,7 @@ class ZooniverseExportQueueService
         \Artisan::queue('sqs:control export_update image_trigger_dlq --action=start')
             ->onQueue(config('config.queue.default'));
 
-        $exportQueue->stage = 1;
+        $exportQueue->stage = ExportQueueStage::ProcessingImages;
         $exportQueue->save();
 
         ZooniverseExportProcessImagesJob::dispatch($exportQueue);

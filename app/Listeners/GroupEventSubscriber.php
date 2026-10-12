@@ -24,6 +24,7 @@ use App\Services\Group\GroupService;
 use Illuminate\Auth\Events\Login;
 use Illuminate\Auth\Events\Logout;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Session;
 
 /**
@@ -90,7 +91,7 @@ class GroupEventSubscriber
 
         $groups = $groupId === null ? $groupIds : $groupIds->diff([$groupId]);
 
-        \Log::info('User group session updated for user: '.Auth::id());
+        Log::info('User group session updated for user: '.Auth::id());
 
         Session::put('groupIds', $groups->toArray());
     }

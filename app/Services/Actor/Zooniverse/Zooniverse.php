@@ -20,6 +20,7 @@
 
 namespace App\Services\Actor\Zooniverse;
 
+use App\Enums\ActorExpeditionState;
 use App\Jobs\ZooniverseCsvJob;
 use App\Jobs\ZooniverseExportBuildQueueJob;
 use App\Models\ActorExpedition;
@@ -37,21 +38,16 @@ class Zooniverse
      * State = 2: Will not run until process started and set to 2, added to WorkflowManager. @see \App\Http\Controllers\Admin\WorkflowManagerController
      * State = 3: Zooniverse classifications completed. @see \App\Console\Commands\ZooniverseClassificationCountCommand
      *
-     * Stages of export
-     * Processing Images // 1
-     * Building CSV // 2
-     * Compressing Export File // 3
-     * Creating Report // 4
-     * Deleting Working Files // 5
+     * The export's own stages are listed in \App\Enums\ExportQueueStage.
      *
      * @throws \Throwable
      */
     public function process(ActorExpedition $actorExpedition): void
     {
-        if ($actorExpedition->state === 1) {
+        if ($actorExpedition->state === ActorExpeditionState::Exported) {
             // @see \App\Console\Commands\ExportQueueCommand
             ZooniverseExportBuildQueueJob::dispatch($actorExpedition);
-        } elseif ($actorExpedition->state === 2 && config('zooniverse.enabled')) {
+        } elseif ($actorExpedition->state === ActorExpeditionState::Processing && config('zooniverse.enabled')) {
             ZooniverseCsvJob::dispatch($actorExpedition->expedition_id);
         }
     }

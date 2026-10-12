@@ -21,6 +21,8 @@
 namespace App\Console\Commands;
 
 use App\Jobs\ProcessPanoptesPusherDataJob;
+use App\Mail\PanoptesListenerAlert;
+use Carbon\CarbonInterval;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -28,24 +30,67 @@ use Illuminate\Support\Facades\Mail;
 use Ratchet\Client\WebSocket;
 use Ratchet\RFC6455\Messaging\MessageInterface;
 use React\EventLoop\Loop;
+use React\EventLoop\LoopInterface;
 use React\Socket\Connector;
 
 use function Ratchet\Client\connect;
 
 /**
- * Command to listen to external Panoptes Pusher channel for real-time updates.
+ * Listens to the Notes From Nature (Zooniverse) Pusher channel and queues each classification.
+ *
+ * Alerts are sent when the state changes, not on every failure:
+ * - Over quota (Pusher error 4004, Notes From Nature's limit): one email when it starts, quiet retries
+ *   with a growing delay, and one email when the subscription succeeds again.
+ * - Too many errors in a minute: the listener goes dormant for an hour without blocking the event loop,
+ *   with one email when it goes dormant and one when it recovers.
+ * Other errors send at most one email an hour.
  */
 class ListenerPanoptesPusherCommand extends Command
 {
+    /**
+     * Cache key holding when the current over-quota episode started.
+     */
+    public const QUOTA_SINCE_KEY = 'panoptes_listener_quota_since';
+
+    /**
+     * Cache key holding how many reconnects the current over-quota episode has tried.
+     */
+    public const QUOTA_RETRIES_KEY = 'panoptes_listener_quota_retries';
+
+    /**
+     * Cache key holding when the listener went dormant after too many errors.
+     */
+    public const DORMANT_SINCE_KEY = 'panoptes_listener_dormant_since';
+
+    /**
+     * Seconds to wait before each reconnect while over quota (the last value repeats).
+     */
+    public const QUOTA_RETRY_DELAYS = [900, 1800, 3600];
+
+    /**
+     * Seconds to stay dormant after too many errors.
+     */
+    public const DORMANT_SECONDS = 3600;
+
+    /**
+     * Errors within a minute that put the listener to sleep.
+     */
+    public const ERROR_THRESHOLD = 10;
+
     protected $signature = 'panoptes:listen';
 
     protected $description = 'Listen to external Panoptes Pusher channel';
 
-    private \React\EventLoop\LoopInterface $loop;
+    private LoopInterface $loop;
 
     private ?WebSocket $connection = null;
 
     private bool $isShuttingDown = false;
+
+    /**
+     * True while waiting out a quota episode or dormant hour; heartbeat reconnects are suspended.
+     */
+    private bool $isPaused = false;
 
     private int $maxReconnectAttempts = 10;
 
@@ -53,7 +98,7 @@ class ListenerPanoptesPusherCommand extends Command
 
     private int $reconnectDelay = 1;
 
-    private ?int $lastMessageTime;
+    private int $lastMessageTime;
 
     private mixed $heartbeatTimer = null;
 
@@ -64,7 +109,7 @@ class ListenerPanoptesPusherCommand extends Command
     public function __construct()
     {
         parent::__construct();
-        $this->adminEmail = config('mail.from.address');
+        $this->adminEmail = (string) config('mail.from.address');
     }
 
     public function handle(): int
@@ -115,7 +160,7 @@ class ListenerPanoptesPusherCommand extends Command
     private function setupHeartbeatMonitor(): void
     {
         $this->heartbeatTimer = $this->loop->addPeriodicTimer(30, function () {
-            if ($this->isShuttingDown) {
+            if ($this->isShuttingDown || $this->isPaused) {
                 return;
             }
 
@@ -127,14 +172,11 @@ class ListenerPanoptesPusherCommand extends Command
 
     private function connectToPusher(): void
     {
-        if ($this->isShuttingDown || Cache::has('panoptes_listener_quota_cooldown')) {
-            if (Cache::has('panoptes_listener_quota_cooldown')) {
-                $this->warn('Still in Pusher quota cooldown. Skipping connection attempt.');
-            }
-
+        if ($this->isShuttingDown) {
             return;
         }
 
+        $this->isPaused = false;
         $this->intentionalDisconnect = false;
         $this->lastMessageTime = time();
         $url = $this->buildWebSocketUrl();
@@ -175,10 +217,6 @@ class ListenerPanoptesPusherCommand extends Command
 
     public function onConnectionFailure(\Throwable $e): void
     {
-        if (Cache::has('panoptes_listener_quota_cooldown')) {
-            return;
-        }
-
         $this->reconnectAttempts++;
         $this->handleError("Connection failed (attempt {$this->reconnectAttempts})", $e);
 
@@ -239,6 +277,9 @@ class ListenerPanoptesPusherCommand extends Command
                 case 'pusher:ping':
                     $this->handlePing();
                     break;
+                case 'pusher_internal:subscription_succeeded':
+                    $this->handleSubscriptionSucceeded();
+                    break;
                 case 'classification':
                     $this->handleClassificationEvent($payload);
                     break;
@@ -276,6 +317,36 @@ class ListenerPanoptesPusherCommand extends Command
         }
     }
 
+    /**
+     * Subscribed again: close any over-quota or dormant episode and say it's over.
+     */
+    private function handleSubscriptionSucceeded(): void
+    {
+        $quotaSince = Cache::pull(self::QUOTA_SINCE_KEY);
+        Cache::forget(self::QUOTA_RETRIES_KEY);
+
+        if ($quotaSince !== null) {
+            $duration = CarbonInterval::seconds(max(0, now()->getTimestamp() - (int) $quotaSince))->cascade()->forHumans(['parts' => 2]);
+            Log::info("Panoptes Pusher connection restored after {$duration} over quota.");
+            $this->sendStateChangeEmail(
+                'Pusher connection restored',
+                "The Panoptes Pusher connection is working again after {$duration} over Notes From Nature's quota.\n"
+                .'Live classifications are flowing again. Classifications from the gap are filled in by the nightly reconcile.'
+            );
+        }
+
+        $dormantSince = Cache::pull(self::DORMANT_SINCE_KEY);
+
+        if ($dormantSince !== null) {
+            Log::info('Panoptes listener recovered from dormant mode.');
+            $this->sendStateChangeEmail(
+                'Listener recovered',
+                "The Panoptes listener has reconnected after going dormant because of repeated errors.\n"
+                .'Live classifications are flowing again.'
+            );
+        }
+    }
+
     private function handleClassificationEvent(array $payload): void
     {
         try {
@@ -294,24 +365,9 @@ class ListenerPanoptesPusherCommand extends Command
         $errorMessage = $payload['data']['message'] ?? 'Unknown Pusher error';
         $errorCode = $payload['data']['code'] ?? 'unknown';
 
-        $this->trackError($errorMessage);
-
         switch ($errorCode) {
-            case 4004: // Over quota
-                $cooldownKey = 'panoptes_listener_quota_cooldown';
-                if (Cache::has($cooldownKey)) {
-                    $this->intentionalDisconnect = true;
-
-                    return;
-                }
-
-                Cache::put($cooldownKey, true, 3600);
-                $this->intentionalDisconnect = true;
-
-                $this->handleCriticalError('Pusher account over quota',
-                    new \RuntimeException("Account exceeded quota. Error: {$errorMessage}"));
-
-                $this->scheduleReconnection(3600);
+            case 4004: // Over quota (Notes From Nature's Pusher account)
+                $this->handleOverQuota($errorMessage);
                 break;
 
             case 4001:
@@ -323,6 +379,32 @@ class ListenerPanoptesPusherCommand extends Command
             default:
                 $this->handleError("Pusher error: {$errorMessage}", null, $payload);
         }
+    }
+
+    /**
+     * Over quota: email once when the episode starts, then retry quietly with a growing delay.
+     */
+    private function handleOverQuota(string $errorMessage): void
+    {
+        $this->isPaused = true;
+        $this->intentionalDisconnect = true;
+
+        if (Cache::add(self::QUOTA_SINCE_KEY, now()->getTimestamp(), now()->addDays(30))) {
+            Log::warning("Panoptes Pusher over quota: {$errorMessage}");
+            $this->sendStateChangeEmail(
+                'Pusher over quota',
+                "Notes From Nature's Pusher account is over its quota ({$errorMessage}).\n"
+                ."Live classifications are paused. The listener retries quietly and emails again when the connection is restored.\n"
+                .'Classifications from the gap are filled in by the nightly reconcile.'
+            );
+        }
+
+        $retries = (int) Cache::get(self::QUOTA_RETRIES_KEY, 0);
+        $delay = self::QUOTA_RETRY_DELAYS[min($retries, count(self::QUOTA_RETRY_DELAYS) - 1)];
+        Cache::put(self::QUOTA_RETRIES_KEY, $retries + 1, now()->addDays(30));
+
+        Log::info("Panoptes Pusher still over quota; retrying in {$delay} seconds.");
+        $this->scheduleReconnection($delay);
     }
 
     private function forceReconnection(): void
@@ -346,36 +428,60 @@ class ListenerPanoptesPusherCommand extends Command
         });
     }
 
-    private function trackError(?string $details = null): void
+    /**
+     * Count an error; more than ERROR_THRESHOLD in a minute puts the listener to sleep for an hour.
+     */
+    private function trackError(): void
     {
-        $key = 'panoptes_listener_errors';
-        $shutdownKey = 'panoptes_listener_shutdown_attempted';
-        if (Cache::has($shutdownKey)) {
+        if ($this->isPaused) {
             return;
         }
 
+        $key = 'panoptes_listener_errors';
         $errors = array_filter(Cache::get($key, []), fn ($t) => $t > (time() - 60));
         $errors[] = time();
         Cache::put($key, $errors, 70);
 
-        if (count($errors) > 10) {
-            Cache::put($shutdownKey, true, 3600);
-            $msg = 'Too many errors detected. Entering dormant mode for 1 hour.';
-            $this->handleCriticalError($msg, new \RuntimeException('Error threshold exceeded'));
-
-            \Log::info('Entering dormant mode for 1 hour...');
-            sleep(3600);
-            exit(1);
+        if (count($errors) > self::ERROR_THRESHOLD) {
+            Cache::forget($key);
+            $this->goDormant();
         }
+    }
+
+    /**
+     * Stop and wait an hour without blocking: the loop keeps handling signals and timers.
+     */
+    private function goDormant(): void
+    {
+        $this->isPaused = true;
+        $this->intentionalDisconnect = true;
+
+        try {
+            $this->connection?->close();
+        } catch (\Throwable $e) {
+        }
+
+        if (Cache::add(self::DORMANT_SINCE_KEY, now()->getTimestamp(), now()->addDays(1))) {
+            Log::critical('Too many Panoptes listener errors; dormant for one hour.');
+            $this->sendStateChangeEmail(
+                'Listener dormant',
+                'The Panoptes listener hit more than '.self::ERROR_THRESHOLD." errors in a minute and stopped for one hour.\n"
+                .'It reconnects automatically and emails again when it recovers. Check the log for the errors.'
+            );
+        }
+
+        $this->scheduleReconnection(self::DORMANT_SECONDS);
     }
 
     private function handleError(string $message, ?\Throwable $e = null, array $context = []): void
     {
-        if (Cache::has('panoptes_listener_quota_cooldown')) {
+        if ($this->isPaused) {
+            Log::info($message, $context + ['error' => $e?->getMessage()]);
+
             return;
         }
 
-        $this->trackError($message.($e ? ": {$e->getMessage()}" : ''));
+        $this->trackError();
 
         $context['timestamp'] = now()->toISOString();
         Log::error($message, $context);
@@ -386,10 +492,6 @@ class ListenerPanoptesPusherCommand extends Command
 
     private function handleCriticalError(string $message, \Throwable $e): void
     {
-        if (Cache::has('panoptes_listener_quota_cooldown') && strpos($message, 'quota') === false) {
-            return;
-        }
-
         $context = ['timestamp' => now()->toISOString(), 'error' => $e->getMessage()];
         Log::critical($message, $context);
         $this->error("🚨 CRITICAL: {$message}");
@@ -397,34 +499,47 @@ class ListenerPanoptesPusherCommand extends Command
         $this->sendErrorEmail($message, $e, $context, true);
     }
 
+    /**
+     * Email about an error, at most once an hour (a file lock, so it survives restarts and cache clears).
+     */
     private function sendErrorEmail(string $message, ?\Throwable $e, array $context, bool $isCritical = false): void
+    {
+        $lockFile = storage_path('framework/panoptes_pusher_email.lock');
+
+        if (file_exists($lockFile) && (time() - (int) file_get_contents($lockFile)) < 3600) {
+            return;
+        }
+
+        file_put_contents($lockFile, time());
+
+        $this->sendEmail(
+            ($isCritical ? '[CRITICAL] ' : '[ERROR] ').'Panoptes Listener - '.config('app.name'),
+            $this->buildErrorEmailBody($message, $e, $context, $isCritical)
+        );
+    }
+
+    /**
+     * Email about a change of state (over quota, restored, dormant, recovered). Not rate limited:
+     * the episode keys in the cache make sure each change is announced once.
+     */
+    private function sendStateChangeEmail(string $title, string $body): void
+    {
+        $this->sendEmail(
+            "[NOTICE] Panoptes Listener: {$title} - ".config('app.name'),
+            $body."\n\nTime: ".now()->format('Y-m-d H:i:s T')
+        );
+    }
+
+    private function sendEmail(string $subject, string $body): void
     {
         if (empty($this->adminEmail)) {
             return;
         }
 
-        // PHYSICAL FILE LOCK GATEKEEPER - Survives Cache::flush() and process restarts
-        $lockFile = storage_path('framework/panoptes_pusher_email.lock');
-
-        if (file_exists($lockFile)) {
-            $lastSent = (int) file_get_contents($lockFile);
-            if ((time() - $lastSent) < 3600) {
-                return; // Less than an hour ago
-            }
-        }
-
-        // Record current time in lock file
-        file_put_contents($lockFile, time());
-
         try {
-            $subject = ($isCritical ? '[CRITICAL] ' : '[ERROR] ').'Panoptes Listener - '.config('app.name');
-            $body = $this->buildErrorEmailBody($message, $e, $context, $isCritical);
-
-            Mail::raw($body, function ($m) use ($subject) {
-                $m->to($this->adminEmail)->subject($subject);
-            });
+            Mail::to($this->adminEmail)->send(new PanoptesListenerAlert($subject, $body));
         } catch (\Throwable $me) {
-            Log::error('Failed to send error notification email', ['mail_error' => $me->getMessage()]);
+            Log::error('Failed to send Panoptes listener email', ['mail_error' => $me->getMessage()]);
         }
     }
 
@@ -473,9 +588,7 @@ class ListenerPanoptesPusherCommand extends Command
             }
         } catch (\Throwable $e) {
         }
-        if ($this->loop) {
-            $this->loop->stop();
-        }
+        $this->loop->stop();
         exit($exitCode);
     }
 }

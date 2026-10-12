@@ -22,11 +22,12 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\ActorExpedition;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\ActorExpedition>
+ * @extends Factory<ActorExpedition>
  */
 final class ActorExpeditionFactory extends Factory
 {
@@ -45,7 +46,7 @@ final class ActorExpeditionFactory extends Factory
         return [
             'expedition_id' => fake()->randomNumber(),
             'actor_id' => fake()->randomNumber(),
-            'state' => fake()->state,
+            'state' => fake()->randomElement(ActorExpeditionState::cases()),
             'total' => fake()->randomNumber(),
             'error' => fake()->randomNumber(),
             'order' => fake()->randomNumber(),

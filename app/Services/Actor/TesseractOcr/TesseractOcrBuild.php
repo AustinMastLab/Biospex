@@ -20,6 +20,7 @@
 
 namespace App\Services\Actor\TesseractOcr;
 
+use App\Enums\OcrQueueStage;
 use App\Models\Expedition;
 use App\Models\OcrQueue;
 use App\Models\OcrQueueFile;
@@ -61,7 +62,7 @@ class TesseractOcrBuild
             'expedition_id' => $expedition?->id,
             'total' => $total,
             'queued' => 0,
-            'stage' => 0,
+            'stage' => OcrQueueStage::Waiting,
             'files_ready' => 0,
             'error' => 0,
         ]);

@@ -20,6 +20,9 @@
 
 namespace App\Models;
 
+use App\Enums\ActorExpeditionState;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+
 /**
  * Class ActorExpedition
  *
@@ -59,12 +62,24 @@ class ActorExpedition extends BaseEloquentModel
     ];
 
     /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'state' => ActorExpeditionState::class,
+        ];
+    }
+
+    /**
      * Define a many-to-one relationship with the Actor model.
      *
      * This pivot model belongs to a single Actor, representing the
      * actor that processes the expedition.
      */
-    public function actor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function actor(): BelongsTo
     {
         return $this->belongsTo(Actor::class);
     }
@@ -75,7 +90,7 @@ class ActorExpedition extends BaseEloquentModel
      * This pivot model belongs to a single Expedition, representing the
      * expedition being processed by the actor.
      */
-    public function expedition(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function expedition(): BelongsTo
     {
         return $this->belongsTo(Expedition::class);
     }

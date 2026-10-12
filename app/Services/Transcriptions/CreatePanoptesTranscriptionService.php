@@ -24,6 +24,7 @@ use App\Facades\TranscriptionMapHelper;
 use App\Services\Csv\AwsS3CsvService;
 use App\Services\Process\CreateReportService;
 use App\Services\Subject\SubjectService;
+use League\Csv\CannotInsertRecord;
 use Str;
 use Throwable;
 use Validator;
@@ -108,7 +109,7 @@ class CreatePanoptesTranscriptionService
             return;
         }
 
-        if (trim($row['subject_subjectId'] === null)) {
+        if (trim((string) $row['subject_subjectId']) === '') {
             $this->csvError[] = array_merge(['error' => 'Transcript missing subject id'], $row);
 
             return;
@@ -152,7 +153,7 @@ class CreatePanoptesTranscriptionService
     /**
      * Check errors.
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      */
     public function checkCsvError(): ?string
     {

@@ -77,7 +77,7 @@ class SqsListenerOcrUpdate extends Command
         $this->service->run($idleChecker, $queueKey, $graceKey, $routeCallback, $this);
     }
 
-    private function routeMessage(array $data): void
+    public function routeMessage(array $data): void
     {
         // Allow either fileId OR subjectId for flexibility (especially for DLQ or metadata-only updates)
         if (! isset($data['fileId']) && ! isset($data['subjectId'])) {

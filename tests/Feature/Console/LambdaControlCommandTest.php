@@ -19,15 +19,17 @@
  */
 
 use Aws\CommandInterface;
+use Aws\Exception\AwsException;
 use Aws\Lambda\LambdaClient;
 use Aws\MockHandler;
 use Aws\Result;
 
 /**
  * Bind a Lambda client that answers with the given results in order and records
- * each AWS call as [operation, arguments] in $calls.
+ * each AWS call as [operation, arguments] in $calls. A string result makes that
+ * call fail with the string as the error message.
  *
- * @param  array<int, array<string, mixed>>  $results
+ * @param  array<int, array<string, mixed>|string>  $results
  * @param  array<int, array{0: string, 1: array<string, mixed>}>  $calls
  */
 function fakeLambdaClient(array $results, array &$calls): void
@@ -38,7 +40,7 @@ function fakeLambdaClient(array $results, array &$calls): void
             $arguments = array_filter($command->toArray(), fn ($key) => $key[0] !== '@', ARRAY_FILTER_USE_KEY);
             $calls[] = [$command->getName(), $arguments];
 
-            return new Result($result);
+            return is_string($result) ? new AwsException($result, $command) : new Result($result);
         });
     }
 
@@ -104,6 +106,59 @@ it('rejects an unknown alias without calling AWS', function () {
 
     $this->artisan('app:lambda-control', ['lambda' => 'BiospexImageFetcher', 'action' => 'stop', '--alias' => 'staging'])
         ->expectsOutput('Alias must be one of: prod, dev, loc')
+        ->assertFailed();
+
+    expect($calls)->toBe([]);
+});
+
+it('enables the alias\'s SQS triggers of every configured function with all, skipping those without triggers', function () {
+    config(['services.aws.lambdas' => ['BiospexOcrProcessor' => 100, 'BiospexImageFetcher' => 100]]);
+    $calls = [];
+    fakeLambdaClient([
+        ['EventSourceMappings' => []],
+        ['EventSourceMappings' => [['UUID' => '11111111-1111-1111-1111-111111111111']]],
+        ['State' => 'Enabling'],
+    ], $calls);
+
+    $this->artisan('app:lambda-control', ['lambda' => 'all', 'action' => 'start', '--alias' => 'dev'])
+        ->expectsOutput('Skipped BiospexOcrProcessor:dev: no SQS triggers')
+        ->expectsOutput('Enabled 1 SQS trigger(s) for BiospexImageFetcher:dev')
+        ->assertSuccessful();
+
+    expect($calls)->toBe([
+        ['ListEventSourceMappings', ['FunctionName' => 'BiospexOcrProcessor:dev']],
+        ['ListEventSourceMappings', ['FunctionName' => 'BiospexImageFetcher:dev']],
+        ['UpdateEventSourceMapping', ['UUID' => '11111111-1111-1111-1111-111111111111', 'Enabled' => true]],
+    ]);
+});
+
+it('keeps going after a function fails with all, then fails', function () {
+    config(['services.aws.lambdas' => ['BiospexZipCreator' => 10, 'BiospexImageFetcher' => 100]]);
+    $calls = [];
+    fakeLambdaClient([
+        'Service unavailable',
+        ['EventSourceMappings' => [['UUID' => '11111111-1111-1111-1111-111111111111']]],
+        ['State' => 'Disabling'],
+    ], $calls);
+
+    $this->artisan('app:lambda-control', ['lambda' => 'all', 'action' => 'stop', '--alias' => 'loc'])
+        ->expectsOutputToContain('Failed for BiospexZipCreator:loc')
+        ->expectsOutput('Disabled 1 SQS trigger(s) for BiospexImageFetcher:loc')
+        ->assertFailed();
+
+    expect($calls)->toBe([
+        ['ListEventSourceMappings', ['FunctionName' => 'BiospexZipCreator:loc']],
+        ['ListEventSourceMappings', ['FunctionName' => 'BiospexImageFetcher:loc']],
+        ['UpdateEventSourceMapping', ['UUID' => '11111111-1111-1111-1111-111111111111', 'Enabled' => false]],
+    ]);
+});
+
+it('rejects all without --alias without calling AWS', function () {
+    $calls = [];
+    fakeLambdaClient([], $calls);
+
+    $this->artisan('app:lambda-control', ['lambda' => 'all', 'action' => 'stop'])
+        ->expectsOutputToContain("'all' requires --alias")
         ->assertFailed();
 
     expect($calls)->toBe([]);

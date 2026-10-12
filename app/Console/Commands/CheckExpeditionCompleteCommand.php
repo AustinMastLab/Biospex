@@ -20,6 +20,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Expedition;
 use Artisan;
 use Illuminate\Console\Command;
@@ -38,7 +39,7 @@ class CheckExpeditionCompleteCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Recovery tool: sets every actor of each 100% complete expedition to Processing and runs workflow:manage for it';
 
     /**
      * Execute the console command.
@@ -52,7 +53,7 @@ class CheckExpeditionCompleteCommand extends Command
 
         $expeditions->each(function ($expedition) {
             $expedition->actorExpeditions->each(function ($actorExpedition) {
-                $actorExpedition->state = 2;
+                $actorExpedition->state = ActorExpeditionState::Processing;
                 $actorExpedition->save();
                 Artisan::call('workflow:manage', ['expeditionId' => $actorExpedition->expedition_id]);
             });

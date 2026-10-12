@@ -20,6 +20,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\OcrQueueStage;
 use App\Models\OcrQueue;
 use App\Models\User;
 use App\Notifications\Generic;
@@ -141,7 +142,7 @@ class TesseractOcrProcessJob implements ShouldQueue
             throw new \Exception("SQS send incomplete: {$sentCount}/{$totalFiles} messages sent");
         }
 
-        $this->ocrQueue->stage = 1;
+        $this->ocrQueue->stage = OcrQueueStage::ProcessingImages;
         $this->ocrQueue->save();
 
         $this->delete();

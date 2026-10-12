@@ -23,6 +23,7 @@ namespace App\Console\Commands;
 use App\Models\City;
 use App\Services\Csv\Csv;
 use Illuminate\Console\Command;
+use League\Csv\Exception;
 
 class PopulateCitiesTableCommand extends Command
 {
@@ -38,7 +39,7 @@ class PopulateCitiesTableCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Command description';
+    protected $description = 'Loads storage/worldcities.csv into the cities table';
 
     /**
      * Create a new command instance.
@@ -53,7 +54,7 @@ class PopulateCitiesTableCommand extends Command
     /**
      * Execute the console command.
      *
-     * @throws \League\Csv\Exception
+     * @throws Exception
      */
     public function handle()
     {

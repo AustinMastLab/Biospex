@@ -20,7 +20,10 @@
 
 namespace App\Services;
 
+use fXmlRpc\Transport\PsrTransport;
 use GuzzleHttp\Client;
+use GuzzleHttp\Psr7\HttpFactory;
+use Illuminate\Support\Facades\Log;
 use Supervisor\Supervisor;
 
 /**
@@ -43,13 +46,7 @@ class SupervisorControlService
     {
         $group = config('app.tag', ''); // e.g. "biospex" or "listeners"
 
-        $guzzle = new Client([
-            'curl' => [CURLOPT_UNIX_SOCKET_PATH => '/var/run/supervisor.sock'],
-        ]);
-
-        $transport = new \fXmlRpc\Transport\PsrTransport(new \GuzzleHttp\Psr7\HttpFactory, $guzzle);
-        $client = new \fXmlRpc\Client('http://localhost/RPC2', $transport);
-        $supervisor = new Supervisor($client);
+        $supervisor = $this->supervisor();
 
         foreach ($programs as $program) {
             // Add group prefix if set
@@ -61,7 +58,7 @@ class SupervisorControlService
             } catch (\Throwable $e) {
                 // Program might not exist yet — treat as STOPPED
                 $state = 'STOPPED';
-                \Log::info("Supervisor: Program {$fullProgramName} not found in Supervisor — assuming STOPPED");
+                Log::info("Supervisor: Program {$fullProgramName} not found in Supervisor — assuming STOPPED");
             }
 
             match ($action) {
@@ -71,8 +68,37 @@ class SupervisorControlService
                 default => throw new \InvalidArgumentException("Invalid action: {$action}"),
             };
 
-            \Log::info("Supervisor: {$action}ed program {$fullProgramName} (was {$state})");
+            Log::info("Supervisor: {$action}ed program {$fullProgramName} (was {$state})");
         }
+    }
+
+    /**
+     * State of every program in this app's Supervisor group, e.g. ['default_00' => 'RUNNING'].
+     *
+     * @return array<string, string>
+     */
+    public function processStates(): array
+    {
+        $group = config('app.tag', '');
+
+        return collect($this->supervisor()->getAllProcessInfo())
+            ->filter(fn (array $process) => $process['group'] === $group)
+            ->mapWithKeys(fn (array $process) => [$process['name'] => $process['statename']])
+            ->all();
+    }
+
+    /**
+     * Supervisor XML-RPC client on the local Unix socket.
+     */
+    protected function supervisor(): Supervisor
+    {
+        $guzzle = new Client([
+            'curl' => [CURLOPT_UNIX_SOCKET_PATH => '/var/run/supervisor.sock'],
+        ]);
+
+        $transport = new PsrTransport(new HttpFactory, $guzzle);
+
+        return new Supervisor(new \fXmlRpc\Client('http://localhost/RPC2', $transport));
     }
 
     /**
@@ -87,7 +113,7 @@ class SupervisorControlService
         if (in_array($state, ['STOPPED', 'BACKOFF', 'EXITED', 'FATAL', 'UNKNOWN'])) {
             $supervisor->startProcess($program);
         } else {
-            \Log::info("Supervisor: {$program} already running — skipping start");
+            Log::info("Supervisor: {$program} already running — skipping start");
         }
     }
 
@@ -103,7 +129,7 @@ class SupervisorControlService
         if ($state === 'RUNNING') {
             $supervisor->stopProcess($program);
         } else {
-            \Log::info("Supervisor: {$program} not running — skipping stop");
+            Log::info("Supervisor: {$program} not running — skipping stop");
         }
     }
 

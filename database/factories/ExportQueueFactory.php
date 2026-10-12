@@ -22,11 +22,14 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Enums\ExportQueueStage;
+use App\Models\Actor;
+use App\Models\Expedition;
 use App\Models\ExportQueue;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\ExportQueue>
+ * @extends Factory<ExportQueue>
  */
 final class ExportQueueFactory extends Factory
 {
@@ -43,9 +46,9 @@ final class ExportQueueFactory extends Factory
     public function definition(): array
     {
         return [
-            'expedition_id' => \App\Models\Expedition::factory(),
-            'actor_id' => \App\Models\Actor::factory(),
-            'stage' => fake()->randomNumber(),
+            'expedition_id' => Expedition::factory(),
+            'actor_id' => Actor::factory(),
+            'stage' => ExportQueueStage::Waiting,
             'queued' => fake()->randomNumber(1),
             'total' => fake()->randomNumber(),
             'error' => fake()->randomNumber(1),

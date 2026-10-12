@@ -20,6 +20,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Expedition;
 use App\Models\User;
 use App\Notifications\Generic;
@@ -109,12 +110,7 @@ class ZooniverseClassificationCountJob implements ShouldQueue
             return;
         }
 
-        /**
-         * State 3 is the final state for Zooniverse.
-         *
-         * @see \App\Services\Actor\Zooniverse\Zooniverse::process()
-         */
-        $expedition->zooActorExpedition->state = 3;
+        $expedition->zooActorExpedition->state = ActorExpeditionState::Complete;
         $expedition->zooActorExpedition->save();
 
         $expedition->completed = 1;
@@ -133,7 +129,7 @@ class ZooniverseClassificationCountJob implements ShouldQueue
     /**
      * Prevent job overlap using expeditionId.
      *
-     * @return \Illuminate\Queue\Middleware\WithoutOverlapping[]
+     * @return WithoutOverlapping[]
      */
     public function middleware(): array
     {

@@ -13,8 +13,26 @@ return [
     'panoptes_listener' => env('PANOPTES_LISTENER', 'prod-panoptes-pusher'),
     'panoptes_listener_enabled' => env('PANOPTES_LISTENER_ENABLED', 1),
 
+    /*
+     * Error alert emails (see App\Services\ErrorAlertService). Every error is still logged;
+     * only the emails are limited: one per error group per window, and a cap per hour.
+     */
+    'error_alerts' => [
+        'enabled' => (bool) env('ERROR_ALERTS_ENABLED', env('APP_ENV') === 'production'),
+        'to' => env('ERROR_ALERTS_TO'),
+        'group_window_minutes' => (int) env('ERROR_ALERTS_GROUP_WINDOW_MINUTES', 60),
+        'max_per_hour' => (int) env('ERROR_ALERTS_MAX_PER_HOUR', 10),
+    ],
+
+    /*
+     * Health check (app:health-check): Healthchecks.io ping URL, pinged when everything is healthy
+     * and with /fail when something isn't. Leave empty to only send alert emails.
+     */
+    'health_check_ping_url' => env('HEALTH_CHECK_PING_URL'),
+
     'api' => [
         'domain' => env('API_DOMAIN'),
+        'rate_limit' => (int) env('API_RATE_LIMIT', 300), // requests per minute per client IP
     ],
 
     'admin' => [
@@ -47,11 +65,6 @@ return [
         'project_resources_downloads' => env('UPLOAD_PROJECT_RESOURCES_DOWNLOADS', 'uploads/project-resources/downloads'),
         'project-assets' => env('UPLOAD_PROJECT_ASSETS', 'uploads/project-assets'),
         'site-assets' => env('UPLOAD_SITE_ASSETS', 'uploads/site-assets'),
-    ],
-
-    'ocr_stages' => [
-        'Waiting for OCR to start', // 0
-        'Processing Images', // 1
     ],
 
     'project_chart_series' => resource_path('json/projectChartSeries.json'),

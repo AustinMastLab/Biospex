@@ -2,12 +2,14 @@
 
 namespace App\Jobs;
 
+use App\Enums\LambdaStatus;
 use App\Models\ExportQueueFile;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 
 /**
  * Job to update the status of image export processing and trigger CSV build when complete.
@@ -66,7 +68,7 @@ class ZooniverseExportImageUpdateJob implements ShouldQueue
                 ->first();
 
         if (! $file) {
-            \Log::warning('ZooniverseExportImageUpdateJob: File not found', [
+            Log::warning('ZooniverseExportImageUpdateJob: File not found', [
                 'file_id' => $this->fileId,
                 'queue_id' => $this->queueId,
                 'subject_id' => $this->subjectId,
@@ -76,7 +78,7 @@ class ZooniverseExportImageUpdateJob implements ShouldQueue
         }
 
         // If the fetcher reported a failure, log the error message
-        if ($this->status !== 'success') {
+        if (LambdaStatus::tryFrom($this->status) !== LambdaStatus::Success) {
             $file->message = $this->error ?? 'Processing failed';
         }
 

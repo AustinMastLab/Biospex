@@ -18,6 +18,32 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Http\Controllers\Api\IndexController;
+namespace App\Mail;
 
-Route::post('/opcache/reset', [IndexController::class, 'resetOpcache'])->name('api.v1.opcache.reset');
+use Illuminate\Bus\Queueable;
+use Illuminate\Mail\Mailable;
+
+/**
+ * Plain-text email from the Panoptes listener (panoptes:listen). Sent right away, not queued,
+ * since the listener runs outside the queue workers.
+ */
+class PanoptesListenerAlert extends Mailable
+{
+    use Queueable;
+
+    /**
+     * Create a new message instance.
+     */
+    public function __construct(public string $alertSubject, public string $alertBody) {}
+
+    /**
+     * Build the message.
+     *
+     * @return $this
+     */
+    public function build()
+    {
+        return $this->subject($this->alertSubject)
+            ->text('mail.panoptes-listener-alert');
+    }
+}

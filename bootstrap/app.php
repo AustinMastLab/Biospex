@@ -6,6 +6,7 @@ use App\Http\Middleware\PreventRequestsDuringMaintenance;
 use App\Http\Middleware\RedirectIfAuthenticated;
 use App\Http\Middleware\TrimStrings;
 use App\Http\Middleware\TrustProxies;
+use App\Services\ErrorAlertService;
 use Illuminate\Cookie\Middleware\EncryptCookies;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -88,12 +89,13 @@ return Application::configure(basePath: dirname(__DIR__))
             ]
         );
 
-        // API middleware group (applied to routes/api.php)
+        // API middleware group (applied to routes/api.php), rate limited by the 'api' limiter in AppServiceProvider
         $middleware->api(
             append: [
                 EnsureFrontendRequestsAreStateful::class,
-            ], remove: ['throttle:api']
+            ]
         );
+        $middleware->throttleApi();
 
         // Middleware aliases (for use in route definitions)
         $middleware->alias([
@@ -104,6 +106,9 @@ return Application::configure(basePath: dirname(__DIR__))
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions) {
-        //
+        // Email reported errors, rate-limited; they are still logged as usual.
+        $exceptions->report(function (Throwable $e) {
+            app(ErrorAlertService::class)->report($e);
+        });
     })
     ->create();

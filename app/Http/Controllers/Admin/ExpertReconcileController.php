@@ -77,8 +77,8 @@ class ExpertReconcileController extends Controller
     }
 
     /**
-     * Start Expert Review set up by invoking explained via lambda BiospexLabelReconcilation
-     * and redirect to index for processing.
+     * Start Expert Review by sending the expedition to the reconcile trigger queue with
+     * explanations, which runs the BiospexReconcile312 Lambda, and redirect to index for processing.
      *
      * @throws \Throwable
      */

@@ -120,17 +120,6 @@ task('artisan:filament:optimize', function () {
 
 /*
  * =============================================================================
- * FILE SYSTEM & LOG MANAGEMENT
- * =============================================================================
- */
-
-desc('Truncate shared Laravel log files');
-task('truncate:logs', function () {
-    run(withUmask("find {{deploy_path}}/shared/storage/logs -type f -name '*.log' -exec truncate -s 0 {} +"));
-});
-
-/*
- * =============================================================================
  * SUPERVISOR PROCESS MANAGEMENT
  * =============================================================================
  */
@@ -139,6 +128,25 @@ desc('Reload Supervisor configuration (config-only update)');
 task('supervisor:reload', function () {
     run(withUmask('sudo supervisorctl reread'));
     run(withUmask('sudo supervisorctl update'));
+});
+
+desc('Restart the Panoptes listener so it runs the new release');
+task('supervisor:restart-panoptes-listener', function () {
+    cd('{{release_or_current_path}}');
+
+    // Supervisor names the program from config, e.g. "biospex:prod-panoptes-pusher".
+    $program = trim(run("php artisan tinker --execute 'echo config(\"app.tag\").\":\".config(\"config.panoptes_listener\");'"));
+    $status = run("sudo supervisorctl status {$program} || true");
+
+    // Leave it alone when it isn't running (disabled with PANOPTES_LISTENER_ENABLED, or stopped by hand).
+    if (! str_contains($status, 'RUNNING')) {
+        writeln("⚠️  Skipping Panoptes listener restart: {$program} is not running.");
+
+        return;
+    }
+
+    run("sudo supervisorctl restart {$program}");
+    writeln("✅ Restarted {$program}");
 });
 
 /*
@@ -218,50 +226,6 @@ task('deploy:ci-artifacts', function () {
     run(withUmask('rm -f artifact.zip')); // Cleanup artifact file
 
     writeln('✅ CI artifacts deployed successfully - No server-side building required!');
-});
-
-/*
- * =============================================================================
- * OPCACHE MANAGEMENT
- * =============================================================================
- */
-
-desc('Reset OpCache after deployment');
-task('opcache:reset', function () {
-    $token = $_ENV['API_TOKEN'] ?? getenv('API_TOKEN') ?? '';
-
-    if (empty($token)) {
-        writeln('⚠️  Skipping OpCache reset: API_TOKEN not set');
-
-        return;
-    }
-
-    $environment = get('environment', 'production');
-    $domain = ($environment === 'production') ? 'api.biospex.org' : 'devapi.biospex.org';
-    $url = "https://{$domain}/v1/opcache/reset";
-
-    try {
-        writeln("Triggering OpCache reset via API: {$url}");
-
-        $response = run(withUmask(
-            'curl -sS -k -X POST '.
-            '--connect-timeout 10 --max-time 30 '.
-            "-H 'Authorization: Bearer {$token}' ".
-            "-H 'Accept: application/json' ".
-            "-w '\nHTTP_STATUS=%{http_code}\n' ".
-            "'{$url}'"
-        ));
-
-        if (str_contains($response, 'successful')) {
-            writeln('✅ OpCache reset successful');
-
-            return;
-        }
-
-        throw new \Exception("Response: {$response}");
-    } catch (\Exception $e) {
-        writeln('❌ OpCache reset failed: '.$e->getMessage());
-    }
 });
 
 /*

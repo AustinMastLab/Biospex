@@ -20,6 +20,7 @@
 
 namespace App\Services\Actor\GeoLocate;
 
+use App\Enums\ActorExpeditionState;
 use App\Jobs\GeoLocateStatsJob;
 use App\Models\ActorExpedition;
 
@@ -37,7 +38,7 @@ class GeoLocate
      */
     public function process(ActorExpedition $actorExpedition): void
     {
-        if ($actorExpedition->state === 2 && config('geolocate.enabled')) {
+        if ($actorExpedition->state === ActorExpeditionState::Processing && config('geolocate.enabled')) {
             GeoLocateStatsJob::dispatch($actorExpedition);
         }
     }

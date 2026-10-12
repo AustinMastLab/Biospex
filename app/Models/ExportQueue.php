@@ -20,8 +20,11 @@
 
 namespace App\Models;
 
+use App\Enums\ExportQueueStage;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class ExportQueue
@@ -49,9 +52,21 @@ class ExportQueue extends BaseEloquentModel
     ];
 
     /**
+     * Get the attributes that should be cast.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'stage' => ExportQueueStage::class,
+        ];
+    }
+
+    /**
      * Get Expedition relation.
      */
-    public function expedition(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function expedition(): BelongsTo
     {
         return $this->belongsTo(Expedition::class);
     }
@@ -59,7 +74,7 @@ class ExportQueue extends BaseEloquentModel
     /**
      * Get Actor relation.
      */
-    public function actor(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function actor(): BelongsTo
     {
         return $this->belongsTo(Actor::class);
     }
@@ -67,7 +82,7 @@ class ExportQueue extends BaseEloquentModel
     /**
      * Get ExportQueueFile relation.
      */
-    public function files(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function files(): HasMany
     {
         return $this->hasMany(ExportQueueFile::class, 'queue_id', 'id');
     }

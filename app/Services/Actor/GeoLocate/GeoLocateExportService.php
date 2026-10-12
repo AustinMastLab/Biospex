@@ -20,6 +20,7 @@
 
 namespace App\Services\Actor\GeoLocate;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Download;
 use App\Models\Expedition;
 use App\Models\GeoLocateExport;
@@ -27,6 +28,7 @@ use App\Models\GeoLocateForm;
 use App\Services\Csv\AwsS3CsvService;
 use Exception;
 use Illuminate\Support\Facades\Storage;
+use League\Csv\CannotInsertRecord;
 use Throwable;
 
 /**
@@ -61,9 +63,9 @@ class GeoLocateExportService
      *
      * @param  Expedition  $expedition  The expedition to be processed.
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      * @throws \League\Csv\Exception
-     * @throws \Throwable
+     * @throws Throwable
      */
     public function process(Expedition $expedition): void
     {
@@ -78,7 +80,7 @@ class GeoLocateExportService
 
         } catch (Throwable $throwable) {
             $expedition->actors()->updateExistingPivot(config('geolocate.actor_id'), [
-                'state' => 0,
+                'state' => ActorExpeditionState::NotStarted->value,
             ]);
 
             $csvFilePath = $this->getCsvFilePath();
@@ -156,9 +158,9 @@ class GeoLocateExportService
      *
      * @param  Expedition  $expedition  The expedition entity containing data and configurations for exporting.
      *
-     * @throws \League\Csv\CannotInsertRecord
+     * @throws CannotInsertRecord
      * @throws \League\Csv\Exception
-     * @throws \Exception
+     * @throws Exception
      */
     public function build(Expedition $expedition): void
     {
@@ -256,7 +258,7 @@ class GeoLocateExportService
     public function updateActorExpeditionPivot(Expedition $expedition): void
     {
         $expedition->actors()->updateExistingPivot(config('geolocate.actor_id'), [
-            'state' => 1,
+            'state' => ActorExpeditionState::Exported->value,
         ]);
     }
 
@@ -272,7 +274,7 @@ class GeoLocateExportService
         $expedition->geoLocateDataSource->delete();
 
         $expedition->actors()->updateExistingPivot(config('geolocate.actor_id'), [
-            'state' => 0,
+            'state' => ActorExpeditionState::NotStarted->value,
         ]);
     }
 

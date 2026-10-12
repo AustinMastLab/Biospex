@@ -20,6 +20,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\ExportQueueStage;
 use App\Models\ExportQueue;
 use App\Models\ExportQueueFile;
 use App\Notifications\Generic;
@@ -34,6 +35,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Notification;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
 use Throwable;
 
 /**
@@ -62,8 +65,8 @@ class ZooniverseExportCreateReportJob implements ShouldBeUnique, ShouldQueue
     }
 
     /**
-     * @throws \League\Csv\CannotInsertRecord
-     * @throws \League\Csv\Exception
+     * @throws CannotInsertRecord
+     * @throws Exception
      */
     /**
      * Execute the job.
@@ -72,8 +75,8 @@ class ZooniverseExportCreateReportJob implements ShouldBeUnique, ShouldQueue
      *
      * @param  CreateReportService  $createReportService  Service to create CSV reports
      *
-     * @throws \League\Csv\CannotInsertRecord
-     * @throws \League\Csv\Exception
+     * @throws CannotInsertRecord
+     * @throws Exception
      */
     public function handle(CreateReportService $createReportService): void
     {
@@ -116,7 +119,7 @@ class ZooniverseExportCreateReportJob implements ShouldBeUnique, ShouldQueue
         Notification::send($users, new Generic($attributes));
 
         // === FINAL: ONLY DISPATCH CLEANUP ===
-        $this->exportQueue->stage = 5;
+        $this->exportQueue->stage = ExportQueueStage::DeletingFiles;
         $this->exportQueue->save();
 
         ZooniverseExportDeleteFilesJob::dispatch($this->exportQueue);

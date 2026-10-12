@@ -35,6 +35,8 @@ Things to know:
 
 An export turns an expedition's subjects into a Zooniverse-ready zip of images plus a manifest CSV. State is tracked in `ExportQueue` (`stage`) and `ExportQueueFile` (`processed`).
 
+The numbers below are enum values: `ActorExpedition.state` is `App\Enums\ActorExpeditionState` (1 `Exported`, 2 `Processing`, 3 `Complete`), and `ExportQueue.stage` is `App\Enums\ExportQueueStage` (1 `ProcessingImages`, 2 `BuildingCsv`, 3 `CreatingArchive`, 4 `CreatingReport`, 5 `DeletingFiles`). The process monitor shows each stage's label.
+
 ```
 workflow:manage → Zooniverse actor (ActorExpedition state 1) → ZooniverseExportBuildQueueJob   creates ExportQueue and its files
 export:queue (every minute) → ZooniverseExportQueueService
@@ -49,7 +51,7 @@ export:queue (every minute) → ZooniverseExportQueueService
 
 - **Failed image fetches go to `{prefix}-image-trigger-dlq`.** `image:listen-dlq` marks those files as failed.
 - **Archive.org images use their own queue,** `{prefix}-ia-image-trigger`, handled by `InternetArchiveImageFetcher` with a lower concurrency.
-- **Restarting a failed export:** `app:export-stage` reruns a stage manually, and `export:queue {expeditionId}` resets an expedition.
+- **Restarting a failed export:** `app:export-stage {queueId} --stage=N` reruns stage 1–5 manually (without `--stage`, the queue's current stage), and `export:queue {expeditionId}` resets an expedition.
 
 ## 3. Tesseract OCR
 
@@ -64,7 +66,7 @@ tesseract:ocr-process (every minute) → TesseractOcrQueueService
   when every file is processed → TesseractOcrCompleteJob
 ```
 
-OCR can be turned off with `OCR_ENABLED=false` (`config/config.php` → `ocr_enabled`). `env.example` still lists the old name, `OCR_DISABLE`. `app:clear-subjects` clears OCR data from subjects that are assigned to expeditions.
+OCR can be turned off with `OCR_ENABLED=false` (`config/config.php` → `ocr_enabled`). `app:clear-subjects` clears OCR data from subjects that are assigned to expeditions.
 
 ## 4. Zooniverse CSV, reconciliation, and nightly backfill
 
@@ -85,7 +87,7 @@ workflow:manage → Zooniverse actor (ActorExpedition state 2, zooniverse.enable
 ```
 
 - **Rerunning by hand:** `zooniverse:reconcile-chain {ids?}` sends expeditions straight to `{prefix}-reconcile-trigger`, which also runs `BiospexReconcile312`. `zooniverse:explained` does the same for "explained" reconciliation, which `ReconcileProcessExplained` handles.
-- **Skipping expeditions:** expedition IDs listed in `config/zooniverse.php` under `skip_api` and `skip_reconcile` are skipped. These lists are hard-coded in the config file, not read from the environment.
+- **Skipping expeditions:** an expedition's **Skip Panoptes API** (`skip_api`) and **Skip reconcile** (`skip_reconcile`) toggles, under Zooniverse Processing on its Filament edit page, exclude it from these steps. Only the admin panel can set them; the project owners' expedition form ignores them.
 - **Expert review** (`expert:review`, `ExpertReview*Job`) builds review records from reconciled data, and `ExpertReconcileReviewPublishJob` publishes them.
 
 ## 5. Download batches

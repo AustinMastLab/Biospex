@@ -23,6 +23,7 @@ namespace App\Services\DarwinCore;
 use App\Models\ImportOccurrence;
 use App\Models\Subject;
 use App\Services\Csv\Csv;
+use App\Services\DarwinCore\Exceptions\MetaFileException;
 use App\Services\DarwinCore\ValueObjects\ProcessedMetaData;
 use App\Services\Project\HeaderService;
 use Exception;
@@ -67,7 +68,7 @@ class DwcBatchProcessor
     /**
      * Process Darwin Core Archive with batch processing.
      *
-     * @throws \League\Csv\Exception|\App\Services\DarwinCore\Exceptions\MetaFileException
+     * @throws \League\Csv\Exception|MetaFileException
      */
     public function processArchive(int $projectId, string $directory): array
     {
@@ -371,8 +372,9 @@ class DwcBatchProcessor
         // Validate the entire batch
         $validationResult = $this->validation->validateBatch($batch, $header, $metaFields, $projectId);
 
-        // Add rejected records to collection
+        // Collect rejected and duplicate rows for the import reports
         $this->rejectedMedia = array_merge($this->rejectedMedia, $validationResult['rejected']);
+        $this->duplicates = array_merge($this->duplicates, $validationResult['duplicates']);
 
         if (empty($validationResult['valid'])) {
             return;

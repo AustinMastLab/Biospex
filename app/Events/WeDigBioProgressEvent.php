@@ -21,10 +21,11 @@
 namespace App\Events;
 
 use Illuminate\Broadcasting\Channel;
-use Illuminate\Contracts\Broadcasting\ShouldBroadcast;
+use Illuminate\Contracts\Broadcasting\ShouldBroadcastNow;
+use Illuminate\Contracts\Broadcasting\ShouldRescue;
 use Illuminate\Foundation\Events\Dispatchable;
 
-class WeDigBioProgressEvent extends Event implements ShouldBroadcast
+class WeDigBioProgressEvent extends Event implements ShouldBroadcastNow, ShouldRescue
 {
     use Dispatchable;
 
@@ -32,14 +33,6 @@ class WeDigBioProgressEvent extends Event implements ShouldBroadcast
      * ScoreboardEvent constructor.
      */
     public function __construct(public string $uuid, public array $data) {}
-
-    /**
-     * The name of the queue on which to place the broadcasting job.
-     */
-    public function broadcastQueue(): string
-    {
-        return config('config.queue.event');
-    }
 
     /**
      * Get the channels the event should be broadcast on.

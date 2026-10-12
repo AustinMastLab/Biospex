@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ActorExpeditions\Schemas;
 
+use App\Enums\ActorExpeditionState;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Schemas\Schema;
@@ -18,10 +19,10 @@ class ActorExpeditionForm
                 Select::make('actor_id')
                     ->relationship('actor', 'title')
                     ->required(),
-                TextInput::make('state')
+                Select::make('state')
+                    ->options(ActorExpeditionState::class)
                     ->required()
-                    ->numeric()
-                    ->default(0),
+                    ->default(ActorExpeditionState::NotStarted),
                 TextInput::make('total')
                     ->required()
                     ->numeric()

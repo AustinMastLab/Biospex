@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -18,35 +18,19 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Console\Commands;
+use App\Models\User;
+use Laravel\Sanctum\Sanctum;
 
-use Illuminate\Console\Command;
-use Illuminate\Foundation\Inspiring;
+it('rate limits API requests', function () {
+    config(['config.api.rate_limit' => 2]);
+    Sanctum::actingAs(User::factory()->create(), ['wedigbio-dashboard:read']);
 
-/**
- * Class Inspire
- */
-class Inspire extends Command
-{
-    /**
-     * The name and signature of the console command.
-     *
-     * @var string
-     */
-    protected $signature = 'inspire';
+    $this->getJson(route('api.v1.wedigbio-dashboard.index'));
+    $this->getJson(route('api.v1.wedigbio-dashboard.index'));
 
-    /**
-     * The console command description.
-     *
-     * @var string
-     */
-    protected $description = 'Display an inspiring quote';
+    $this->getJson(route('api.v1.wedigbio-dashboard.index'))->assertTooManyRequests();
+});
 
-    /**
-     * Execute the console command.
-     */
-    public function handle(): void
-    {
-        $this->comment(PHP_EOL.Inspiring::quote().PHP_EOL);
-    }
-}
+it('checks the Reverb server certificate', function () {
+    expect(config('broadcasting.connections.reverb.client_options.verify', true))->not->toBeFalse();
+});

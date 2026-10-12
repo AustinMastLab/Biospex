@@ -28,8 +28,11 @@ use App\Observers\ExpeditionLogoObserver;
 use App\Observers\ExpeditionPublicCacheObserver;
 use App\Observers\ProjectLogoObserver;
 use App\Observers\ProjectPublicCacheObserver;
+use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
+use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
 use Schema;
@@ -63,6 +66,10 @@ class AppServiceProvider extends ServiceProvider
         Event::observe(EventPublicCacheObserver::class);
         Expedition::observe([ExpeditionPublicCacheObserver::class, ExpeditionLogoObserver::class]);
         Project::observe([ProjectPublicCacheObserver::class, ProjectLogoObserver::class]);
+
+        // API requests per minute per client IP (throttle:api). WeDigBio Reports pages through the
+        // WeDigBio dashboard API in quick bursts when catching up, so keep this generous.
+        RateLimiter::for('api', fn (Request $request) => Limit::perMinute(config('config.api.rate_limit'))->by($request->ip()));
     }
 
     /**

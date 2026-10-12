@@ -8,6 +8,7 @@ use App\Models\Workflow;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\Textarea;
 use Filament\Forms\Components\TextInput;
+use Filament\Forms\Components\Toggle;
 use Filament\Schemas\Components\Section;
 use Filament\Schemas\Schema;
 
@@ -55,6 +56,18 @@ class ExpeditionForm
                             ->maxSize(2048),
                     ])
                     ->columns(1)
+                    ->columnSpanFull(),
+                Section::make('Zooniverse Processing')
+                    ->description('Exclude an expedition that causes problems from automatic Zooniverse processing.')
+                    ->schema([
+                        Toggle::make('skip_api')
+                            ->label('Skip Panoptes API')
+                            ->helperText('Don\'t request classification exports from the Panoptes API.'),
+                        Toggle::make('skip_reconcile')
+                            ->label('Skip reconcile')
+                            ->helperText('Don\'t run reconciliation, expert review or live transcription processing.'),
+                    ])
+                    ->columns(2)
                     ->columnSpanFull(),
             ]);
     }

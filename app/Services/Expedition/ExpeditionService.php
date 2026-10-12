@@ -20,6 +20,7 @@
 
 namespace App\Services\Expedition;
 
+use App\Enums\ActorExpeditionState;
 use App\Models\Expedition;
 use App\Models\Project;
 use App\Models\User;
@@ -254,7 +255,7 @@ class ExpeditionService
             } else {
                 return [
                     $actor->id => [
-                        'state' => 0, 'order' => $actor->pivot->order, 'total' => $subjectCount,
+                        'state' => ActorExpeditionState::NotStarted->value, 'order' => $actor->pivot->order, 'total' => $subjectCount,
                     ],
                 ];
             }
@@ -431,7 +432,7 @@ class ExpeditionService
             }
         } catch (\Exception $e) {
             // Log error but don't fail the update
-            \Log::error("Failed to remove old logo for expedition {$expedition->id}: ".$e->getMessage());
+            Log::error("Failed to remove old logo for expedition {$expedition->id}: ".$e->getMessage());
         }
     }
 }

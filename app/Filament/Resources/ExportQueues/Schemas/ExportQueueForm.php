@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ExportQueues\Schemas;
 
+use App\Enums\ExportQueueStage;
 use Filament\Forms\Components\Select;
 use Filament\Forms\Components\TextInput;
 use Filament\Forms\Components\Toggle;
@@ -19,10 +20,10 @@ class ExportQueueForm
                 Select::make('actor_id')
                     ->relationship('actor', 'title')
                     ->required(),
-                TextInput::make('stage')
+                Select::make('stage')
+                    ->options(ExportQueueStage::class)
                     ->required()
-                    ->numeric()
-                    ->default(0),
+                    ->default(ExportQueueStage::Waiting),
                 Toggle::make('queued')
                     ->required(),
                 TextInput::make('total')

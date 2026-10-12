@@ -20,6 +20,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\ExportQueueStage;
 use App\Models\ExportQueue;
 use App\Models\ExportQueueFile;
 use App\Services\Actor\Zooniverse\ZooniverseZipTriggerService;
@@ -127,7 +128,7 @@ class ZooniverseExportBuildCsvJob implements ShouldBeUnique, ShouldQueue
         // === SEND ZIP TRIGGER ===
         $zipTriggerService->sendZipTrigger($this->exportQueue, $exportData['totalSize'], $exportData['fileCount']);
 
-        $this->exportQueue->stage = 3;
+        $this->exportQueue->stage = ExportQueueStage::CreatingArchive;
         $this->exportQueue->save();
     }
 

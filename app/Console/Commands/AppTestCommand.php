@@ -31,9 +31,8 @@ class AppTestCommand extends Command
 
     /**
      * The console command description.
-     *  chaange to push
      */
-    protected $description = 'Simulate OCR Process for Queue';
+    protected $description = 'Scratch command for trying out code locally. Commit it with an empty handle().';
 
     /**
      * Execute the console command.

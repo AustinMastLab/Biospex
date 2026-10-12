@@ -20,6 +20,7 @@
 
 namespace App\Console\Commands;
 
+use App\Enums\LambdaStatus;
 use App\Jobs\LabelReconciliationJob;
 use App\Services\SqsListenerService;
 use Illuminate\Console\Command;
@@ -29,6 +30,12 @@ use InvalidArgumentException;
 use RuntimeException;
 use Throwable;
 
+/**
+ * Listens to the reconcile update queue for results from the reconcile Lambda.
+ *
+ * Messages are routed by their `function` field: `BiospexLabelReconciliation`, sent by the
+ * BiospexReconcile312 Lambda.
+ */
 class SqsListenerReconcileUpdate extends Command
 {
     /** @var string Command signature */
@@ -64,7 +71,7 @@ class SqsListenerReconcileUpdate extends Command
     /**
      * Validate required AWS configuration settings.
      *
-     * @throws \RuntimeException When the required configuration is missing
+     * @throws RuntimeException When the required configuration is missing
      */
     private function validateConfiguration(): void
     {
@@ -98,9 +105,9 @@ class SqsListenerReconcileUpdate extends Command
      *
      * @param  array  $data  Message data
      *
-     * @throws \InvalidArgumentException|\Throwable When a function is missing or unknown
+     * @throws InvalidArgumentException|Throwable When a function is missing or unknown
      */
-    private function routeMessage(array $data): void
+    public function routeMessage(array $data): void
     {
         if (! isset($data['function'])) {
             throw new InvalidArgumentException('Message missing required "function" field');
@@ -128,15 +135,15 @@ class SqsListenerReconcileUpdate extends Command
      *
      * @param  array  $data  Message data containing reconciliation results
      *
-     * @throws \InvalidArgumentException When required fields are missing
-     * @throws \RuntimeException When reconciliation failed
+     * @throws InvalidArgumentException When required fields are missing
+     * @throws RuntimeException When reconciliation failed
      */
     private function dispatchLabelReconciliationJob(array $data): void
     {
         $status = $data['status'] ?? throw new InvalidArgumentException('Missing status');
         $expeditionId = $data['expeditionId'] ?? throw new InvalidArgumentException('Missing expeditionId');
 
-        if ($status === 'failed') {
+        if (LambdaStatus::tryFrom($status) === LambdaStatus::Failed) {
             $error = $data['error'] ?? 'Unknown error';
             Log::error('BiospexLabelReconciliation failed', $data);
 

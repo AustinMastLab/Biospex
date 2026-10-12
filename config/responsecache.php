@@ -1,7 +1,7 @@
 <?php
 
 use App\Services\Cache\FlashReplacer;
-use Spatie\ResponseCache\CacheProfiles\CacheAllSuccessfulGetRequests;
+use App\Services\Cache\WeDigBioEventCacheProfile;
 use Spatie\ResponseCache\Hasher\DefaultHasher;
 use Spatie\ResponseCache\Replacers\CsrfTokenReplacer;
 use Spatie\ResponseCache\Serializers\JsonSerializer;
@@ -101,10 +101,10 @@ return [
 
     /*
      * The given class determines if a request should be cached.
-     * By default all successful GET-requests will be cached.
+     * All successful GET-requests are cached; pages expire early when a WeDigBio event starts or ends.
      * You can provide your own by using the CacheProfile.
      */
-    'cache_profile' => CacheAllSuccessfulGetRequests::class,
+    'cache_profile' => WeDigBioEventCacheProfile::class,
 
     /*
      * This class is responsible for generating a hash for

@@ -24,8 +24,7 @@ class OcrQueuesTable
                 TextColumn::make('total')
                     ->numeric(thousandsSeparator: '')
                     ->sortable(),
-                TextColumn::make('status')
-                    ->numeric(thousandsSeparator: '')
+                TextColumn::make('stage')
                     ->sortable(),
                 IconColumn::make('error')
                     ->boolean(),

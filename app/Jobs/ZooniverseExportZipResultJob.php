@@ -20,6 +20,8 @@
 
 namespace App\Jobs;
 
+use App\Enums\ExportQueueStage;
+use App\Enums\LambdaStatus;
 use App\Models\Download;
 use App\Models\ExportQueue;
 use App\Models\User;
@@ -75,7 +77,7 @@ class ZooniverseExportZipResultJob implements ShouldQueue
             throw new \Exception("ExportQueue #{$queueId} not found");
         }
 
-        if ($status === 'zip-ready') {
+        if (LambdaStatus::tryFrom((string) $status) === LambdaStatus::ZipReady) {
             $this->handleZipSuccess($queue);
         } else {
             $this->handleZipFailure($queue, $this->data);
@@ -91,7 +93,7 @@ class ZooniverseExportZipResultJob implements ShouldQueue
      */
     private function handleZipSuccess(ExportQueue $queue): void
     {
-        $queue->stage = 4;
+        $queue->stage = ExportQueueStage::CreatingReport;
         $queue->save();
 
         // === CREATE DOWNLOAD RECORD ===
@@ -152,7 +154,7 @@ class ZooniverseExportZipResultJob implements ShouldQueue
      *
      * Updates the queue status and notifies the admin user about the failure.
      *
-     * @param  \Throwable  $throwable  The exception that caused the failure
+     * @param  Throwable  $throwable  The exception that caused the failure
      */
     public function failed(Throwable $throwable): void
     {

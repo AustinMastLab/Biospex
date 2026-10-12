@@ -26,7 +26,6 @@ set('repository', 'https://github.com/AustinMastLab/Biospex.git');
 set('ssm_app', 'biospex');  // .env is generated from SSM /biospex/{environment} (env:ssm)
 set('base_path', '/data/web');
 set('remote_user', 'ubuntu');
-set('php_fpm_version', '8.3');
 set('ssh_multiplexing', true);
 set('writable_mode', 'chmod');
 set('keep_releases', 3);  // Keep only 3 recent releases
@@ -47,7 +46,7 @@ set('shared_dirs', [
     'public/fonts',     // Web fonts
     'public/images',    // Static images
     'public/svg',       // SVG assets
-    'public/vendor',    // Vendor assets (Nova, etc.)
+    'public/vendor',    // Vendor assets (Livewire, etc.)
 ]);
 
 // Files/Directories to Remove After Deployment
@@ -126,17 +125,17 @@ task('deploy', [
     'artisan:optimize',        // Run Laravel optimization
     'artisan:filament:optimize',   // Optimize Filament resources and assets
 
-    // Phase 7: Domain-Specific Supervisor Management
-    'supervisor:reload', // Update configs only
-    'artisan:queue:restart',
-
     // Phase 8: Finalization
-    'truncate:logs',           // Truncate shared logs before publish
     'deploy:clear_paths',      // Remove unnecessary files/directories
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
 
-    // Phase 6: OpCache Management (Now moved after publish)
-    'opcache:reset',           // <--- NOW IT WILL FIND THE ROUTE
+    // Phase 7: Supervisor and long-running processes, after the symlink switch,
+    // so Supervisor starts them from the new release instead of the one being
+    // replaced. A changed config makes `supervisorctl update` restart the group.
+    'supervisor:reload',
+    'artisan:queue:restart',
+    'artisan:reverb:restart',
+    'supervisor:restart-panoptes-listener',
 
     'deploy:verify-structure', // Verify flat structure post-deploy
 ]);

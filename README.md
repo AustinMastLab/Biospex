@@ -45,18 +45,6 @@ For the full deployment process, environment configuration (`.env` comes from AW
 - ✅ **Environment Isolation**: Separate queue names for development vs production
 - ✅ **Skip Deployment**: Use `[skip deploy]` in commit messages to push without deploying
 
-### Detailed Setup & Configuration
-
-**For complete deployment setup, troubleshooting, and advanced configuration:**  
-👉 **[See DEPLOYMENT_SETUP.md](DEPLOYMENT_SETUP.md)**
-
-The detailed guide covers:
-- GitHub token configuration
-- CI/CD workflow explanation  
-- Queue configuration and environment variables
-- Troubleshooting common deployment issues
-- Testing procedures and best practices
-
 ## License
 Biospex is open-sourced software licensed under GNU General Public License v3.0.
 

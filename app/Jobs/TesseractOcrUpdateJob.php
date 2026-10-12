@@ -20,6 +20,7 @@
 
 namespace App\Jobs;
 
+use App\Enums\LambdaStatus;
 use App\Models\OcrQueueFile;
 use App\Services\Subject\SubjectService;
 use Illuminate\Bus\Queueable;
@@ -27,6 +28,7 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Facades\Log;
 use Throwable;
 
 /**
@@ -35,7 +37,7 @@ use Throwable;
  * This job handles updating the OCR text results for subjects after processing,
  * managing the OCR queue status, and tracking completion of OCR batches.
  *
- * @implements \Illuminate\Contracts\Queue\ShouldQueue
+ * @implements ShouldQueue
  */
 class TesseractOcrUpdateJob implements ShouldQueue
 {
@@ -65,7 +67,7 @@ class TesseractOcrUpdateJob implements ShouldQueue
         $this->fileId = (int) ($data['fileId'] ?? 0);
         $this->queueId = (int) ($data['queueId'] ?? 0);
         $this->subjectId = (string) ($data['subjectId'] ?? '');
-        $this->status = (string) ($data['status'] ?? 'failed');
+        $this->status = (string) ($data['status'] ?? LambdaStatus::Failed->value);
         $this->text = $data['text'] ?? null;
         $this->error = $data['error'] ?? null;
 
@@ -87,7 +89,7 @@ class TesseractOcrUpdateJob implements ShouldQueue
                 ->first();
 
         if (! $file) {
-            \Log::warning('TesseractOcrUpdateJob: File not found', [
+            Log::warning('TesseractOcrUpdateJob: File not found', [
                 'file_id' => $this->fileId,
                 'subject_id' => $this->subjectId,
             ]);
@@ -95,7 +97,7 @@ class TesseractOcrUpdateJob implements ShouldQueue
             return;
         }
 
-        if ($this->status === 'success') {
+        if (LambdaStatus::tryFrom($this->status) === LambdaStatus::Success) {
             $text = trim(preg_replace('/\s+/', ' ', $this->text));
             $text = $text !== '' ? $text : '[OCR produced no text]';
             $subjectService->update(['ocr' => $text], $this->subjectId);

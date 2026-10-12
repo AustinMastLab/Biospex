@@ -21,15 +21,17 @@
 namespace App\Repositories;
 
 use App\Models\OcrQueueFile;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\LazyCollection;
 
 /**
- * Class OcrQueueRepository
+ * Class OcrQueueFileRepository
  */
 class OcrQueueFileRepository extends BaseRepository
 {
     /**
-     * OcrQueueRepository constructor.
+     * OcrQueueFileRepository constructor.
      */
     public function __construct(OcrQueueFile $ocrQueueFile)
     {
@@ -47,9 +49,9 @@ class OcrQueueFileRepository extends BaseRepository
     /**
      * Get OcrQueueFile empty.
      *
-     * @return \Illuminate\Database\Eloquent\Builder[]|\Illuminate\Database\Eloquent\Collection
+     * @return Builder[]|Collection
      */
-    public function getUnprocessedOcrQueueFiles(int $queueId, int $take = 50): \Illuminate\Database\Eloquent\Collection|array
+    public function getUnprocessedOcrQueueFiles(int $queueId, int $take = 50): Collection|array
     {
         return $this->model->where('queue_id', $queueId)->where('processed', 0)->take($take)->get();
     }

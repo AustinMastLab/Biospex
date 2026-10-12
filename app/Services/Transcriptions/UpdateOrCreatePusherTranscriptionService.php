@@ -131,7 +131,7 @@ class UpdateOrCreatePusherTranscriptionService
         ];
 
         $transcriptionContent = [
-            'country' => ! empty($transcription->Country) ? $transcription->Country : $classification->country,
+            'country' => ! empty($transcription->Country) ? $transcription->Country : $classification->transcriptionContent['country'],
             'province' => TranscriptionMapHelper::mapTranscriptionField('province', $transcription, $classification),
             'county' => ! empty($transcription->County) ? $transcription->County : $classification->transcriptionContent['county'],
             'locality' => ! empty($transcription->Location) ? $transcription->Location : '',

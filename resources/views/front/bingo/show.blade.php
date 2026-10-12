@@ -35,9 +35,9 @@
 @endsection
 
 @push('scripts')
-    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    <script>
+    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js" defer></script>
+    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js" defer></script>
+    <script type="module">
         $('#words-tbl').DataTable();
     </script>
 @endpush

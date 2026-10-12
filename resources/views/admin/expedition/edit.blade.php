@@ -101,6 +101,6 @@
     </div>
 
     @push('scripts')
-        <script src="{{ mix('js/livewire.js') }}"></script>
+        @vite('resources/js/livewire/index.js')
     @endpush
 @endsection

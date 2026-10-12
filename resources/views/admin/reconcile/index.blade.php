@@ -145,6 +145,5 @@
 
 @push('scripts')
     <script src="https://unpkg.com/@panzoom/panzoom@4.6.0/dist/panzoom.min.js"></script>
-    <script src="{{ secure_asset('js/expertReview.min.js') }}"></script>
-    <script src="{{ secure_asset('js/jquery.form.min.js') }}"></script>
+    @vite('resources/js/expertReview.js')
 @endpush

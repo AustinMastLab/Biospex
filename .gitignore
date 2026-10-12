@@ -6,8 +6,8 @@ node_modules
 /public/css
 /public/js
 /public/fonts
-/public/images
-/public/mix-manifest.json
+/public/build
+/public/hot
 storage/cmd.txt
 storage/testing
 storage/app/classifications/*

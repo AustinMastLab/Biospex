@@ -7,9 +7,7 @@
     <!-- Copyright -->
 </footer>
 @include('common.php-vars-javascript')
-<script src="{{ mix('/js/manifest.js') }}"></script>
-<script src="{{ mix('/js/vendor.js') }}"></script>
-<script src="{{ mix('/js/admin.js') }}"></script>
+@vite('resources/js/admin-app.js')
 @include('common.amchart')
 @livewireScripts
 @stack('scripts')

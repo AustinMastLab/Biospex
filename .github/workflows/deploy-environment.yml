@@ -79,12 +79,12 @@ jobs:
         run: yarn install --frozen-lockfile --ignore-engines
 
       - name: Build assets
-        run: npm run production
+        run: yarn build
         env:
-          MIX_REVERB_APP_KEY: ${{ vars[format('{0}_REVERB_APP_KEY', inputs.vars_prefix)] }}
-          MIX_REVERB_HOST: ${{ vars[format('{0}_REVERB_HOST', inputs.vars_prefix)] }}
-          MIX_REVERB_PORT: ${{ vars[format('{0}_REVERB_PORT', inputs.vars_prefix)] }}
-          MIX_REVERB_SCHEME: ${{ vars[format('{0}_REVERB_SCHEME', inputs.vars_prefix)] }}
+          VITE_REVERB_APP_KEY: ${{ vars[format('{0}_REVERB_APP_KEY', inputs.vars_prefix)] }}
+          VITE_REVERB_HOST: ${{ vars[format('{0}_REVERB_HOST', inputs.vars_prefix)] }}
+          VITE_REVERB_PORT: ${{ vars[format('{0}_REVERB_PORT', inputs.vars_prefix)] }}
+          VITE_REVERB_SCHEME: ${{ vars[format('{0}_REVERB_SCHEME', inputs.vars_prefix)] }}
 
       - name: Create deployment package
         run: |
@@ -94,7 +94,8 @@ jobs:
           # Create isolated temp dir
           TEMP_DIR=$(mktemp -d)
 
-          # Sync repo files to temp (exclusions prevent bloat/self-ref)
+          # Sync repo files to temp (exclusions prevent bloat/self-ref).
+          # This includes the Vite build in public/build, which each release keeps for itself.
           rsync -av \
             --exclude=node_modules \
             --exclude=.git \
@@ -104,8 +105,8 @@ jobs:
             --exclude=vendor \
             . "$TEMP_DIR/"
 
-          # Copy assets into temp/public/ (these are already built via npm run production)
-          cp -r public/css public/js public/fonts public/images public/svg public/mix-manifest.json "$TEMP_DIR/public/" || true
+          # Fail early if the build is missing, rather than deploying pages without assets
+          test -f "$TEMP_DIR/public/build/manifest.json"
 
           # Rename to package name
           mv "$TEMP_DIR" deployment-package

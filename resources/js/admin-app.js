@@ -16,34 +16,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Imports run in the order written: jQuery and the libraries first, then the page scripts that use them.
+import "./jquery-global.js";
 import "./app.js";
-
-try {
-
-    window.$ = window.jQuery = require('jquery');
-    window.ClipboardJS = require('clipboard');
-
-    window.bootstrap = require('bootstrap');
-
-    require("bootstrap-select/dist/js/bootstrap-select.min");
-    require("bootstrap-notify/bootstrap-notify");
-
-    require("jquery-ui/ui/widgets/dialog");
-    require("jquery-ui/ui/widgets/draggable");
-    require("jquery-ui/ui/widgets/droppable");
-    require("jquery-ui/ui/widgets/resizable");
-    require("jquery-datetimepicker/build/jquery.datetimepicker.full");
-
-    require("./ui.multiselect");
-    require("free-jqgrid/js/jquery.jqgrid.min");
-    require("summernote/dist/summernote-bs4.min");
-
-    window.bootbox = require("./bootbox");
-    require("./common");
-    require("./jqgrid");
-    require("./admin");
-    require("./admin-modals");
-
-} catch (e) {
-    console.log(e);
-}
+import "./admin-globals.js";
+import "bootstrap-select/dist/js/bootstrap-select.min";
+import "bootstrap-notify/bootstrap-notify";
+// The prebuilt bundle: the individual widget files only load their dependencies (the widget factory,
+// mouse, position) through AMD, which Vite doesn't use.
+import "jquery-ui/dist/jquery-ui.js";
+import "jquery-datetimepicker/build/jquery.datetimepicker.full";
+import "./ui.multiselect.js";
+import "./jqgrid-setup.js";
+import "summernote/dist/summernote-bs4.min";
+import "./common.js";
+import "./jqgrid.js";
+import "./admin.js";
+import "./admin-modals.js";

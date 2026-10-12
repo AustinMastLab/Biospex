@@ -16,6 +16,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Imported here, not by the invite modal's own script: modal bodies arrive through jQuery's load(),
+// and a module script in them would load after the callback below runs.
+import {GroupInviteManager} from './livewire/group-invite-manager.js';
+
 $(function () {
     let $body = $('body')
     $(document).on('shown.bs.modal', function () {
@@ -136,14 +140,14 @@ $(function () {
 })
 
 // Make select box rows sortable and bootstrap-select
-makeSelect = function ($entry) {
+window.makeSelect = function ($entry) {
     $entry.find('select').each(function () {
         $(this).selectpicker();
     }).disableSelection();
 }
 
 // Renumber prefixes when rows add and removed.
-renumber_geolocate = function () {
+window.renumber_geolocate = function () {
     let $entries = $('#controls > div.entry');
     $entries.each(function (index) {
         $(this).find('select').each(function () {
@@ -153,7 +157,7 @@ renumber_geolocate = function () {
     $("#entries").val($entries.length);
 }
 
-formPost = function (url, formData) {
+window.formPost = function (url, formData) {
     $.ajax({
         type: "POST",
         url: url,
@@ -175,7 +179,7 @@ formPost = function (url, formData) {
 }
 
 // Enhanced form post that closes modal after completion to prevent Livewire DOM conflicts
-formPostWithModalClose = function (url, formData, $modal) {
+window.formPostWithModalClose = function (url, formData, $modal) {
     $.ajax({
         type: "POST",
         url: url,
@@ -204,7 +208,7 @@ formPostWithModalClose = function (url, formData, $modal) {
     });
 }
 
-toggleGeoLocateCommunityForm = function () {
+window.toggleGeoLocateCommunityForm = function () {
     if ($('#community-form-select').length === 0) return;
     let val = $('#community-form-select').val()
     if (val === '') {
@@ -219,7 +223,7 @@ toggleGeoLocateCommunityForm = function () {
 }
 
 // Check duplicate export field selection before submitting form.
-checkDuplicates = function () {
+window.checkDuplicates = function () {
     let dup = false;
     let fieldOptions = [];
     $('select.geolocate-field').each(function () {
@@ -233,7 +237,7 @@ checkDuplicates = function () {
     return dup;
 }
 
-checkRequiredValues = function () {
+window.checkRequiredValues = function () {
     let list = ["County", "Country", "Locality", "ScientificName", "StateProvince"];
     $('select.geolocate-field').each(function () {
         if ($.inArray($(this).val(), list) > -1) {

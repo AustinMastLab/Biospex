@@ -48,7 +48,7 @@ jobs:
       new_version: ${{ steps.new_version.outputs.new_version }}
       current_version: ${{ steps.version_bump.outputs.current_version }}
     steps:
-      - uses: actions/checkout@v6
+      - uses: actions/checkout@v7
         with:
           fetch-depth: 0
 

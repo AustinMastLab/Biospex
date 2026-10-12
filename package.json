@@ -32,7 +32,7 @@
     "sass": "^1.72.0",
     "sass-loader": "16.0.4",
     "summernote": "0.9.1",
-    "tailwindcss": "^3.1.0",
+    "tailwindcss": "^4.3.3",
     "webpack": "^5.91.0"
   },
   "dependencies": {

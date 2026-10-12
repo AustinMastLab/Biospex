@@ -33,13 +33,17 @@ use Illuminate\Support\Facades\Log;
  *
  * With --alias, only that alias's SQS triggers (event source mappings) are disabled or
  * enabled, leaving the other environments and the concurrency alone.
+ *
+ * The lambda "all" applies --alias to every function in config('services.aws.lambdas'),
+ * skipping the ones without SQS triggers. It requires --alias, so it never changes the
+ * concurrency of every function at once.
  */
 class LambdaControlCommand extends Command
 {
     /** @var array<int, string> Lambda aliases, one per environment. */
     private const ALIASES = ['prod', 'dev', 'loc'];
 
-    protected $signature = 'app:lambda-control {lambda} {action=start}
+    protected $signature = 'app:lambda-control {lambda : A function from config, or "all" with --alias} {action=start}
         {--alias= : Only disable (stop) or enable (start) the SQS triggers of this alias: prod, dev or loc}';
 
     protected $description = 'Stop or start a Lambda: concurrency 0 in every environment, or one alias\'s SQS triggers with --alias';
@@ -48,10 +52,17 @@ class LambdaControlCommand extends Command
     {
         $lambdaName = $this->argument('lambda');
         $action = strtolower($this->argument('action'));
+        $alias = $this->option('alias');
 
         $lambdas = config('services.aws.lambdas', []);
 
-        if (! isset($lambdas[$lambdaName])) {
+        if ($lambdaName === 'all') {
+            if ($alias === null) {
+                $this->error("'all' requires --alias; stop or start functions without --alias one at a time");
+
+                return self::FAILURE;
+            }
+        } elseif (! isset($lambdas[$lambdaName])) {
             $this->error("Lambda '{$lambdaName}' not found in config");
 
             return self::FAILURE;
@@ -61,9 +72,17 @@ class LambdaControlCommand extends Command
             throw new \InvalidArgumentException("Action must be 'start' or 'stop'");
         }
 
-        $alias = $this->option('alias');
-
         if ($alias !== null) {
+            if (! in_array($alias, self::ALIASES, true)) {
+                $this->error('Alias must be one of: '.implode(', ', self::ALIASES));
+
+                return self::FAILURE;
+            }
+
+            if ($lambdaName === 'all') {
+                return $this->setAllTriggers($lambdaClient, array_keys($lambdas), $alias, $action === 'start');
+            }
+
             return $this->setTriggers($lambdaClient, $lambdaName, $alias, $action === 'start');
         }
 
@@ -110,21 +129,10 @@ class LambdaControlCommand extends Command
      */
     private function setTriggers(LambdaClient $lambdaClient, string $lambdaName, string $alias, bool $enabled): int
     {
-        if (! in_array($alias, self::ALIASES, true)) {
-            $this->error('Alias must be one of: '.implode(', ', self::ALIASES));
-
-            return self::FAILURE;
-        }
-
         $functionName = "{$lambdaName}:{$alias}";
 
         try {
-            $uuids = [];
-            foreach ($lambdaClient->getPaginator('ListEventSourceMappings', ['FunctionName' => $functionName]) as $page) {
-                foreach ($page['EventSourceMappings'] ?? [] as $mapping) {
-                    $uuids[] = $mapping['UUID'];
-                }
-            }
+            $uuids = $this->findTriggerUuids($lambdaClient, $functionName);
 
             if ($uuids === []) {
                 $this->error("{$functionName} has no SQS triggers. It may be started by S3 events instead; run the command without --alias to stop the function in every environment.");
@@ -132,14 +140,7 @@ class LambdaControlCommand extends Command
                 return self::FAILURE;
             }
 
-            foreach ($uuids as $uuid) {
-                $lambdaClient->updateEventSourceMapping(['UUID' => $uuid, 'Enabled' => $enabled]);
-            }
-
-            $state = $enabled ? 'Enabled' : 'Disabled';
-            $message = "{$state} ".count($uuids)." SQS trigger(s) for {$functionName}";
-            Log::info($message);
-            $this->info($message);
+            $this->updateTriggers($lambdaClient, $functionName, $uuids, $enabled);
 
             return self::SUCCESS;
         } catch (\Exception $e) {
@@ -147,5 +148,73 @@ class LambdaControlCommand extends Command
 
             return self::FAILURE;
         }
+    }
+
+    /**
+     * Enable or disable the SQS triggers of one alias of every given function.
+     *
+     * Functions without SQS triggers are skipped. A failure on one function does not stop
+     * the others, but makes the command fail.
+     *
+     * @param  array<int, string>  $lambdaNames
+     */
+    private function setAllTriggers(LambdaClient $lambdaClient, array $lambdaNames, string $alias, bool $enabled): int
+    {
+        $failed = false;
+
+        foreach ($lambdaNames as $lambdaName) {
+            $functionName = "{$lambdaName}:{$alias}";
+
+            try {
+                $uuids = $this->findTriggerUuids($lambdaClient, $functionName);
+
+                if ($uuids === []) {
+                    $this->line("Skipped {$functionName}: no SQS triggers");
+
+                    continue;
+                }
+
+                $this->updateTriggers($lambdaClient, $functionName, $uuids, $enabled);
+            } catch (\Exception $e) {
+                $this->error("Failed for {$functionName}: ".$e->getMessage());
+                $failed = true;
+            }
+        }
+
+        return $failed ? self::FAILURE : self::SUCCESS;
+    }
+
+    /**
+     * Get the UUIDs of the function alias's SQS triggers (event source mappings).
+     *
+     * @return array<int, string>
+     */
+    private function findTriggerUuids(LambdaClient $lambdaClient, string $functionName): array
+    {
+        $uuids = [];
+        foreach ($lambdaClient->getPaginator('ListEventSourceMappings', ['FunctionName' => $functionName]) as $page) {
+            foreach ($page['EventSourceMappings'] ?? [] as $mapping) {
+                $uuids[] = $mapping['UUID'];
+            }
+        }
+
+        return $uuids;
+    }
+
+    /**
+     * Enable or disable the given SQS triggers and report the change.
+     *
+     * @param  array<int, string>  $uuids
+     */
+    private function updateTriggers(LambdaClient $lambdaClient, string $functionName, array $uuids, bool $enabled): void
+    {
+        foreach ($uuids as $uuid) {
+            $lambdaClient->updateEventSourceMapping(['UUID' => $uuid, 'Enabled' => $enabled]);
+        }
+
+        $state = $enabled ? 'Enabled' : 'Disabled';
+        $message = "{$state} ".count($uuids)." SQS trigger(s) for {$functionName}";
+        Log::info($message);
+        $this->info($message);
     }
 }

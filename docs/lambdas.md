@@ -43,6 +43,13 @@ php artisan app:lambda-control BiospexImageFetcher start --alias=dev   # enable 
 php artisan app:lambda-control BiospexImageFetcher stop --alias=dev    # disable them afterwards
 ```
 
+To change every function's triggers for an alias at once, use `all`. Functions without SQS triggers are skipped. `all` requires `--alias`.
+
+```bash
+php artisan app:lambda-control all start --alias=dev   # enable every dev trigger
+php artisan app:lambda-control all stop --alias=dev    # disable them afterwards
+```
+
 This only touches that alias's triggers. Production and the function's concurrency are left alone, so it's also the way to halt a runaway test. It works for the functions started from SQS: `BiospexImageFetcher`, `InternetArchiveImageFetcher`, `BiospexZipCreator` and `BiospexBatchCreator`. `BiospexOcrProcessor` is started only by S3 uploads, so `--alias` can't stop it. For `BiospexReconcile312`, `--alias` stops only the manual reconcile queue, not the nightly S3 uploads. `BiospexZipMerger` is called only by the Step Function.
 
 Run it from your machine: it needs `lambda:ListEventSourceMappings` and `lambda:UpdateEventSourceMapping`, which `LocalDeployUser` has but the servers' instance roles don't.

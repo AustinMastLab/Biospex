@@ -8,7 +8,7 @@
 | Framework | Laravel 13 |
 | Public and project admin UI | Blade, Livewire 4, Alpine.js |
 | Site admin panel | Filament 5, at `/admin/dashboard` (`app/Providers/Filament/AdminPanelProvider.php`) |
-| Asset build | Laravel Mix (`webpack.mix.js`), run with `yarn`. Not Vite. |
+| Asset build | Vite (`vite.config.js`), run with `yarn`. Builds into `public/build`, which each release keeps for itself. |
 | Relational database | MySQL |
 | Document database | MongoDB, through `mongodb/laravel-mongodb` |
 | Queue | Beanstalkd, with workers managed by Supervisor |

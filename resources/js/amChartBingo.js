@@ -137,10 +137,10 @@ $(function () {
 function showWinnerModal($bingoRows, msg, owner = false) {
     $('#bingo-modal').modal('show').on('shown.bs.modal', function () {
         $('#bingo-conffeti').collapse('show');
-        $body = $(this).find('.modal-body');
+        const $body = $(this).find('.modal-body');
         $body.html(msg);
 
-        timeout = setTimeout(function () {
+        setTimeout(function () {
             $('#bingo-modal').modal('hide')
             $('#bingo-conffeti').collapse('hide');
             $body.html('');

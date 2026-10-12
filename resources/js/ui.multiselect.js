@@ -45,35 +45,14 @@
  *  Implement dynamic insertion through remote calls
  */
 
-/*global jQuery, define, module, require */
+/*
+ * Loaded by admin-app.js after the global jQuery and jQuery UI (which includes the sortable widget).
+ * The original UMD wrapper is replaced by a direct call, so the widget registers the same way in the
+ * Vite dev server and in the production build.
+ */
 (function (factory) {
     "use strict";
-    if (typeof define === "function" && define.amd) {
-        // AMD. Register as an anonymous module.
-        define([
-            "jquery",
-            "jquery-ui/sortable"
-        ], factory);
-    } else if (typeof module === "object" && module.exports) {
-        // Node/CommonJS
-        module.exports = function (root, $) {
-            if ($ === undefined) {
-                // require("jquery") returns a factory that requires window to
-                // build a jQuery instance, we normalize how we use modules
-                // that require this pattern but the window provided is a noop
-                // if it's defined (how jquery works)
-                $ = typeof window !== "undefined" ?
-                    require("jquery") :
-                    require("jquery")(root || window);
-            }
-            require("jquery-ui/sortable");
-            factory($);
-            return $;
-        };
-    } else {
-        // Browser globals
-        factory(jQuery);
-    }
+    factory(window.jQuery);
 }(function ($) {
 
     $.widget("ui.multiselect", {

@@ -12,7 +12,7 @@
     @include('common.favicon')
     <link href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700" rel="stylesheet">
     <script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous" SameSite="none Secure"></script>
-    <link href="{{ mix('/css/front.css') }}" rel="stylesheet" type="text/css"/>
+    @vite('resources/sass/front.scss')
     @stack('styles')
     @production
         @include('common.google-analytics')
@@ -126,9 +126,7 @@ sub footer -->
     @include('front.layout.contributors')
 @endif
 @include('common.php-vars-javascript')
-<script src="{{ mix('/js/manifest.js') }}"></script>
-<script src="{{ mix('/js/vendor.js') }}"></script>
-<script src="{{ mix('/js/front.js') }}"></script>
+@vite('resources/js/front-app.js')
 @include('common.amchart')
 
 @stack('scripts')

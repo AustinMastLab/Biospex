@@ -10,7 +10,7 @@
     @include('common.favicon')
     <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Raleway:400,700|Work+Sans:400,700">
     <script src="https://kit.fontawesome.com/c840411e54.js" crossorigin="anonymous"></script>
-    <link href="{{ mix('/css/admin.css') }}" rel="stylesheet" type="text/css"/>
+    @vite('resources/sass/admin.scss')
     @stack('styles')
     @production
         @include('common.google-analytics')

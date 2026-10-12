@@ -103,7 +103,7 @@ The task order is in `deploy.php`:
 
 - **Environment:** WSL Ubuntu 22, with the app at `/data/web/biospex` and the local domain `biospex.test`. The API is at `api.biospex.test`.
 - **Services needed:** PHP 8.5, MySQL, MongoDB, Beanstalkd, Redis, and Supervisor. The local Supervisor configs come from the same templates, with the `loc-` prefix.
-- **Assets:** `yarn install`, then `yarn run dev` (or `yarn run production`, or `yarn run watch`).
+- **Assets:** `yarn install`, then `yarn build` (or `yarn dev` for the Vite dev server). Set `VITE_REVERB_*` in `.env` so the build connects to the local Reverb.
 - **Tests:** `php artisan test --compact`. Tests use Pest on SQLite, with the sync queue and the array cache. MongoDB isn't available, so code that depends on MongoDB must be faked or kept out of tests.
 - **Formatting:** `vendor/bin/pint --dirty`.
 - **Project guidelines:** these are in `.ai/guidelines` and `.ai/rules`. Laravel Boost compiles them into `CLAUDE.md` and `AGENTS.md`.

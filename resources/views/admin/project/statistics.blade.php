@@ -63,9 +63,9 @@
 @endsection
 @push('scripts')
     @if($transcribers->isNotEmpty())
-        <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-        <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-        <script>
+        <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js" defer></script>
+        <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js" defer></script>
+        <script type="module">
             const $tbl = $('#transcribers-tbl');
 
             $tbl
@@ -91,6 +91,6 @@
         </script>
         @endif
         @if(isset($transcriptions))
-            <script src="{{ asset('js/amChartStat.min.js')}}"></script>
+            @vite('resources/js/amChartStat-entry.js')
         @endif
     @endpush

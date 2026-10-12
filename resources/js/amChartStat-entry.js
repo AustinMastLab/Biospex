@@ -17,7 +17,7 @@
  */
 
 // AmChart Stat Entry Point - Import jQuery before executing chart code
-window.$ = window.jQuery = require("jquery");
+import "./jquery-global.js";
 
 // Import the original amChart file
-require('./amChartStat.js');
+import "./amChartStat.js";

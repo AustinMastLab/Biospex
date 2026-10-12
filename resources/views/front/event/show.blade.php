@@ -39,7 +39,7 @@
 
 @push('scripts')
     @if( ! event_before($event))
-        <script src="{{ asset('js/amChartEventRate.min.js')}}"></script>
+        @vite('resources/js/amChartEventRate-entry.js')
     @endif
 @endpush
 

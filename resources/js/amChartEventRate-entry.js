@@ -17,7 +17,7 @@
  */
 
 // AmChart EventRate Entry Point - Import jQuery before executing chart code
-window.$ = window.jQuery = require("jquery");
+import "./jquery-global.js";
 
 // Import the original amChart file
-require('./amChartEventRate.js');
+import "./amChartEventRate.js";

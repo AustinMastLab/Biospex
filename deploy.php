@@ -35,16 +35,14 @@ set('cleanup_use_sudo', true);
 // Shared Files (persisted across deployments)
 set('shared_files', [
     '.env',                        // Environment configuration
-    'public/mix-manifest.json',    // Laravel Mix manifest for asset versioning
 ]);
 
-// Shared Directories (persisted across deployments)
+// Shared Directories (persisted across deployments).
+// The Vite build (public/build) and the static images (public/images) belong to each release, so a rollback
+// gets the assets it was built with. Filament publishes its assets into public/css, public/js and
+// public/fonts on every deploy (artisan:filament:assets).
 set('shared_dirs', [
     'storage',          // Laravel storage (logs, cache, uploads)
-    'public/css',       // Compiled CSS files
-    'public/js',        // Compiled JavaScript files
-    'public/fonts',     // Web fonts
-    'public/images',    // Static images
     'public/svg',       // SVG assets
     'public/vendor',    // Vendor assets (Livewire, etc.)
 ]);
@@ -128,6 +126,7 @@ task('deploy', [
     // Phase 8: Finalization
     'deploy:clear_paths',      // Remove unnecessary files/directories
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
+    'artisan:responsecache:clear', // Drop pages cached by the old release, which name its asset files
 
     // Phase 7: Supervisor and long-running processes, after the symlink switch,
     // so Supervisor starts them from the new release instead of the one being

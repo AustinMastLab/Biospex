@@ -23,12 +23,12 @@ abstract class TestCase extends BaseTestCase
     }
 
     /**
-     * Render views without built assets, so tests don't depend on public/mix-manifest.json.
+     * Render views without built assets, so tests don't depend on public/build/manifest.json.
      */
     protected function setUp(): void
     {
         parent::setUp();
 
-        $this->withoutMix();
+        $this->withoutVite();
     }
 }

@@ -50,7 +50,6 @@ return [
 
     'missing_project_logo' => env('APP_URL').'/images/placeholders/project.png',
     'missing_expedition_logo' => env('APP_URL').'/images/placeholders/card-image-place-holder02.jpg',
-    'missing_avatar_small' => env('APP_URL').'/images/avatars/small/missing.png',
     'missing_avatar_medium' => env('APP_URL').'/images/avatars/medium/missing.png',
 
     'uploads' => [

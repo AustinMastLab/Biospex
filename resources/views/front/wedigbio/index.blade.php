@@ -31,7 +31,7 @@
 @endsection
 
 @push('scripts')
-    <script>
+    <script type="module">
         let eventConfetti = new ConfettiGenerator({target: 'event-conffeti'});
         eventConfetti.render();
     </script>

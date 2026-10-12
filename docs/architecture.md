@@ -110,7 +110,7 @@ These are defined in `routes/console.php`:
 | `app:check-lambda-reconcile` | Daily at 6:00 | Checks the Lambda reconciliation directory. |
 | `workflow:manage` | Daily, production only | Runs the actors for every active expedition. |
 | `app:health-check` | Every 5 minutes, production only | Checks Supervisor and Reverb, emails alerts, and pings Healthchecks.io. |
-| `app:clean-efs-dirs` | Daily, production only | Deletes files older than 72 hours under `/efs` (never directories). Skipped while an import, export, OCR run or GeoLocate job is in progress. |
+| `app:clean-efs-dirs` | Daily, production only | Deletes files and empty subdirectories older than 72 hours in the `/efs` directories BIOSPEX writes to: `import`, `scratch` and `geolocate/export`. The rest of `/efs`, which both servers share, is left alone. Skipped while an import, export, OCR run or GeoLocate job is in progress. |
 
 ## External services
 

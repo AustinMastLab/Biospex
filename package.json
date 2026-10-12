@@ -11,34 +11,34 @@
   },
   "devDependencies": {
     "@tailwindcss/forms": "^0.5.2",
-    "alpinejs": "^3.4.2",
-    "autoprefixer": "^10.4.2",
+    "alpinejs": "^3.17.4",
+    "autoprefixer": "^10.6.1",
     "bootstrap": "^4.6.2",
     "bootstrap-notify": "^3.1.3",
     "bootstrap-select": "^1.13.18",
     "clipboard": "^2.0.11",
-    "codemirror": "^6.0.1",
+    "codemirror": "^6.0.2",
     "confetti-js": "^0.0.18",
     "cross-env": "^7.0.3",
     "free-jqgrid": "^4.15.5",
     "hamburgers": "^1.2.1",
     "jquery": "^3.7.1",
     "jquery-datetimepicker": "^2.5.21",
-    "jquery-ui": "^1.13.2",
+    "jquery-ui": "^1.14.2",
     "laravel-mix": "^6.0.49",
     "popper.js": "^1.16.1",
-    "postcss": "^8.4.31",
+    "postcss": "^8.5.29",
     "resolve-url-loader": "^5.0.0",
-    "sass": "^1.72.0",
+    "sass": "^1.105.1",
     "sass-loader": "16.0.4",
     "summernote": "0.9.1",
     "tailwindcss": "^3.1.0",
-    "webpack": "^5.91.0"
+    "webpack": "^5.111.1"
   },
   "dependencies": {
-    "axios": "^1.9.0",
+    "axios": "^1.20.0",
     "laravel-echo": "^1.19.0",
-    "pusher-js": "^8.4.0"
+    "pusher-js": "^8.6.0"
   },
   "packageManager": "yarn@1.22.22+sha1.ac34549e6aa8e7ead463a7407e1c7390f61a6610"
 }

@@ -3651,10 +3651,10 @@ klona@^2.0.5:
   resolved "https://registry.npmjs.org/klona/-/klona-2.0.6.tgz"
   integrity sha512-dhG34DXATL5hSxJbIexCft8FChFXtmskoZYnoPWjXQuebWYCNkVeV3KkGegCK9CP1oswI/vQibS2GY7Em/sJJA==
 
-laravel-echo@^1.19.0:
-  version "1.19.0"
-  resolved "https://registry.npmjs.org/laravel-echo/-/laravel-echo-1.19.0.tgz"
-  integrity sha512-o/X4XH8BIRwij66PSjtotZfM88Z8g/4P3gzxQf2BTcZBKmGqucvI5JYYLprR2OZQ9XlGsmJ2v+hDpPGEbXwUWw==
+laravel-echo@^2.6.1:
+  version "2.6.1"
+  resolved "https://registry.yarnpkg.com/laravel-echo/-/laravel-echo-2.6.1.tgz#4488128ed9add286ee15a62b2b0e71901ec9f296"
+  integrity sha512-hKqIqy4Bl2HRdJsGzN8DbzcON7+09TNr8r5dCNZHNORZ78FUNoFbsy0cUGhYRAMei/yr8IQvCZ1ozJ8LTzzueQ==
 
 laravel-mix@^6.0.49:
   version "6.0.49"

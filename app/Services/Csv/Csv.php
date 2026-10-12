@@ -20,8 +20,11 @@
 
 namespace App\Services\Csv;
 
+use League\Csv\CannotInsertRecord;
 use League\Csv\CharsetConverter;
+use League\Csv\Exception;
 use League\Csv\Reader;
+use League\Csv\SyntaxError;
 use League\Csv\Writer;
 
 /**
@@ -58,6 +61,16 @@ class Csv
     }
 
     /**
+     * Release the reader, closing its file.
+     *
+     * On EFS (NFS) a file that is still open can't really be deleted, so its directory can't be removed either.
+     */
+    public function closeReader(): void
+    {
+        unset($this->reader);
+    }
+
+    /**
      * Create reader from stream.
      *
      * @return void
@@ -88,7 +101,7 @@ class Csv
     /**
      * Set delimiter.
      *
-     * @throws \League\Csv\Exception
+     * @throws Exception
      */
     public function setDelimiter(string $delimiter = ',')
     {
@@ -98,7 +111,7 @@ class Csv
     /**
      * Set enclosure.
      *
-     * @throws \League\Csv\Exception
+     * @throws Exception
      */
     public function setEnclosure(string $enclosure = '"')
     {
@@ -108,7 +121,7 @@ class Csv
     /**
      * Set escape.
      *
-     * @throws \League\Csv\Exception
+     * @throws Exception
      */
     public function setEscape(string $escape = '\\')
     {
@@ -119,7 +132,7 @@ class Csv
      * Set header offset.
      *
      *
-     * @throws \League\Csv\Exception
+     * @throws Exception
      */
     public function setHeaderOffset(int $offset = 0): void
     {
@@ -131,7 +144,7 @@ class Csv
      *
      * @return string[]
      *
-     * @throws \League\Csv\SyntaxError
+     * @throws SyntaxError
      */
     public function getHeader(): array
     {
@@ -141,7 +154,7 @@ class Csv
     /**
      * Fetch all rows.
      *
-     * @throws \League\Csv\Exception
+     * @throws Exception
      */
     public function getRecords(array $header = []): \Iterator
     {
@@ -151,7 +164,7 @@ class Csv
     /**
      * Insert one row.
      *
-     * @throws \League\Csv\CannotInsertRecord|\League\Csv\Exception
+     * @throws CannotInsertRecord|Exception
      */
     public function insertOne($row): void
     {

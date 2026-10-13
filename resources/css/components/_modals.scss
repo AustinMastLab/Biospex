@@ -37,7 +37,35 @@ h2.modal-number > small {
   color: #fff;
 }
 
-.bootbox-body {
-  text-align: center;
-  padding: 1rem;
+/* Confirmation dialog (components/confirm-dialog.blade.php). The padding is on the form, so a click on the dialog
+   element itself is a click on the backdrop. */
+.confirm-dialog {
+  width: min(500px, calc(100% - 2rem));
+  padding: 0;
+  border: 0;
+  border-radius: .3rem;
+  box-shadow: 0 .5rem 1rem rgba(0, 0, 0, .5);
+
+  &::backdrop {
+    background: rgba(0, 0, 0, .925);
+  }
+
+  form {
+    padding: 1.5rem 1rem 1rem;
+    text-align: center;
+  }
+}
+
+.confirm-dialog-title {
+  font-size: 1.25rem;
+  margin-bottom: 1rem;
+}
+
+.confirm-dialog-buttons {
+  display: flex;
+  justify-content: center;
+  gap: .5rem;
+  padding-top: 1rem;
+  margin-top: 1rem;
+  border-top: 1px solid #e9ecef;
 }

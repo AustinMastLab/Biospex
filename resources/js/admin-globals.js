@@ -21,8 +21,6 @@
  */
 import ClipboardJS from "clipboard";
 import * as bootstrap from "bootstrap";
-import bootbox from "bootbox";
 
 window.ClipboardJS = ClipboardJS;
 window.bootstrap = bootstrap;
-window.bootbox = bootbox;

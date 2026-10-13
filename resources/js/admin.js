@@ -303,48 +303,6 @@ $(function () {
         })
     }
 
-    // Restore: confirm + method spoofing + csrf via bootbox
-    $(document).on('click', '[data-confirm=confirmation]', function (e) {
-        e.preventDefault();
-
-        let $trigger = $(this);
-        let url = $trigger.is("[data-href]") ? $trigger.data("href") : $trigger.attr('href')
-        let method = (($trigger.data('method') || 'get') + '').toLowerCase();
-
-        bootbox.confirm({
-            title: $trigger.data('title'),
-            message: $trigger.data('content'),
-            buttons: {
-                cancel: {
-                    label: '<i class="fas fa-times-circle"></i> Cancel',
-                    className: 'btn btn-primary'
-                },
-                confirm: {
-                    label: '<i class="fas fa-check-circle"></i> Confirm',
-                    className: 'btn btn-primary'
-                }
-            },
-            callback: function (result) {
-                if (!result) return;
-
-                // IMPORTANT: For GET actions, do not method-spoof through POST.
-                // Navigate directly so proxies/web servers don't reject POST first.
-                if (method === 'get') {
-                    window.location.assign(url);
-                    return;
-                }
-
-                $trigger.append(function () {
-                    let methodForm = "\n"
-                    methodForm += "<form action='" + url + "' method='POST' style='display:none'>\n"
-                    methodForm += "<input type='hidden' name='_method' value='" + method + "'>\n"
-                    methodForm += "<input type='hidden' name='_token' value='" + $('meta[name=csrf-token]').attr('content') + "'>\n"
-                    methodForm += "</form>\n"
-                    return methodForm
-                }).find('form').last().submit()
-            }
-        })
-    })
 
     // Restore: banner picker behavior
     $('.project-banner').on('click', function () {

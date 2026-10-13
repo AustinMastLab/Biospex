@@ -22,14 +22,12 @@ import "./app.js";
 import "./admin-globals.js";
 import "bootstrap-select/dist/js/bootstrap-select.min";
 import "bootstrap-notify/bootstrap-notify";
-// The prebuilt bundle: the individual widget files only load their dependencies (the widget factory,
-// mouse, position) through AMD, which Vite doesn't use.
-import "jquery-ui/dist/jquery-ui.js";
-import "jquery-datetimepicker/build/jquery.datetimepicker.full";
-import "./ui.multiselect.js";
-import "./jqgrid-setup.js";
-import "summernote/dist/summernote-bs4.min";
 import "./common.js";
-import "./jqgrid.js";
 import "./admin.js";
 import "./admin-modals.js";
+
+// The subjects grid (jqGrid and jQuery UI) is only loaded on the pages that have one. Summernote and the date
+// picker are loaded by admin.js in the same way.
+if (document.getElementById('jqGridTable')) {
+    import("./admin-grid.js");
+}

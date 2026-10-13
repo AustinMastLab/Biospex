@@ -201,6 +201,7 @@
 
 @endsection
 @push('scripts')
+    @include('common.amchart', ['maps' => $years !== null])
     @if ($years !== null)
         @vite('resources/js/amChartTranscript-entry.js')
         @vite('resources/js/amChartMap-entry.js')

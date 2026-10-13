@@ -36,7 +36,7 @@
 </div>
 @include('common.php-vars-javascript')
 @vite('resources/js/front-app.js')
-@include('common.amchart')
+@include('common.amchart', ['maps' => true])
 @vite('resources/js/amChartBingo-entry.js')
 <script type="module">
     let bingoConfetti = new ConfettiGenerator({target: 'bingo-conffeti'});

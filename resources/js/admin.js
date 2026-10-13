@@ -214,10 +214,10 @@ $(function () {
         e.preventDefault()
     })
 
-    // Summernote init + updated a11y patching
+    // Summernote init + updated a11y patching. Summernote is only loaded on pages with an editor.
     let textarea = $('.textarea')
     if (textarea.length) {
-        textarea.summernote({
+        import('summernote/dist/summernote-bs4.min').then(() => textarea.summernote({
             height: 200,
             toolbar: [
                 ['style', ['bold', 'italic', 'underline', 'clear']],
@@ -233,7 +233,7 @@ $(function () {
                     setTimeout(patchAllSummernotes, 0);
                 }
             }
-        });
+        }));
     }
 
     // Keep patching as Summernote/Bootstrap rebuilds menus/toolbars dynamically.
@@ -271,30 +271,37 @@ $(function () {
 
     observer.observe(document.body, { childList: true, subtree: true });
 
-    // Restore: datetimepicker init
-    $.datetimepicker.setLocale('en')
-    $('.date-time-picker').datetimepicker({
-        format: 'Y-m-d H:i',
-        allowTimes: [
-            '00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00', '03:30',
-            '04:00', '04:30', '05:00', '05:30', '06:00', '06:30', '07:00', '07:30',
-            '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-            '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-            '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
-            '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'
-        ],
-        onShow: function () {
-            // Patch immediately and on next tick (some scanners snapshot fast)
-            patchDateTimePickerA11y(document);
-            setTimeout(function () {
+    // Restore: datetimepicker init. The picker is only loaded on pages with date fields.
+    let $dateTimePickers = $('.date-time-picker')
+    if ($dateTimePickers.length) {
+        import('jquery-datetimepicker/build/jquery.datetimepicker.full').then(() => initDateTimePickers($dateTimePickers))
+    }
+
+    function initDateTimePickers($pickers) {
+        $.datetimepicker.setLocale('en')
+        $pickers.datetimepicker({
+            format: 'Y-m-d H:i',
+            allowTimes: [
+                '00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00', '03:30',
+                '04:00', '04:30', '05:00', '05:30', '06:00', '06:30', '07:00', '07:30',
+                '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
+                '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
+                '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
+                '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'
+            ],
+            onShow: function () {
+                // Patch immediately and on next tick (some scanners snapshot fast)
                 patchDateTimePickerA11y(document);
-            }, 0);
-        },
-        onGenerate: function () {
-            // Fired when the widget regenerates its HTML (month nav, etc.)
-            patchDateTimePickerA11y(document);
-        }
-    })
+                setTimeout(function () {
+                    patchDateTimePickerA11y(document);
+                }, 0);
+            },
+            onGenerate: function () {
+                // Fired when the widget regenerates its HTML (month nav, etc.)
+                patchDateTimePickerA11y(document);
+            }
+        })
+    }
 
     // Restore: confirm + method spoofing + csrf via bootbox
     $(document).on('click', '[data-confirm=confirmation]', function (e) {

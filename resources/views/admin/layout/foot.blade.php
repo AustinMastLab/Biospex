@@ -8,6 +8,6 @@
 </footer>
 @include('common.php-vars-javascript')
 @vite('resources/js/admin-app.js')
-@include('common.amchart')
+@vite('resources/js/amChartWeDigBioRate-entry.js')
 @livewireScripts
 @stack('scripts')

@@ -16,38 +16,51 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+import {loadAmCharts} from './amcharts-loader.js';
+
 let weDigBioRateChart = null;
 let interval = null;
-am4core.ready(function () {
+let modalOpen = false;
 
-    $('#wedigbio-rate-modal').on('show.bs.modal', function (e) {
-        let $div = $(this).find('#weDigBioRateChartDiv');
-        let projectsUrl = $(e.relatedTarget).data('projects');
-        let url = $(e.relatedTarget).data('href');
+// The modal is in the menu of every page, so amCharts is only loaded the first time it opens.
+$('#wedigbio-rate-modal').on('show.bs.modal', function (e) {
+    modalOpen = true;
+    let $div = $(this).find('#weDigBioRateChartDiv');
+    let projectsUrl = $(e.relatedTarget).data('projects');
+    let url = $(e.relatedTarget).data('href');
 
-        let createChart = function () {
-            am4core.disposeAllCharts();
-            $.get(projectsUrl).fail(function () {
-                $div.html('<p class="d-flex justify-content-center">Failed to load projects</p>');
-            }).done(function (projects) {
-                if (!projects) {
-                    $div.html('<p class="d-flex justify-content-center">No current WeDigBio Event</p>');
-                    return;
-                }
-                buildChart(url, projects)
-            });
+    let createChart = function () {
+        am4core.disposeAllCharts();
+        $.get(projectsUrl).fail(function () {
+            $div.html('<p class="d-flex justify-content-center">Failed to load projects</p>');
+        }).done(function (projects) {
+            if (!projects) {
+                $div.html('<p class="d-flex justify-content-center">No current WeDigBio Event</p>');
+                return;
+            }
+            buildChart(url, projects)
+        });
+    }
+
+    loadAmCharts().then(function () {
+        // Closed while amCharts was loading
+        if (!modalOpen) {
+            return;
         }
+
         createChart();
         // Refresh chart every 5 minutes. TODO: can this be handled by amCharts?
         // https://www.amcharts.com/docs/v4/concepts/data/loading-external-data/
         // chart.dataSource.reloadFrequency = 300000;
         interval = setInterval(createChart, 300000);
-    }).on('hidden.bs.modal', function () {
-        am4core.disposeAllCharts();
-        clearInterval(interval);
+    }).catch(function () {
+        $div.html('<p class="d-flex justify-content-center">Failed to load the chart</p>');
     });
-
-}); // end am4core.ready()
+}).on('hidden.bs.modal', function () {
+    modalOpen = false;
+    window.am4core?.disposeAllCharts();
+    clearInterval(interval);
+});
 
 
 function buildChart(url, projects) {

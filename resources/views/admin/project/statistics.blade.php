@@ -91,6 +91,7 @@
         </script>
         @endif
         @if(isset($transcriptions))
+            @include('common.amchart')
             @vite('resources/js/amChartStat-entry.js')
         @endif
     @endpush

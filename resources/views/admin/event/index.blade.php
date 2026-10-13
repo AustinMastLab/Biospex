@@ -16,5 +16,6 @@
 @endsection
 
 @push('scripts')
+    @include('common.amchart')
     @vite('resources/js/amChartEventRate-entry.js')
 @endpush

@@ -39,6 +39,7 @@
 
 @push('scripts')
     @if( ! event_before($event))
+        @include('common.amchart')
         @vite('resources/js/amChartEventRate-entry.js')
     @endif
 @endpush

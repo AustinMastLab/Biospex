@@ -127,7 +127,7 @@ sub footer -->
 @endif
 @include('common.php-vars-javascript')
 @vite('resources/js/front-app.js')
-@include('common.amchart')
+@vite('resources/js/amChartWeDigBioRate-entry.js')
 
 @stack('scripts')
 </body>

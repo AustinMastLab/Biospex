@@ -20,6 +20,7 @@
     @include('common.process-modal')
     @include('common.ocr-main-modal')
     @include('common.modal')
+    <x-confirm-dialog/>
 </main>
 @include('admin.layout.foot')
 </body>

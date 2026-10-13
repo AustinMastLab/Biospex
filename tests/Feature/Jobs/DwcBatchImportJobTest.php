@@ -26,6 +26,8 @@ use App\Models\Subject;
 use App\Notifications\Generic;
 use App\Services\Process\CreateReportService;
 use Illuminate\Queue\Jobs\FakeJob;
+use Illuminate\Support\Facades\File;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Queue;
 use Illuminate\Support\Facades\Storage;
@@ -70,6 +72,14 @@ function dwcImport(Project $project, array $files = ['meta.xml', 'occurrence.csv
     ], $attributes));
 }
 
+/**
+ * The import's scratch directory on the efs disk, where the job unzips the archive.
+ */
+function scratchDirectory(Import $import): string
+{
+    return config('config.scratch_dir').'/'.md5($import->file);
+}
+
 function runImportJob(Import $import, int $attempt = 1): FakeJob
 {
     $queueJob = new FakeJob;
@@ -90,8 +100,21 @@ it('imports the archive, notifies the group owner and queues OCR', function () {
     expect(Subject::where('project_id', $this->project->id)->count())->toBe(3)
         ->and(Import::find($import->id))->toBeNull();
     Storage::disk('efs')->assertMissing('imports/archive.zip');
+    Storage::disk('efs')->assertMissing(scratchDirectory($import));
     Queue::assertPushed(TesseractOcrCreateJob::class);
     Notification::assertSentTo($this->project->group->owner, Generic::class);
+});
+
+it('logs a warning when the scratch directory can\'t be removed', function () {
+    $import = dwcImport($this->project);
+    File::partialMock()->shouldReceive('deleteDirectory')->andReturnFalse();
+    Log::spy();
+
+    runImportJob($import);
+
+    Log::shouldHaveReceived('warning')->with('Could not remove the import scratch directory', Mockery::on(
+        fn (array $context) => $context['import_id'] === $import->id
+    ));
 });
 
 it('sends the owner a separate report of duplicate images', function () {
@@ -150,6 +173,7 @@ it('marks the import as failed and tells the owner on the last attempt', functio
     expect(Subject::count())->toBe(0)
         ->and($queueJob->isDeleted())->toBeTrue()
         ->and($import->fresh())->error->toBe(1)->processing->toBe(0);
+    Storage::disk('efs')->assertMissing(scratchDirectory($import));
     Queue::assertNothingPushed();
     Notification::assertSentTo($this->project->group->owner, Generic::class);
 });

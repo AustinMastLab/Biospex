@@ -117,6 +117,9 @@ class DwcBatchProcessor
             ]);
 
             throw $e;
+        } finally {
+            // Close the last CSV, so DwcBatchImportJob can remove the scratch directory on EFS.
+            $this->csv->closeReader();
         }
     }
 

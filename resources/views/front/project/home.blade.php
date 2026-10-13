@@ -201,11 +201,12 @@
 
 @endsection
 @push('scripts')
+    @include('common.amchart', ['maps' => $years !== null])
     @if ($years !== null)
-        <script src="{{ asset('js/amChartTranscript.min.js')}}"></script>
-        <script src="{{ asset('js/amChartMap.min.js')}}"></script>
+        @vite('resources/js/amChartTranscript-entry.js')
+        @vite('resources/js/amChartMap-entry.js')
     @endif
-    <script src="{{ asset('js/amChartEventRate.min.js')}}"></script>
+    @vite('resources/js/amChartEventRate-entry.js')
     <script>
         let expeditionConfetti;
         document.addEventListener('livewire:init', () => {

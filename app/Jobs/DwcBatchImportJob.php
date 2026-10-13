@@ -466,9 +466,11 @@ class DwcBatchImportJob implements ShouldQueue
      */
     private function cleanupScratchDirectory(string $scratchFileDir): void
     {
-        if (File::isDirectory($scratchFileDir)) {
-            File::cleanDirectory($scratchFileDir);
-            File::deleteDirectory($scratchFileDir);
+        if (File::isDirectory($scratchFileDir) && ! File::deleteDirectory($scratchFileDir)) {
+            Log::warning('Could not remove the import scratch directory', [
+                'import_id' => $this->import->id,
+                'directory' => $scratchFileDir,
+            ]);
         }
     }
 }

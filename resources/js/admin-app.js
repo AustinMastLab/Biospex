@@ -16,34 +16,18 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+// Imports run in the order written: jQuery and the libraries first, then the page scripts that use them.
+import "./jquery-global.js";
 import "./app.js";
+import "./admin-globals.js";
+import "bootstrap-select/dist/js/bootstrap-select.min";
+import "bootstrap-notify/bootstrap-notify";
+import "./common.js";
+import "./admin.js";
+import "./admin-modals.js";
 
-try {
-
-    window.$ = window.jQuery = require('jquery');
-    window.ClipboardJS = require('clipboard');
-
-    window.bootstrap = require('bootstrap');
-
-    require("bootstrap-select/dist/js/bootstrap-select.min");
-    require("bootstrap-notify/bootstrap-notify");
-
-    require("jquery-ui/ui/widgets/dialog");
-    require("jquery-ui/ui/widgets/draggable");
-    require("jquery-ui/ui/widgets/droppable");
-    require("jquery-ui/ui/widgets/resizable");
-    require("jquery-datetimepicker/build/jquery.datetimepicker.full");
-
-    require("./ui.multiselect");
-    require("free-jqgrid/js/jquery.jqgrid.min");
-    require("summernote/dist/summernote-bs4.min");
-
-    window.bootbox = require("./bootbox");
-    require("./common");
-    require("./jqgrid");
-    require("./admin");
-    require("./admin-modals");
-
-} catch (e) {
-    console.log(e);
+// The subjects grid (jqGrid and jQuery UI) is only loaded on the pages that have one. Summernote and the date
+// picker are loaded by admin.js in the same way.
+if (document.getElementById('jqGridTable')) {
+    import("./admin-grid.js");
 }

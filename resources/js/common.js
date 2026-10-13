@@ -220,7 +220,7 @@ $(function () {
 
 let timeInterval;
 
-getTimeRemaining = function (endTime) {
+window.getTimeRemaining = function (endTime) {
     const now = Date.now();
     const t = Date.parse(endTime) - now;
     const seconds = Math.floor((t / 1000) % 60);
@@ -236,7 +236,7 @@ getTimeRemaining = function (endTime) {
     };
 }
 
-clockDiv = function () {
+window.clockDiv = function () {
     $('.clockdiv').each(function () {
         const $this = $(this);
         const deadline = $this.data('value'); // Sun Sep 30 2018 14:26:26 GMT-0400 (Eastern Daylight Time)
@@ -244,7 +244,7 @@ clockDiv = function () {
     });
 }
 
-initializeClock = function ($clock, endTime) {
+window.initializeClock = function ($clock, endTime) {
 
     const daysSpan = $clock.find('.days');
     const hoursSpan = $clock.find('.hours');
@@ -267,7 +267,7 @@ initializeClock = function ($clock, endTime) {
     timeInterval = setInterval(updateClock, 1000);
 }
 
-notify = function (icon, msg, type) {
+window.notify = function (icon, msg, type) {
     $.notify({
         icon: 'fas fa-' + icon + ' fa-2x',
         message: msg

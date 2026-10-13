@@ -16,5 +16,6 @@
 @endsection
 
 @push('scripts')
-    <script src="{{ asset('js/amChartEventRate.min.js')}}"></script>
+    @include('common.amchart')
+    @vite('resources/js/amChartEventRate-entry.js')
 @endpush

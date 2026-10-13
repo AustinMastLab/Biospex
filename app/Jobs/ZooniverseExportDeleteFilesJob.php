@@ -62,10 +62,6 @@ class ZooniverseExportDeleteFilesJob implements ShouldBeUnique, ShouldQueue
             Storage::disk('s3')->deleteDirectory($processDir);
         }
 
-        if (Storage::disk('efs')->exists($processDir)) {
-            Storage::disk('efs')->deleteDirectory($processDir);
-        }
-
         $this->exportQueue->delete();
     }
 

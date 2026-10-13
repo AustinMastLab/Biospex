@@ -44,6 +44,30 @@ function importFixtureArchive(Project $project): array
     return ['processor' => $processor, 'result' => $result];
 }
 
+/**
+ * The files this PHP process still has open under the given directory (Linux only).
+ *
+ * @return list<string>
+ */
+function openFilesUnder(string $directory): array
+{
+    return collect(glob('/proc/self/fd/*'))
+        ->map(fn (string $descriptor) => @readlink($descriptor))
+        ->filter(fn (string|false $target) => is_string($target) && str_starts_with($target, $directory.'/'))
+        ->values()
+        ->all();
+}
+
+it('closes the archive\'s files when it finishes, so the directory can be removed on EFS', function () {
+    $directory = realpath(base_path('tests/Fixtures/dwc/basic'));
+
+    // Keep the processor alive, as DwcBatchImportJob does while it removes the scratch directory.
+    $archive = importFixtureArchive($this->project);
+
+    expect($archive['result']['success'])->toBeTrue()
+        ->and(openFilesUnder($directory))->toBe([]);
+})->skip(! is_dir('/proc/self/fd'), 'Needs /proc to list open files.');
+
 it('creates a subject for each valid media row, with its occurrence data', function () {
     ['result' => $result] = importFixtureArchive($this->project);
 

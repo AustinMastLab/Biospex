@@ -44,7 +44,11 @@ class CleanEfsDirsCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Deletes files older than 72 hours from the /efs directory, leaving empty directories intact. Skipped while an import, export, OCR run or GeoLocate job is in progress.';
+    protected $description = 'Deletes files and empty directories older than 72 hours from the /efs directories BIOSPEX writes to (import, scratch, GeoLocate export). Skipped while an import, export, OCR run or GeoLocate job is in progress.';
+
+    private int $deletedFiles = 0;
+
+    private int $deletedDirectories = 0;
 
     /**
      * Execute the console command.
@@ -61,9 +65,34 @@ class CleanEfsDirsCommand extends Command
             return;
         }
 
-        $deletedFiles = $this->cleanDirectory(config('filesystems.disks.efs.root'));
+        $threshold = Carbon::now()->subHours(72)->getTimestamp();
 
-        Log::info("Cleanup completed. Files deleted: $deletedFiles");
+        foreach ($this->directories() as $directory) {
+            if (File::isDirectory($directory)) {
+                $this->cleanDirectory($directory, $threshold);
+            }
+        }
+
+        Log::info("Cleanup completed. Files deleted: {$this->deletedFiles}. Directories deleted: {$this->deletedDirectories}.");
+    }
+
+    /**
+     * Get the /efs directories that BIOSPEX writes to.
+     *
+     * /efs is shared by both servers and holds other files too, such as database dumps, so nothing outside these
+     * directories is touched.
+     *
+     * @return list<string>
+     */
+    private function directories(): array
+    {
+        $root = config('filesystems.disks.efs.root');
+
+        return [
+            "$root/".config('config.import_dir'),
+            "$root/".config('config.scratch_dir'),
+            "$root/".config('geolocate.dir.export'),
+        ];
     }
 
     /**
@@ -100,32 +129,27 @@ class CleanEfsDirsCommand extends Command
     }
 
     /**
-     * Recursively clean files older than 72 hours in a directory.
+     * Recursively delete the files, and then the empty subdirectories, last modified before the threshold.
+     *
+     * The directory itself is kept. A subdirectory emptied by this run was just modified, so it's removed by a
+     * later run. Hidden files aren't deleted, and a subdirectory holding one isn't empty: on EFS a deleted file
+     * that is still open becomes a hidden .nfs file until it's closed.
      */
-    private function cleanDirectory(string $path): int
+    private function cleanDirectory(string $path, int $threshold): void
     {
-        $deletedFiles = 0;
-
-        // Iterate through directory contents
-        $items = File::files($path);
-        $directories = File::directories($path);
-
-        // Delete files older than 72 hours
-        foreach ($items as $file) {
-            $lastModified = Carbon::createFromTimestamp(File::lastModified($file));
-            $threshold = Carbon::now()->subHours(72);
-
-            if ($lastModified->lessThan($threshold)) {
-                File::delete($file); // Use the File facade to delete
-                $deletedFiles++;
+        foreach (File::files($path) as $file) {
+            if (File::lastModified($file) < $threshold) {
+                File::delete($file);
+                $this->deletedFiles++;
             }
         }
 
-        // Recursively scan subdirectories
-        foreach ($directories as $directory) {
-            $deletedFiles += $this->cleanDirectory($directory);
-        }
+        foreach (File::directories($path) as $directory) {
+            $this->cleanDirectory($directory, $threshold);
 
-        return $deletedFiles;
+            if (File::isEmptyDirectory($directory) && File::lastModified($directory) < $threshold && File::deleteDirectory($directory)) {
+                $this->deletedDirectories++;
+            }
+        }
     }
 }

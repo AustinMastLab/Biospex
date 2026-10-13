@@ -17,5 +17,4 @@
             </div>
         </form>
     </div>
-    <script src="{{ mix('js/livewire.js') }}"></script>
 @endif

@@ -119,6 +119,18 @@ task('artisan:filament:optimize', function () {
 });
 
 /*
+ * Cached pages name the Vite build's hashed files, which only exist in the release that built them. Pages cached
+ * by the old release until the symlink switch would point at files the new release doesn't have, so the response
+ * cache is cleared again right after the switch.
+ */
+desc('Clear the response cache after the symlink switch');
+task('artisan:responsecache:clear', function () {
+    cd('{{current_path}}');
+    run(withUmask('php artisan responsecache:clear'));
+    writeln('✅ Response cache cleared');
+});
+
+/*
  * =============================================================================
  * SUPERVISOR PROCESS MANAGEMENT
  * =============================================================================

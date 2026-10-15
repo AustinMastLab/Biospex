@@ -18,7 +18,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Enums\ApiAbility;
 use App\Http\Controllers\Api\V1\WeDigBioDashboardController;
 
 Route::apiResource('/wedigbio-dashboard', WeDigBioDashboardController::class, ['names' => 'api.v1.wedigbio-dashboard'])
-    ->middleware('ability:panoptes-pusher:read,panoptes-pusher:create,wedigbio-dashboard:read,lambda:update');
+    ->middleware(ApiAbility::middleware(
+        ApiAbility::PanoptesPusherRead,
+        ApiAbility::PanoptesPusherCreate,
+        ApiAbility::WeDigBioDashboardRead,
+        ApiAbility::LambdaUpdate,
+    ));

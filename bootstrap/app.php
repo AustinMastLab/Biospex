@@ -1,5 +1,6 @@
 <?php
 
+use App\Enums\ApiAbility;
 use App\Http\Middleware\Authenticate;
 use App\Http\Middleware\FlashHelperMessage;
 use App\Http\Middleware\PreventRequestsDuringMaintenance;
@@ -56,7 +57,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 Route::prefix('v1')->middleware([
                     'api',
                     'auth:sanctum',
-                    'ability:panoptes-pusher:read,panoptes-pusher:create,wedigbio-dashboard:read,lambda:update,public:read',
+                    ApiAbility::middleware(),
                 ])->group(function () use ($require_files) {
                     $require_files('routes/api/v1');
                 });

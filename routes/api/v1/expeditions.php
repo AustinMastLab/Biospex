@@ -18,9 +18,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Enums\ApiAbility;
 use App\Http\Controllers\Api\V1\ExpeditionController;
 
-Route::middleware('ability:public:read')->group(function () {
+Route::middleware(ApiAbility::middleware(ApiAbility::PublicRead))->group(function () {
     Route::get('/expeditions', [ExpeditionController::class, 'index'])->name('api.v1.expeditions.index');
     Route::get('/expeditions/{uuid}', [ExpeditionController::class, 'show'])->name('api.v1.expeditions.show');
 });

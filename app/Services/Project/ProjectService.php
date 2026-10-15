@@ -24,6 +24,7 @@ use App\Models\Project;
 use App\Models\ProjectAsset;
 use App\Models\User;
 use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
@@ -215,6 +216,25 @@ class ProjectService
                 ->orderBy('projects.id', $order)
                 ->simplePaginate(9, ['*'], 'projectPage', $page);
         });
+    }
+
+    /**
+     * Get one page of public projects for the API, oldest first.
+     */
+    public function getApiPage(int $perPage): LengthAwarePaginator
+    {
+        return $this->publicProjectIndexQuery()
+            ->orderBy('projects.id')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    /**
+     * Find a public project by its UUID for the API.
+     */
+    public function findPublicByUuid(string $uuid): ?Project
+    {
+        return $this->publicProjectIndexQuery()->where('projects.uuid', $uuid)->first();
     }
 
     protected function projectIndexQuery(): Builder

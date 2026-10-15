@@ -18,9 +18,10 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Enums\ApiAbility;
 use App\Http\Controllers\Api\V1\ProjectController;
 
-Route::middleware('ability:public:read')->group(function () {
+Route::middleware(ApiAbility::middleware(ApiAbility::PublicRead))->group(function () {
     Route::get('/projects', [ProjectController::class, 'index'])->name('api.v1.projects.index');
     Route::get('/projects/{uuid}', [ProjectController::class, 'show'])->name('api.v1.projects.show');
 });

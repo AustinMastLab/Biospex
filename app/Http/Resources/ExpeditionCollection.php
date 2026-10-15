@@ -23,23 +23,14 @@ namespace App\Http\Resources;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 /**
- * Class ExpeditionCollection
+ * Paginated list of public expeditions; pagination links and meta are added by Laravel.
  */
 class ExpeditionCollection extends ResourceCollection
 {
     /**
-     * Transform the resource collection into an array.
+     * The resource that this resource collects.
      *
-     * @param  \Illuminate\Http\Request
-     * @return array
+     * @var string
      */
-    public function toArray($request)
-    {
-        return [
-            'data' => $this->collection,
-            'links' => [
-                'self' => 'link-value',
-            ],
-        ];
-    }
+    public $collects = ExpeditionResource::class;
 }

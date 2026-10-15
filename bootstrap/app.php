@@ -56,7 +56,7 @@ return Application::configure(basePath: dirname(__DIR__))
                 Route::prefix('v1')->middleware([
                     'api',
                     'auth:sanctum',
-                    'ability:panoptes-pusher:read,panoptes-pusher:create,wedigbio-dashboard:read,lambda:update',
+                    'ability:panoptes-pusher:read,panoptes-pusher:create,wedigbio-dashboard:read,lambda:update,public:read',
                 ])->group(function () use ($require_files) {
                     $require_files('routes/api/v1');
                 });

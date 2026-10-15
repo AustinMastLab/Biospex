@@ -128,7 +128,15 @@ class PanoptesProjectPresenter extends Presenter
     }
 
     /**
-     * Return participation url.
+     * Return the Zooniverse participation url, or null without a workflow.
+     */
+    public function participateUrl(): ?string
+    {
+        return $this->model->panoptes_workflow_id === null ? null : $this->classifyReplace();
+    }
+
+    /**
+     * Build the Zooniverse classify url.
      *
      * @return mixed
      */

@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (C) 2015  Biospex
  * biospex@gmail.com
@@ -19,4 +20,5 @@
 
 use App\Http\Controllers\Api\V1\WeDigBioDashboardController;
 
-Route::apiResource('/wedigbio-dashboard', WeDigBioDashboardController::class, ['names' => 'api.v1.wedigbio-dashboard']);
+Route::apiResource('/wedigbio-dashboard', WeDigBioDashboardController::class, ['names' => 'api.v1.wedigbio-dashboard'])
+    ->middleware('ability:panoptes-pusher:read,panoptes-pusher:create,wedigbio-dashboard:read,lambda:update');

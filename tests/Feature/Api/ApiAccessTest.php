@@ -31,6 +31,12 @@ it('rate limits API requests', function () {
     $this->getJson(route('api.v1.wedigbio-dashboard.index'))->assertTooManyRequests();
 });
 
+it('returns 403 for the WeDigBio dashboard when the token only has public:read', function () {
+    Sanctum::actingAs(User::factory()->create(), ['public:read']);
+
+    $this->getJson(route('api.v1.wedigbio-dashboard.index'))->assertForbidden();
+});
+
 it('checks the Reverb server certificate', function () {
     expect(config('broadcasting.connections.reverb.client_options.verify', true))->not->toBeFalse();
 });

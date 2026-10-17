@@ -35,7 +35,7 @@
                data-method="delete"
                data-confirm="confirmation"
                data-title="{{ t('Stop Processing') }}"
-               data-content="{{ t('This will stop the Expedition Process. However, Subjects cannot be added since process was already started. Do you wish to Continue?') }}'">
+               data-content="{{ t('This will stop the Expedition Process. However, Subjects cannot be added since process was already started. Do you wish to Continue?') }}">
                 {{ t('Stop Expedition Processing') }}</a>
         @endif
     @endif

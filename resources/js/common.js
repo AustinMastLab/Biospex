@@ -27,31 +27,6 @@ $(function () {
         }
     });
 
-    // Prevent Chrome "Blocked aria-hidden..." warnings for Bootbox/Bootstrap:
-    // Ensure focus is not inside the modal when it is being hidden, then restore focus.
-    let lastFocusBeforeBootbox = null;
-
-    $(document).on('show.bs.modal', '.bootbox.modal', function () {
-        lastFocusBeforeBootbox = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    });
-
-    $(document).on('hide.bs.modal', '.bootbox.modal', function () {
-        const modal = this;
-
-        // If focus is currently inside the modal, move it out before aria-hidden is applied.
-        if (modal.contains(document.activeElement) && document.activeElement instanceof HTMLElement) {
-            document.activeElement.blur();
-        }
-    });
-
-    $(document).on('hidden.bs.modal', '.bootbox.modal', function () {
-        // After the modal is fully hidden, restore focus to what opened it (best a11y).
-        if (lastFocusBeforeBootbox && document.contains(lastFocusBeforeBootbox)) {
-            lastFocusBeforeBootbox.focus();
-        }
-        lastFocusBeforeBootbox = null;
-    });
-
     // Remove the global aria-hidden interception / mutation-observer approach.
     // It can introduce hard-to-debug side effects and doesn't solve the root issue (focus).
 

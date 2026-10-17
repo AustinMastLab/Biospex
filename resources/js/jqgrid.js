@@ -152,9 +152,9 @@ $(function () {
                     url: exportUrl,
                     data: {'filters': filters, 'route': route}
                 }).done(function () {
-                    bootboxMsg("Export Submitted", "You will receive an email when the export is complete.");
+                    notify('check-circle', 'Export submitted. You will receive an email when the export is complete.', 'success');
                 }).fail(function () {
-                    bootboxMsg("Export Error", "Export submission failed. Please contact Admin.");
+                    notify('times-circle', 'Export submission failed. Please contact Admin.', 'danger');
                 });
             },
             setSelectedCount = function () {
@@ -449,17 +449,4 @@ function mapFormatter(column) {
             col.formatter = functionsMapping[col.formatter];
         }
     }
-}
-
-/**
- * Display bootbox message.
- *
- * @param title
- * @param message
- */
-function bootboxMsg(title, message) {
-    bootbox.alert({
-        title: title,
-        message: message
-    })
 }

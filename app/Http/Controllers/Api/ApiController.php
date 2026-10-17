@@ -20,6 +20,7 @@
 
 namespace App\Http\Controllers\Api;
 
+use Illuminate\Http\Request;
 use Illuminate\Http\Response;
 use Illuminate\Routing\Controller;
 
@@ -61,6 +62,14 @@ class ApiController extends Controller
         $this->statusCode = $statusCode;
 
         return $this;
+    }
+
+    /**
+     * Requested page size from `per_page`, kept between 1 and 100 (default 25).
+     */
+    protected function perPage(Request $request): int
+    {
+        return max(1, min(100, $request->integer('per_page', 25)));
     }
 
     /**

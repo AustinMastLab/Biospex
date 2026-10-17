@@ -1,4 +1,5 @@
 <?php
+
 /*
  * Copyright (C) 2015  Biospex
  * biospex@gmail.com
@@ -17,6 +18,13 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
+use App\Enums\ApiAbility;
 use App\Http\Controllers\Api\V1\WeDigBioDashboardController;
 
-Route::apiResource('/wedigbio-dashboard', WeDigBioDashboardController::class, ['names' => 'api.v1.wedigbio-dashboard']);
+Route::apiResource('/wedigbio-dashboard', WeDigBioDashboardController::class, ['names' => 'api.v1.wedigbio-dashboard'])
+    ->middleware(ApiAbility::middleware(
+        ApiAbility::PanoptesPusherRead,
+        ApiAbility::PanoptesPusherCreate,
+        ApiAbility::WeDigBioDashboardRead,
+        ApiAbility::LambdaUpdate,
+    ));

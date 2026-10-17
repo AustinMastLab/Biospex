@@ -29,6 +29,7 @@ use App\Services\Subject\SubjectService;
 use DB;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Pagination\LengthAwarePaginator;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
@@ -176,6 +177,45 @@ class ExpeditionService
                 ->orderBy('expeditions.id', $order)
                 ->simplePaginate(12, ['*'], 'expeditionPage', $page);
         });
+    }
+
+    /**
+     * Get one page of public expeditions for the API, oldest first.
+     *
+     * @param  array{project_uuid?: string|null, status?: string|null}  $filters
+     */
+    public function getApiPage(array $filters, int $perPage): LengthAwarePaginator
+    {
+        $query = $this->publicApiQuery();
+
+        if (! empty($filters['project_uuid'])) {
+            $query->whereHas('project', fn (Builder $q) => $q->where('uuid', $filters['project_uuid']));
+        }
+
+        if (in_array($filters['status'] ?? null, ['active', 'completed'], true)) {
+            $query->where('expeditions.completed', $filters['status'] === 'completed');
+        }
+
+        return $query
+            ->orderBy('expeditions.id')
+            ->paginate($perPage)
+            ->withQueryString();
+    }
+
+    /**
+     * Find a public expedition by its UUID for the API.
+     */
+    public function findPublicByUuid(string $uuid): ?Expedition
+    {
+        return $this->publicApiQuery()->where('expeditions.uuid', $uuid)->first();
+    }
+
+    /**
+     * Public expedition query with the project UUID the API links to.
+     */
+    protected function publicApiQuery(): Builder
+    {
+        return $this->publicIndexQuery()->with('project:id,uuid,title,slug');
     }
 
     /**

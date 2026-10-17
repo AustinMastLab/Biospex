@@ -19,8 +19,6 @@
 /**
  * Expose the libraries the admin page scripts and Blade views call as globals.
  */
-import ClipboardJS from "clipboard";
 import * as bootstrap from "bootstrap";
 
-window.ClipboardJS = ClipboardJS;
 window.bootstrap = bootstrap;

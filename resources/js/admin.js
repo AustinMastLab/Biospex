@@ -190,8 +190,12 @@ $(function () {
         });
     }
 
-    // Restore: clipboard support used in admin pages
-    let clipboard = new ClipboardJS('.clipboard');
+    // Copy buttons: copy their data-clipboard-text with the Clipboard API.
+    $(document).on('click', '.clipboard', function () {
+        navigator.clipboard.writeText($(this).data('clipboard-text'))
+            .then(() => notify('check-circle', 'Copied to clipboard.', 'success'))
+            .catch(() => notify('exclamation-circle', 'Could not copy to the clipboard.', 'warning'))
+    })
 
     // Restore: user group toggle
     let userGroup = $('#user-group')

@@ -3,6 +3,7 @@
 namespace App\Filament\Resources\ApiTokens\Schemas;
 
 use App\Enums\ApiAbility;
+use App\Filament\Resources\ApiTokens\ApiTokenResource;
 use App\Models\User;
 use Filament\Forms\Components\CheckboxList;
 use Filament\Forms\Components\DateTimePicker;
@@ -39,8 +40,9 @@ class ApiTokenForm
                     ->columnSpanFull(),
                 DateTimePicker::make('expires_at')
                     ->label('Expires at')
-                    ->helperText('Leave empty for a token that never expires.')
-                    ->after('now'),
+                    ->timezone(fn (): string => ApiTokenResource::adminTimezone())
+                    ->minDate(fn (DateTimePicker $component): string => now($component->getTimezone())->toDateTimeString())
+                    ->helperText(fn (): string => 'In '.ApiTokenResource::adminTimezone().' time. Leave empty for a token that never expires.'),
             ]);
     }
 }

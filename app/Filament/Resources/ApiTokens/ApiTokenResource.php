@@ -30,6 +30,14 @@ class ApiTokenResource extends Resource
 
     protected static string|BackedEnum|null $navigationIcon = Heroicon::OutlinedKey;
 
+    /**
+     * The signed-in admin's profile timezone, so token times are entered and shown in local time while stored in UTC.
+     */
+    public static function adminTimezone(): string
+    {
+        return auth()->user()?->profile?->timezone ?: config('app.timezone');
+    }
+
     public static function form(Schema $schema): Schema
     {
         return ApiTokenForm::configure($schema);

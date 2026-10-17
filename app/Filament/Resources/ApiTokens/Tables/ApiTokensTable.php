@@ -2,6 +2,7 @@
 
 namespace App\Filament\Resources\ApiTokens\Tables;
 
+use App\Filament\Resources\ApiTokens\ApiTokenResource;
 use Filament\Actions\DeleteAction;
 use Filament\Tables\Columns\TextColumn;
 use Filament\Tables\Table;
@@ -23,15 +24,15 @@ class ApiTokensTable
                 TextColumn::make('abilities')
                     ->badge(),
                 TextColumn::make('last_used_at')
-                    ->dateTime()
+                    ->dateTime(timezone: ApiTokenResource::adminTimezone())
                     ->placeholder('Never')
                     ->sortable(),
                 TextColumn::make('expires_at')
-                    ->dateTime()
+                    ->dateTime(timezone: ApiTokenResource::adminTimezone())
                     ->placeholder('Never')
                     ->sortable(),
                 TextColumn::make('created_at')
-                    ->dateTime()
+                    ->dateTime(timezone: ApiTokenResource::adminTimezone())
                     ->sortable(),
             ])
             ->recordActions([

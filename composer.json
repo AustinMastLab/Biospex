@@ -49,7 +49,7 @@
     "tio/laravel": "^1.0"
   },
   "require-dev": {
-    "austinmastlab/deployer-recipes": "^1.0",
+    "austinmastlab/deployer-recipes": "^1.2.0-rc1",
     "deployer/deployer": "^8.0",
     "fakerphp/faker": "^1.0",
     "fruitcake/laravel-debugbar": "^4.0",

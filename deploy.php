@@ -4,6 +4,7 @@ namespace Deployer;
 
 require 'recipe/laravel.php';
 require __DIR__.'/vendor/austinmastlab/deployer-recipes/recipe/ssm-env.php';
+require __DIR__.'/vendor/austinmastlab/deployer-recipes/recipe/ci-artifacts.php';
 require 'deploy/custom.php';
 
 /*
@@ -24,6 +25,11 @@ require 'deploy/custom.php';
 // Deployment Configuration
 set('repository', 'https://github.com/AustinMastLab/Biospex.git');
 set('ssm_app', 'biospex');  // .env is generated from SSM /biospex/{environment} (env:ssm)
+
+// Shared tasks from deployer-recipes/recipe/ci-artifacts.php
+set('supervisor_groups', ['biospex']);  // supervisor:reload updates only this group
+set('deploy_umask', '002');             // CI artifact files are group-writable
+set('ci_artifacts_optional', true);     // manual deploys (dep deploy …) skip the CI artifact
 set('base_path', '/data/web');
 set('remote_user', 'ubuntu');
 set('ssh_multiplexing', true);

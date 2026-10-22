@@ -42,6 +42,18 @@ it('restarts long-running processes after the release is published', function (s
     'Panoptes listener' => 'supervisor:restart-panoptes-listener',
 ]);
 
+it('uses the shared deploy tasks and reloads only its own Supervisor group', function () {
+    $deploy = file_get_contents(base_path('deploy.php'));
+    $custom = file_get_contents(base_path('deploy/custom.php'));
+
+    expect($deploy)
+        ->toContain("require __DIR__.'/vendor/austinmastlab/deployer-recipes/recipe/ci-artifacts.php';")
+        ->toContain("set('supervisor_groups', ['biospex']);")
+        ->and($custom)
+        ->not->toContain("task('supervisor:reload'")
+        ->not->toContain("task('deploy:ci-artifacts'")
+        ->not->toContain("task('deploy:verify-structure'");
+});
 it('lets Supervisor bring Reverb back after it stops', function () {
     $config = parse_ini_file(resource_path('supervisor/reverb.conf'), true, INI_SCANNER_RAW);
     $program = reset($config);

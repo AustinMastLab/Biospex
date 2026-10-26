@@ -15,9 +15,8 @@ This information was taken from AWS and the repositories on 2026-10-05. Check AW
 | `BiospexZipMerger` | [BiospexZipMerger](https://github.com/AustinMastLab/BiospexZipMerger) | Node.js 22 | 3072 MB / 900 s | 1 |
 | `BiospexBatchCreator` | [BiospexBatchCreator](https://github.com/AustinMastLab/BiospexBatchCreator) | Node.js 22 | 5120 MB / 900 s | 1 |
 | `BiospexReconcile312` | [BiospexReconcile312](https://github.com/AustinMastLab/BiospexReconcile312) | Python 3.12 | 1024 MB / 900 s | 8 |
-| `BiospexLabelReconcile` | [BiospexLabelReconcile](https://github.com/AustinMastLab/BiospexLabelReconcile) | Python 3.10 | 1024 MB / 900 s | 8 |
 
-`BiospexLabelReconcile` is the old reconciliation function, replaced by `BiospexReconcile312`. Nothing triggers it, and its repository is archived, but the function is still deployed.
+`BiospexReconcile312` replaced the old `BiospexLabelReconcile` function, which was deleted on 2026-10-17; its repository is archived.
 
 The **ZipBatchOrchestrator** repository ([ZipBatchOrchestrator](https://github.com/AustinMastLab/ZipBatchOrchestrator)) holds an AWS Step Functions state machine, not a Lambda. It runs `BiospexZipCreator` and `BiospexZipMerger` for large exports.
 

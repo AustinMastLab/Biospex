@@ -136,12 +136,6 @@ task('artisan:responsecache:clear', function () {
  * =============================================================================
  */
 
-desc('Reload Supervisor configuration (config-only update)');
-task('supervisor:reload', function () {
-    run(withUmask('sudo supervisorctl reread'));
-    run(withUmask('sudo supervisorctl update'));
-});
-
 desc('Restart the Panoptes listener so it runs the new release');
 task('supervisor:restart-panoptes-listener', function () {
     cd('{{release_or_current_path}}');
@@ -161,96 +155,5 @@ task('supervisor:restart-panoptes-listener', function () {
     writeln("✅ Restarted {$program}");
 });
 
-/*
- * =============================================================================
- * CI/CD ARTIFACT DEPLOYMENT - CORE OF OPTION 1 IMPLEMENTATION
- * =============================================================================
- */
-
-desc('Download and extract pre-built assets from GitHub Actions (OPTION 1 CORE FEATURE)');
-task('deploy:ci-artifacts', function () {
-    // Environment variables automatically provided by GitHub Actions workflow
-    $githubActions = ($_ENV['GITHUB_ACTIONS'] ?? getenv('GITHUB_ACTIONS') ?? '') === 'true';
-
-    $githubToken = $_ENV['GITHUB_TOKEN'] ?? getenv('GITHUB_TOKEN') ?? '';
-    $githubSha = $_ENV['GITHUB_SHA'] ?? getenv('GITHUB_SHA') ?? '';
-    $githubRepo = $_ENV['GITHUB_REPO'] ?? getenv('GITHUB_REPO') ?? 'AustinMastLab/Biospex';
-
-    // If not running in GitHub Actions, skip this task (manual deploy path)
-    if (! $githubActions) {
-        writeln('⚠️  Skipping deploy:ci-artifacts (not running in GitHub Actions).');
-        writeln('    Tip: Use GitHub Actions for artifact-based deploys, or deploy from repository instead.');
-
-        return;
-    }
-
-    // Validate required environment variables
-    if (empty($githubToken) || empty($githubSha)) {
-        // Provide more helpful error message with debugging information
-        $envVars = array_keys($_ENV);
-        $relevantEnvVars = array_filter($envVars, function ($key) {
-            return strpos(strtoupper($key), 'GITHUB') !== false;
-        });
-
-        $errorMsg = "GITHUB_TOKEN and GITHUB_SHA environment variables are required.\n";
-        $errorMsg .= 'Available GitHub-related env vars: '.implode(', ', $relevantEnvVars)."\n";
-        $errorMsg .= 'All env vars count: '.count($envVars);
-
-        throw new \Exception($errorMsg);
-    }
-
-    // Artifact naming convention: biospex-{git-sha}
-    $artifactName = "biospex-{$githubSha}";
-    writeln("Downloading CI artifact: {$artifactName}");
-
-    // Step 1: Get artifact download URL from GitHub API
-    $apiUrl = "https://api.github.com/repos/{$githubRepo}/actions/artifacts";
-    $response = runLocally("curl -H 'Authorization: Bearer {$githubToken}' -H 'Accept: application/vnd.github.v3+json' '{$apiUrl}?name={$artifactName}&per_page=1'");
-    $artifacts = json_decode($response, true);
-
-    // Validate artifact exists
-    if (empty($artifacts['artifacts'])) {
-        throw new \Exception("No CI artifact found with name: {$artifactName}");
-    }
-
-    $downloadUrl = $artifacts['artifacts'][0]['archive_download_url'];
-    cd('{{release_or_current_path}}');
-
-    // Step 2: Download, extract, and deploy CI-built assets
-    run(withUmask("curl -L -H 'Authorization: Bearer {$githubToken}' -H 'Accept: application/vnd.github.v3+json' '{$downloadUrl}' -o artifact.zip"));
-    run(withUmask('unzip -o -q artifact.zip'));       // Extract artifact quietly, overwrite existing files
-
-    // Find the deepest 'deployment-package' and rsync its contents to flatten
-    $nestLevelCmd = run(withUmask('find . -type d -name "deployment-package" -printf "%p\\n" | wc -l'));
-    $nests = (int) trim($nestLevelCmd);
-
-    if ($nests > 0) {
-        // Find innermost (or only) and rsync up (silent flatten)
-        $innermost = run(withUmask('find . -type d -name "deployment-package" | sort -r | head -1'));
-        $innermost = trim($innermost);
-        if (! empty($innermost)) {
-            run(withUmask("rsync -av '{$innermost}/' ./"));  // Copy contents to root
-            // Clean all deployment-package dirs
-            run(withUmask('find . -type d -name "deployment-package" -exec rm -rf {} +'));
-        }
-    }
-
-    run(withUmask('rm -f artifact.zip')); // Cleanup artifact file
-
-    writeln('✅ CI artifacts deployed successfully - No server-side building required!');
-});
-
-/*
- * =============================================================================
- * DEPLOYMENT VERIFICATION
- * =============================================================================
- */
-
-desc('Verify flat deployment structure');
-task('deploy:verify-structure', function () {
-    $nestCheck = run(withUmask('find {{release_path}} -type d -name "deployment-package" | wc -l'));
-    if ((int) trim($nestCheck) > 0) {
-        throw new \Exception("Nesting detected post-deploy: {$nestCheck} dirs. Check CI artifact.");
-    }
-    writeln('✅ Deployment structure verified: flat and clean');
-});
+// deploy:ci-artifacts, deploy:verify-structure and supervisor:reload come from
+// deployer-recipes/recipe/ci-artifacts.php (required in deploy.php).

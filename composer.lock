@@ -11163,16 +11163,16 @@
     "packages-dev": [
         {
             "name": "austinmastlab/deployer-recipes",
-            "version": "v1.2.0-rc1",
+            "version": "v1.2.0",
             "source": {
                 "type": "git",
                 "url": "https://github.com/AustinMastLab/deployer-recipes",
-                "reference": "9622dea28fca2d50f21001ceed0794f342a1a87a"
+                "reference": "1a3c56693f52f09d079c895f6d0ba338e961eccc"
             },
             "dist": {
                 "type": "zip",
-                "url": "https://api.github.com/repos/AustinMastLab/deployer-recipes/zipball/9622dea28fca2d50f21001ceed0794f342a1a87a",
-                "reference": "9622dea28fca2d50f21001ceed0794f342a1a87a",
+                "url": "https://api.github.com/repos/AustinMastLab/deployer-recipes/zipball/1a3c56693f52f09d079c895f6d0ba338e961eccc",
+                "reference": "1a3c56693f52f09d079c895f6d0ba338e961eccc",
                 "shasum": ""
             },
             "require": {
@@ -11189,7 +11189,7 @@
             ],
             "type": "library",
             "description": "Shared Deployer recipes and AWS SSM environment tools for AustinMastLab sites",
-            "time": "2026-10-21T16:43:04+00:00"
+            "time": "2026-10-22T00:56:00+00:00"
         },
         {
             "name": "brianium/paratest",
@@ -15903,9 +15903,7 @@
     ],
     "aliases": [],
     "minimum-stability": "stable",
-    "stability-flags": {
-        "austinmastlab/deployer-recipes": 5
-    },
+    "stability-flags": {},
     "prefer-stable": true,
     "prefer-lowest": false,
     "platform": {

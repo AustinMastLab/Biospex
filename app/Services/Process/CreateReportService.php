@@ -23,6 +23,8 @@ namespace App\Services\Process;
 use App\Models\Download;
 use App\Models\ExportQueue;
 use App\Services\Csv\AwsS3CsvService;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
 
 /**
  * Class CreateReportService
@@ -37,7 +39,7 @@ class CreateReportService
     /**
      * Create csv report.
      *
-     * @throws \League\Csv\CannotInsertRecord|\League\Csv\Exception
+     * @throws CannotInsertRecord|Exception
      */
     public function createCsvReport(string $csvName, array $data): ?string
     {
@@ -45,7 +47,7 @@ class CreateReportService
             return null;
         }
 
-        $header = array_keys($data[0]);
+        [$header, $rows] = $this->awsS3CsvService->csv->alignRows($data);
 
         $bucket = config('filesystems.disks.s3.bucket');
         $filePath = config('config.report_dir').'/'.$csvName;
@@ -53,7 +55,7 @@ class CreateReportService
         $this->awsS3CsvService->createBucketStream($bucket, $filePath, 'w');
         $this->awsS3CsvService->createCsvWriterFromStream();
         $this->awsS3CsvService->csv->insertOne($header);
-        $this->awsS3CsvService->csv->insertAll($data);
+        $this->awsS3CsvService->csv->insertAll($rows);
 
         return base64_encode($csvName);
     }

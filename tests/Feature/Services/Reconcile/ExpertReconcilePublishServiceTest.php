@@ -56,3 +56,19 @@ it('leaves the record id out of the published expert reconcile csv', function ()
         ->not->toContain('_id')
         ->and($row)->toHaveCount(count($header));
 });
+
+it('gives a field missing from the first record its own column in the published csv', function () {
+    $expedition = Expedition::factory()->create();
+    Reconcile::create(['subject_expeditionId' => $expedition->id, 'subject_id' => 1, 'subject_problem' => 0]);
+    Reconcile::create(['subject_expeditionId' => $expedition->id, 'subject_id' => 2, 'subject_problem' => 0, 'notes' => 'checked by expert']);
+
+    app(ExpertReconcilePublishService::class)->publishReconciled($expedition);
+
+    $csv = Storage::disk('s3')->get(config('zooniverse.directory.reconciled-with-expert').'/'.$expedition->id.'.csv');
+    $lines = array_map('str_getcsv', array_values(array_filter(explode("\n", $csv))));
+    $header = array_shift($lines);
+
+    expect($header)->toContain('notes')
+        ->and($lines)->each->toHaveCount(count($header))
+        ->and(array_combine($header, $lines[1])['notes'])->toBe('checked by expert');
+});

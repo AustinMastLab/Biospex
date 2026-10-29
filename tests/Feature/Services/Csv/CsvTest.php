@@ -43,6 +43,20 @@ it('writes csv that standard RFC 4180 readers parse back unchanged', function ()
     expect(fgetcsv($file, null, ',', '"', ''))->toBe($this->row);
 });
 
+it('keeps RFC 4180 escaping when setEscape is called without an argument', function () {
+    $file = fopen($this->path, 'w');
+    fputcsv($file, ['_id', 'occurrence', 'ocr'], ',', '"', '');
+    fputcsv($file, $this->row, ',', '"', '');
+    fclose($file);
+
+    $csv = new Csv;
+    $csv->readerCreateFromPath($this->path);
+    $csv->setEscape();
+    $csv->setHeaderOffset();
+
+    expect(array_values(iterator_to_array($csv->getRecords())[1]))->toBe($this->row);
+});
+
 it('reads standard RFC 4180 csv containing backslash quotes', function () {
     $file = fopen($this->path, 'w');
     fputcsv($file, ['_id', 'occurrence', 'ocr'], ',', '"', '');

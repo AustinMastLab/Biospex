@@ -61,7 +61,6 @@ class CreatePanoptesTranscriptionService
             $this->awsS3CsvService->createCsvReaderFromStream();
             $this->awsS3CsvService->csv->setDelimiter();
             $this->awsS3CsvService->csv->setEnclosure();
-            $this->awsS3CsvService->csv->setEscape('"');
             $this->awsS3CsvService->csv->setHeaderOffset();
 
             $header = $this->prepareHeader($this->awsS3CsvService->csv->getHeader());

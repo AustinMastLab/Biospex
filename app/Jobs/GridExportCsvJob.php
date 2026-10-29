@@ -33,8 +33,10 @@ use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Str;
+use League\Csv\CannotInsertRecord;
 use Throwable;
 
 /**
@@ -64,8 +66,8 @@ class GridExportCsvJob implements ShouldQueue
     /**
      * Execute the job.
      *
-     * @throws \League\Csv\CannotInsertRecord
-     * @throws \Exception
+     * @throws CannotInsertRecord
+     * @throws Exception
      */
     public function handle(
         JqGridEncoder $jqGridEncoder,
@@ -85,14 +87,16 @@ class GridExportCsvJob implements ShouldQueue
 
         $cursor->each(function ($subject) use ($header, $awsS3CsvService, $generalService) {
             $subjectArray = $subject->getAttributes();
-            $subjectArray['id'] = (string) $subject->id;
+            $subjectArray['_id'] = (string) $subject->id;
             $subjectArray['expedition_ids'] = trim(implode(', ', $subject->expedition_ids), ',');
             $subjectArray['updated_at'] = $subject->updated_at ? $subject->updated_at->toDateTimeString() : '';
             $subjectArray['created_at'] = $subject->created_at ? $subject->created_at->toDateTimeString() : '';
             $subjectArray['ocr'] = $generalService->forceUtf8($subject->ocr);
             $subjectArray['occurrence'] = $this->decodeAndEncode($subject['occurrence']->getAttributes());
 
-            $merged = $header->merge($subjectArray);
+            // Only header columns: the model exposes the key as `id`, and older
+            // subjects carry fields (e.g. oldAccessURI) the header doesn't list.
+            $merged = $header->merge(collect($subjectArray)->only($header->keys()));
 
             $awsS3CsvService->csv->insertOne($merged->toArray());
         });
@@ -121,7 +125,7 @@ class GridExportCsvJob implements ShouldQueue
     /**
      * Build the header for export.
      */
-    private function buildHeader(): \Illuminate\Support\Collection
+    private function buildHeader(): Collection
     {
         $header = Header::where('project_id', $this->data['projectId'])->first()->header['image'];
         array_unshift($header, '_id', 'project_id', 'imageId', 'expedition_ids', 'exported');

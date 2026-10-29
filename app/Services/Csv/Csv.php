@@ -29,6 +29,10 @@ use League\Csv\Writer;
 
 /**
  * Class Csv
+ *
+ * Readers and writers use RFC 4180 escaping (quotes doubled, no escape character).
+ * League's default backslash escape writes `\"` without doubling the quote, which
+ * Excel, Google Sheets and Python read as the end of the field.
  */
 class Csv
 {
@@ -57,7 +61,7 @@ class Csv
      */
     public function readerCreateFromPath($file)
     {
-        $this->reader = Reader::createFromPath($file);
+        $this->reader = Reader::createFromPath($file)->setEscape('');
     }
 
     /**
@@ -77,7 +81,7 @@ class Csv
      */
     public function readerCreateFromStream($stream)
     {
-        $this->reader = Reader::createFromStream($stream);
+        $this->reader = Reader::createFromStream($stream)->setEscape('');
     }
 
     /**
@@ -85,7 +89,7 @@ class Csv
      */
     public function writerCreateFromPath($filePath)
     {
-        $this->writer = Writer::createFromPath($filePath, 'w+');
+        $this->writer = Writer::createFromPath($filePath, 'w+')->setEscape('');
     }
 
     /**
@@ -95,7 +99,7 @@ class Csv
      */
     public function writerCreateFromStream($stream)
     {
-        $this->writer = Writer::createFromStream($stream);
+        $this->writer = Writer::createFromStream($stream)->setEscape('');
     }
 
     /**

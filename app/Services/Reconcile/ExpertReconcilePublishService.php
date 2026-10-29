@@ -62,7 +62,8 @@ class ExpertReconcilePublishService
     {
         $results = $this->reconcile->where('subject_expeditionId', (int) $expedition->id)->get();
         $mapped = $results->map(function ($record) {
-            unset($record->_id, $record->subject_columns, $record->subject_problem, $record->updated_at, $record->created_at, $record->reviewed);
+            // The model exposes the key as `id`; unsetting `_id` would leave it in.
+            unset($record->id, $record->subject_columns, $record->subject_problem, $record->updated_at, $record->created_at, $record->reviewed);
 
             return $record;
         });
@@ -71,7 +72,7 @@ class ExpertReconcilePublishService
             throw new \Exception(t('Missing reconciled records for Expert Review publish for Expedition Id: %s', $expedition->id));
         }
 
-        $header = array_keys($mapped->first()->toArray());
+        [$header, $rows] = $this->awsS3CsvService->csv->alignRows($mapped->map(fn ($record) => $record->toArray()));
         $decodedHeader = [];
         foreach ($header as $value) {
             $decodedHeader[] = TranscriptionMapHelper::decodeTranscriptionField($value);
@@ -81,7 +82,7 @@ class ExpertReconcilePublishService
         $this->awsS3CsvService->createBucketStream(config('filesystems.disks.s3.bucket'), $file, 'w');
         $this->awsS3CsvService->createCsvWriterFromStream();
         $this->awsS3CsvService->csv->insertOne($decodedHeader);
-        $this->awsS3CsvService->csv->insertAll($mapped->toArray());
+        $this->awsS3CsvService->csv->insertAll($rows);
     }
 
     /**

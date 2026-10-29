@@ -29,6 +29,10 @@ use League\Csv\Writer;
 
 /**
  * Class Csv
+ *
+ * Readers and writers use RFC 4180 escaping (quotes doubled, no escape character).
+ * League's default backslash escape writes `\"` without doubling the quote, which
+ * Excel, Google Sheets and Python read as the end of the field.
  */
 class Csv
 {
@@ -57,7 +61,7 @@ class Csv
      */
     public function readerCreateFromPath($file)
     {
-        $this->reader = Reader::createFromPath($file);
+        $this->reader = Reader::createFromPath($file)->setEscape('');
     }
 
     /**
@@ -77,7 +81,7 @@ class Csv
      */
     public function readerCreateFromStream($stream)
     {
-        $this->reader = Reader::createFromStream($stream);
+        $this->reader = Reader::createFromStream($stream)->setEscape('');
     }
 
     /**
@@ -85,7 +89,7 @@ class Csv
      */
     public function writerCreateFromPath($filePath)
     {
-        $this->writer = Writer::createFromPath($filePath, 'w+');
+        $this->writer = Writer::createFromPath($filePath, 'w+')->setEscape('');
     }
 
     /**
@@ -95,7 +99,7 @@ class Csv
      */
     public function writerCreateFromStream($stream)
     {
-        $this->writer = Writer::createFromStream($stream);
+        $this->writer = Writer::createFromStream($stream)->setEscape('');
     }
 
     /**
@@ -123,7 +127,7 @@ class Csv
      *
      * @throws Exception
      */
-    public function setEscape(string $escape = '\\')
+    public function setEscape(string $escape = '')
     {
         $this->reader->setEscape($escape);
     }
@@ -166,6 +170,26 @@ class Csv
      *
      * @throws CannotInsertRecord|Exception
      */
+    /**
+     * Align rows that may have different keys to one header.
+     *
+     * The header is every key found in any row, in first-seen order, and each row is
+     * returned in that column order with '' for fields it lacks, so no row can add
+     * unlabeled values or shift into the wrong column.
+     *
+     * @return array{0: array<int, string>, 1: array<int, array<string, mixed>>}
+     */
+    public function alignRows(iterable $rows): array
+    {
+        $rows = collect($rows)->map(fn ($row) => (array) $row)->values();
+        $blank = $rows->reduce(fn (array $keys, array $row) => $keys + array_fill_keys(array_keys($row), ''), []);
+
+        return [
+            array_map('strval', array_keys($blank)),
+            $rows->map(fn (array $row) => array_replace($blank, $row))->all(),
+        ];
+    }
+
     public function insertOne($row): void
     {
         $this->writer->insertOne($row);

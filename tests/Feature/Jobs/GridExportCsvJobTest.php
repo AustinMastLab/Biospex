@@ -87,7 +87,7 @@ it('leaves out subject fields that are not in the header', function () {
         'imageId' => 'image-1',
         'expedition_ids' => [21],
         'accessURI' => 'https://example.org/image-1.jpg',
-        'oldAccessURI' => 'https://example.org/old/image-1.jpg',
+        'legacyField' => 'not-in-header',
         'ocr' => '',
         'occurrence' => ['id' => 'occurrence-1'],
     ]);
@@ -95,5 +95,5 @@ it('leaves out subject fields that are not in the header', function () {
     [$header, $row] = exportGridCsv($this->project);
 
     expect($row)->toHaveCount(count($header))
-        ->and($row)->not->toContain('https://example.org/old/image-1.jpg');
+        ->and($row)->not->toContain('not-in-header');
 });

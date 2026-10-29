@@ -94,8 +94,8 @@ class GridExportCsvJob implements ShouldQueue
             $subjectArray['ocr'] = $generalService->forceUtf8($subject->ocr);
             $subjectArray['occurrence'] = $this->decodeAndEncode($subject['occurrence']->getAttributes());
 
-            // Only header columns: the model exposes the key as `id`, and older
-            // subjects carry fields (e.g. oldAccessURI) the header doesn't list.
+            // Only header columns: the model exposes the key as `id`, and a subject
+            // can carry fields the project header doesn't list.
             $merged = $header->merge(collect($subjectArray)->only($header->keys()));
 
             $awsS3CsvService->csv->insertOne($merged->toArray());

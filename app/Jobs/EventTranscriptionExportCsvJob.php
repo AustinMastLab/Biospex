@@ -71,7 +71,8 @@ class EventTranscriptionExportCsvJob implements ShouldQueue
 
             $transcriptions = $ids->map(function ($id) use ($panoptesTranscriptionService) {
                 $transcript = $panoptesTranscriptionService->getFirst('classification_id', $id);
-                unset($transcript['_id']);
+                // The model exposes the key as `id`; unsetting `_id` would leave it in.
+                unset($transcript['id']);
 
                 return $transcript;
             })->reject(function ($transcription) {

@@ -62,7 +62,8 @@ class ExpertReconcilePublishService
     {
         $results = $this->reconcile->where('subject_expeditionId', (int) $expedition->id)->get();
         $mapped = $results->map(function ($record) {
-            unset($record->_id, $record->subject_columns, $record->subject_problem, $record->updated_at, $record->created_at, $record->reviewed);
+            // The model exposes the key as `id`; unsetting `_id` would leave it in.
+            unset($record->id, $record->subject_columns, $record->subject_problem, $record->updated_at, $record->created_at, $record->reviewed);
 
             return $record;
         });

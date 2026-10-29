@@ -24,6 +24,9 @@ use App\Models\ActorExpedition;
 use App\Models\Download;
 use App\Models\GeoLocateExport;
 use App\Services\Csv\AwsS3CsvService;
+use League\Csv\CannotInsertRecord;
+use League\Csv\Exception;
+use League\Csv\SyntaxError;
 
 /**
  * Constructor method for GeoLocateResultCsvService.
@@ -88,8 +91,8 @@ class GeoLocateResultCsvService
      *
      * @param  array  $fields  The GeoLocate Form fields used to clean and adjust the header of the CSV file.
      *
-     * @throws \League\Csv\Exception
-     * @throws \League\Csv\SyntaxError
+     * @throws Exception
+     * @throws SyntaxError
      */
     public function processCsvDownload(array $fields): void
     {
@@ -107,26 +110,39 @@ class GeoLocateResultCsvService
      *
      * @param  int  $expeditionId  The ID of the expedition for which the Geo Reconciled download is being created or updated.
      *
-     * @throws \League\Csv\CannotInsertRecord
-     * @throws \League\Csv\Exception
+     * @throws CannotInsertRecord
+     * @throws Exception
      */
     public function createUpdateGeoReconciledDownload(int $expeditionId): void
     {
         $this->awsS3CsvService->createBucketStream(config('filesystems.disks.s3.bucket'), $this->destinationFile, 'w');
         $this->awsS3CsvService->createCsvWriterFromStream();
 
-        $recordHeader = [];
-        $counter = 0;
-        foreach ($this->geoLocateExport->where('subject_expeditionId', $expeditionId)->lazy() as $record) {
-            unset($record->id, $record->updated_at, $record->created_at);
-            if ($counter === 0) {
-                $mergedHeader = $this->setMergedHeader($record);
-                $this->awsS3CsvService->csv->insertOne($mergedHeader);
-                $recordHeader = array_fill_keys(array_keys(array_flip($mergedHeader)), null);
-                $counter++;
-            }
+        $records = fn () => $this->geoLocateExport->where('subject_expeditionId', $expeditionId)->lazy()
+            ->map(function (GeoLocateExport $record) {
+                unset($record->id, $record->updated_at, $record->created_at);
 
-            $this->awsS3CsvService->csv->insertOne(array_merge($recordHeader, $record->toArray()));
+                return $record->toArray();
+            });
+
+        // First pass: the header is every record's fields plus the GeoLocate columns,
+        // so a field missing from the first record still gets its own column.
+        $keys = [];
+        foreach ($records() as $record) {
+            $keys += array_fill_keys(array_keys($record), null);
+        }
+
+        if ($keys === []) {
+            $this->awsS3CsvService->closeBucketStream();
+
+            return;
+        }
+
+        $recordHeader = array_fill_keys($this->setMergedHeader(array_keys($keys)), null);
+        $this->awsS3CsvService->csv->insertOne(array_keys($recordHeader));
+
+        foreach ($records() as $record) {
+            $this->awsS3CsvService->csv->insertOne(array_replace($recordHeader, array_intersect_key($record, $recordHeader)));
         }
 
         $this->awsS3CsvService->closeBucketStream();
@@ -139,9 +155,9 @@ class GeoLocateResultCsvService
      * @param  GeoLocateExport  $record  The GeoLocateExport instance containing record data for processing.
      * @return array The resulting array after merging and removing specific keys.
      */
-    private function setMergedHeader(GeoLocateExport $record): array
+    private function setMergedHeader(array $recordKeys): array
     {
-        return array_diff(array_merge(array_keys($record->toArray()), $this->geoCsvHeader), ['CatalogNumber']);
+        return array_values(array_unique(array_diff(array_merge($recordKeys, $this->geoCsvHeader), ['CatalogNumber'])));
     }
 
     /**
@@ -165,7 +181,7 @@ class GeoLocateResultCsvService
      * Processes the records retrieved from the CSV, finds the corresponding geo-location export record based on the catalog number,
      * updates the found record with the remaining data, and removes the catalog number from the data array.
      *
-     * @throws \League\Csv\Exception
+     * @throws Exception
      */
     public function processRecords(): void
     {

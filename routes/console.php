@@ -27,6 +27,9 @@ Schedule::command('queue:prune-batches --hours=48 --unfinished=72')->daily();
 // Clean bingo maps
 Schedule::command('bingo:clean')->dailyAt('10:05');
 
+// Store the home page contributor and transcription counts (too slow to count during a request)
+Schedule::command('app:update-site-counts')->everyFourHours()->withoutOverlapping()->runInBackground();
+
 // Run lambda-reconciliation check every morning at 6:00
 Schedule::command('app:check-lambda-reconcile')->dailyAt('6:00');
 

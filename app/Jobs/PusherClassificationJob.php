@@ -29,6 +29,8 @@ use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
 use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\Log;
+use Throwable;
 
 /**
  * Job to process Zooniverse classifications and dispatch them for further processing.
@@ -44,6 +46,15 @@ class PusherClassificationJob implements ShouldQueue
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
     public int $timeout = 60;
+
+    public int $tries = 3;
+
+    /**
+     * Seconds to wait before each retry, so a short Panoptes outage can pass.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [10, 60];
 
     /**
      * Create a new job instance.
@@ -77,13 +88,7 @@ class PusherClassificationJob implements ShouldQueue
             fn () => $apiService->getPanoptesSubject($subjectId)
         ) : null;
 
-        $user = $this->data['user_id'] !== null
-            ? Cache::remember(
-                "panoptes_user_{$this->data['user_id']}",
-                3600, // Cache for 1 hour
-                fn () => $apiService->getPanoptesUser($this->data['user_id'])
-            )
-            : null;
+        $user = $this->data['user_id'] !== null ? $this->getUser($apiService) : null;
 
         if ($subject === null) {
             return;
@@ -93,6 +98,34 @@ class PusherClassificationJob implements ShouldQueue
 
         // Dispatch enriched data to MongoDB
         PusherTranscriptionJob::dispatch($payload);
+    }
+
+    /**
+     * Look up the volunteer on Panoptes.
+     *
+     * The user only adds the transcriber's login to the payload, so a failed
+     * lookup (for example a Zooniverse 502) is logged and the classification
+     * is saved without it instead of failing the job.
+     *
+     * @return array<string, mixed>|null
+     */
+    private function getUser(PanoptesApiService $apiService): ?array
+    {
+        try {
+            return Cache::remember(
+                "panoptes_user_{$this->data['user_id']}",
+                3600, // Cache for 1 hour
+                fn () => $apiService->getPanoptesUser($this->data['user_id'])
+            );
+        } catch (Throwable $e) {
+            Log::warning('Panoptes user lookup failed; saving the classification without user details', [
+                'user_id' => $this->data['user_id'],
+                'classification_id' => $this->data['classification_id'],
+                'error' => $e->getMessage(),
+            ]);
+
+            return null;
+        }
     }
 
     /**

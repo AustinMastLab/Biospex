@@ -19,6 +19,7 @@
  */
 
 use App\Models\PanoptesTranscription;
+use App\Services\Transcriptions\PanoptesTranscriptionService;
 use Database\Seeders\HomePageTestSeeder;
 
 beforeEach(function () {
@@ -51,6 +52,25 @@ describe('Home Page Basic Tests', function () {
         $response = $this->get(route('home'));
 
         $response->assertViewHas(['expedition', 'contributorCount', 'transcriptionCount']);
+    });
+
+    it('shows the stored contributor and transcription counts', function () {
+        Cache::store(config('config.site_counts_cache_store'))
+            ->forever(PanoptesTranscriptionService::SITE_COUNTS_KEY, ['contributors' => 16269, 'transcriptions' => 1989247]);
+
+        $response = $this->get(route('home'));
+
+        $response->assertOk()
+            ->assertSee('1989247 Digitizations in Biospex-launched Projects')
+            ->assertSee('16269 Participants in Biospex-launched Projects');
+    });
+
+    it('leaves out the counts before they are first stored', function () {
+        $response = $this->get(route('home'));
+
+        $response->assertOk()
+            ->assertDontSee('Digitizations in Biospex-launched Projects')
+            ->assertDontSee('Participants in Biospex-launched Projects');
     });
 
     it('displays content with data provided by services', function () {

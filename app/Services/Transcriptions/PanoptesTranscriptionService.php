@@ -21,11 +21,22 @@
 namespace App\Services\Transcriptions;
 
 use App\Models\PanoptesTranscription;
+use Illuminate\Contracts\Cache\Repository;
 use Illuminate\Support\Facades\Cache;
 use MongoDB\BSON\UTCDateTime;
 
 class PanoptesTranscriptionService
 {
+    /**
+     * Cache key for the stored home page counts.
+     */
+    public const SITE_COUNTS_KEY = 'site_counts';
+
+    /**
+     * Time limit for the counting queries. They only run from app:update-site-counts, never during a request.
+     */
+    protected const SITE_COUNTS_MAX_TIME_MS = 600000;
+
     public function __construct(protected PanoptesTranscription $model) {}
 
     /**
@@ -45,49 +56,64 @@ class PanoptesTranscriptionService
     }
 
     /**
-     * Get a contributor count for all transcriptions.
+     * Count the contributors and transcriptions and store them for the home page.
+     *
+     * Counting distinct contributors reads every transcription, which can take longer
+     * than a page request may wait. If a query fails, the previously stored counts stay.
      */
-    public function getContributorCount(): mixed
+    public function refreshSiteCounts(): void
     {
-        $aggregationQuery = [
-            [
-                '$match' => [
-                    'user_name' => ['$not' => ['$regex' => '^not-logged-in.*', '$options' => 'i']],
-                ],
-            ],
-            [
-                '$group' => ['_id' => '$user_name'],
-            ],
-            [
-                '$count' => 'count',
-            ],
+        $counts = [
+            'contributors' => $this->countContributors(),
+            'transcriptions' => $this->model->raw(function ($collection) {
+                return $collection->countDocuments([], ['maxTimeMS' => self::SITE_COUNTS_MAX_TIME_MS]);
+            }),
         ];
 
-        $key = 'contributor_count';
-        $tags = ['panoptes_transcriptions'];
+        $this->siteCountsCache()->forever(self::SITE_COUNTS_KEY, $counts);
+    }
 
-        $result = Cache::tags($tags)->remember($key, 14440, function () use ($aggregationQuery) {
-            return $this->model->raw(function ($collection) use ($aggregationQuery) {
-                return $collection->aggregate($aggregationQuery, ['maxTimeMS' => 30000]); // 30 second timeout
-            })->first();
-        });
+    /**
+     * Stored number of contributors, or null before the counts are first stored.
+     */
+    public function getContributorCount(): ?int
+    {
+        return $this->siteCountsCache()->get(self::SITE_COUNTS_KEY)['contributors'] ?? null;
+    }
+
+    /**
+     * Stored number of transcriptions, or null before the counts are first stored.
+     */
+    public function getTotalTranscriptions(): ?int
+    {
+        return $this->siteCountsCache()->get(self::SITE_COUNTS_KEY)['transcriptions'] ?? null;
+    }
+
+    /**
+     * Count distinct contributors, leaving out the "not-logged-in" placeholder names.
+     */
+    protected function countContributors(): int
+    {
+        $aggregationQuery = [
+            ['$sort' => ['user_name' => 1]],
+            ['$group' => ['_id' => '$user_name']],
+            ['$match' => ['_id' => ['$not' => ['$regex' => '^not-logged-in.*', '$options' => 'i']]]],
+            ['$count' => 'count'],
+        ];
+
+        $result = $this->model->raw(function ($collection) use ($aggregationQuery) {
+            return $collection->aggregate($aggregationQuery, ['maxTimeMS' => self::SITE_COUNTS_MAX_TIME_MS]);
+        })->first();
 
         return $result === null ? 0 : $result->count;
     }
 
     /**
-     * Get total transcriptions for site.
+     * The cache store that keeps the home page counts across deploys.
      */
-    public function getTotalTranscriptions(): mixed
+    protected function siteCountsCache(): Repository
     {
-        $key = 'total_transcriptions';
-        $tags = ['panoptes_transcriptions'];
-
-        return Cache::tags($tags)->remember($key, 14440, function () {
-            return $this->model->raw(function ($collection) {
-                return $collection->countDocuments([], ['maxTimeMS' => 30000]); // 30 second timeout
-            });
-        });
+        return Cache::store(config('config.site_counts_cache_store'));
     }
 
     /**

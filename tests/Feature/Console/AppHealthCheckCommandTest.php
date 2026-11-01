@@ -22,6 +22,7 @@ use App\Mail\HealthCheckAlert;
 use App\Services\SupervisorControlService;
 use Illuminate\Http\Client\Request as HttpRequest;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
 
 const PING_URL = 'https://hc-ping.com/test-check';
@@ -80,7 +81,7 @@ it('alerts about a stopped Panoptes listener when it is enabled', function () {
     config(['config.panoptes_listener_enabled' => 1]);
     supervisorStates(['default_00' => 'RUNNING', 'panoptes-pusher' => 'STOPPED']);
 
-    $this->artisan('app:health-check')->assertFailed();
+    $this->artisan('app:health-check')->assertSuccessful();
     $this->artisan('app:health-check')->assertFailed();
 
     Mail::assertSent(HealthCheckAlert::class, fn (HealthCheckAlert $mail) => $mail->problems === ['panoptes-pusher is STOPPED.']);
@@ -89,7 +90,7 @@ it('alerts about a stopped Panoptes listener when it is enabled', function () {
 it('waits for a second failed check before alerting', function () {
     supervisorStates(['default_00' => 'FATAL', 'biospex-reverb_00' => 'RUNNING']);
 
-    $this->artisan('app:health-check')->assertFailed();
+    $this->artisan('app:health-check')->assertSuccessful();
 
     Mail::assertNothingSent();
     Http::assertNotSent(fn (HttpRequest $request) => str_starts_with($request->url(), PING_URL));
@@ -105,7 +106,7 @@ it('reports Reverb as down when it returns a server error', function () {
     supervisorStates(['default_00' => 'RUNNING']);
     $this->reverbStatus = 502;
 
-    $this->artisan('app:health-check')->assertFailed();
+    $this->artisan('app:health-check')->assertSuccessful();
     $this->artisan('app:health-check')->assertFailed();
 
     Mail::assertSent(HealthCheckAlert::class, fn (HealthCheckAlert $mail) => str_contains($mail->problems[0], 'Reverb returned HTTP 502'));
@@ -116,8 +117,20 @@ it('reports when Supervisor cannot be reached', function () {
         ->shouldReceive('processStates')
         ->andThrow(new RuntimeException('connection refused'));
 
-    $this->artisan('app:health-check')->assertFailed();
+    $this->artisan('app:health-check')->assertSuccessful();
     $this->artisan('app:health-check')->assertFailed();
 
     Mail::assertSent(HealthCheckAlert::class, fn (HealthCheckAlert $mail) => $mail->problems === ['Supervisor could not be reached: connection refused']);
+});
+
+it('logs the problems on every failed check', function () {
+    Log::spy();
+    supervisorStates(['default_00' => 'FATAL', 'biospex-reverb_00' => 'RUNNING']);
+
+    $this->artisan('app:health-check');
+    $this->artisan('app:health-check');
+
+    Log::shouldHaveReceived('warning')
+        ->with('Health check found problems', ['problems' => ['default_00 is FATAL.']])
+        ->twice();
 });

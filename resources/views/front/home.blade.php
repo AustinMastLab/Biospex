@@ -182,8 +182,12 @@
                         <div class="row card-body pb-5">
                             <div class="col-12">
                                 <ul class="text">
-                                    <li class="mt-3">{{ $transcriptionCount }} {{ t('Digitizations in Biospex-launched Projects') }}</li>
-                                    <li>{{ $contributorCount }} {{ t('Participants in Biospex-launched Projects') }}</li>
+                                    @if($transcriptionCount !== null)
+                                        <li class="mt-3">{{ $transcriptionCount }} {{ t('Digitizations in Biospex-launched Projects') }}</li>
+                                    @endif
+                                    @if($contributorCount !== null)
+                                        <li>{{ $contributorCount }} {{ t('Participants in Biospex-launched Projects') }}</li>
+                                    @endif
                                 </ul>
                             </div>
                         </div>

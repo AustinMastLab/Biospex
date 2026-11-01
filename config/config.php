@@ -30,6 +30,12 @@ return [
      */
     'health_check_ping_url' => env('HEALTH_CHECK_PING_URL'),
 
+    /*
+     * Cache store for the home page counts saved by app:update-site-counts. A deploy clears the
+     * default store, so the counts live in their own store and the page never shows them missing.
+     */
+    'site_counts_cache_store' => env('SITE_COUNTS_CACHE_STORE', 'file'),
+
     'api' => [
         'domain' => env('API_DOMAIN'),
         'rate_limit' => (int) env('API_RATE_LIMIT', 300), // requests per minute per client IP

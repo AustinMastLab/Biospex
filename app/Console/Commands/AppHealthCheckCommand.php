@@ -83,11 +83,14 @@ class AppHealthCheckCommand extends Command
             $this->error($problem);
         }
 
+        Log::warning('Health check found problems', ['problems' => $problems]);
+
         if (! Cache::has(self::FAILING_CACHE_KEY)) {
-            // First failed check: wait for the next run to confirm it.
+            // First failed check: wait for the next run to confirm it. Exit successfully,
+            // or the scheduler emails about every unconfirmed blip.
             Cache::put(self::FAILING_CACHE_KEY, true, now()->addMinutes(15));
 
-            return self::FAILURE;
+            return self::SUCCESS;
         }
 
         $this->ping($pingUrl ? rtrim($pingUrl, '/').'/fail' : null, implode("\n", $problems));

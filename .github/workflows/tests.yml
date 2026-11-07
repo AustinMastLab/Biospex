@@ -76,6 +76,12 @@ jobs:
 
       - name: Build assets (for the browser tests)
         run: yarn build
+        env:
+          # Echo needs a Reverb key to start; the tests don't connect, so placeholders do.
+          VITE_REVERB_APP_KEY: browser-tests
+          VITE_REVERB_HOST: 127.0.0.1
+          VITE_REVERB_PORT: '8080'
+          VITE_REVERB_SCHEME: http
 
       - name: Install Playwright's Chromium (for the browser tests)
         run: npx playwright install --with-deps chromium

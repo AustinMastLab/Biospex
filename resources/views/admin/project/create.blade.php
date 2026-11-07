@@ -247,8 +247,7 @@
                             <div class="form-group col-sm-4 pt-3">
                                 <button type="button"
                                         class="btn btn-link p-0"
-                                        data-toggle="modal"
-                                        data-target="#project-banner-modal"
+                                        data-modal-target="#project-banner-modal"
                                         data-hover="tooltip"
                                         title="{{ t('Click to select banner.') }}"
                                         aria-label="{{ t('Click to select banner.') }}">

@@ -124,8 +124,8 @@ class GroupPresenter extends Presenter
 
         $ariaLabel = e(t('Invite users to group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
 
-        return '<a href="#" class="prevent-default" data-toggle="modal" data-url="'.$route.'" 
-                    data-target="#global-modal" data-size="modal-lg" data-dismiss="modal" data-toggle="modal"
+        return '<a href="#" class="prevent-default" data-url="'.$route.'" 
+                    data-modal-target="#global-modal" data-size="modal-lg"
                     data-title="'.e(t('Invite users to group')).'"
                     data-hover="tooltip" title="'.e(t('Invite users to group')).'"
                     aria-label="'.$ariaLabel.'">
@@ -138,8 +138,8 @@ class GroupPresenter extends Presenter
 
         $ariaLabel = e(t('Invite users to group: %s (group %s)', (string) $this->model->title, (string) $this->model->uuid ?? (string) $this->model->id));
 
-        return '<a href="#" class="prevent-default" data-toggle="modal" data-url="'.$route.'" 
-                    data-target="#global-modal" data-size="modal-lg" data-dismiss="modal" data-toggle="modal"
+        return '<a href="#" class="prevent-default" data-url="'.$route.'" 
+                    data-modal-target="#global-modal" data-size="modal-lg"
                     data-title="'.e(t('Invite users to group')).'"
                     data-hover="tooltip" title="'.e(t('Invite users to group')).'"
                     aria-label="'.$ariaLabel.'">

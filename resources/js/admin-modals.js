@@ -21,12 +21,7 @@
 import {GroupInviteManager} from './livewire/group-invite-manager.js';
 
 $(function () {
-    let $body = $('body')
-    $(document).on('shown.bs.modal', function () {
-        if ($body.hasClass('modal-open') === false) {
-            $body.addClass('modal-open')
-        }
-
+    document.addEventListener('modal:shown', function () {
         // Ensure the global modal heading is never empty (Silktide scans at odd times)
         let $title = $('#modal-title');
         if ($title.length && $title.text().trim() === '') {
@@ -35,8 +30,8 @@ $(function () {
     })
 
     let $globalModal = $('.global-modal');
-    $globalModal.on('show.bs.modal', function (e) {
-        let $target = $(e.relatedTarget)
+    $globalModal.on('modal:show', function (e) {
+        let $target = $(e.originalEvent.detail.relatedTarget)
         let $modalBody = $(this).find('.modal-body')
         let size = $target.data('size')
 
@@ -68,7 +63,7 @@ $(function () {
                 console.error('Livewire is not available - wire:click events will not work');
             }
         });
-    }).on('hidden.bs.modal', function () {
+    }).on('modal:hidden', function () {
         let size = $(this).data('size');
         $(this).find('div.modal-dialog').removeClass(size).data('size', '')
         $(this).find('.modal-body').html('')
@@ -86,7 +81,7 @@ $(function () {
             e.preventDefault() // avoid to execute the actual submit of the form.
             let formData = new FormData(this);
             formPost($(this).attr('action'), formData)
-            $globalModal.modal('hide');
+            closeModal('global-modal');
         }) // Geolocate Export form
         .on('change', '#geolocate-form-select', function () {
             $('#warning').html('').collapse('hide')
@@ -196,14 +191,14 @@ window.formPostWithModalClose = function (url, formData, $modal) {
         notify("exclamation-circle", data.message, "success")
         // Close modal only after successful completion
         setTimeout(function () {
-            $modal.modal('hide');
+            closeModal($modal.attr('id'));
         }, 100); // Small delay to ensure notifications are displayed
     }).fail(function (response) {
         let json = JSON.parse(response.responseText)
         notify("exclamation-circle", json.message, "warning")
         // Close modal on error as well, but after notification
         setTimeout(function () {
-            $modal.modal('hide');
+            closeModal($modal.attr('id'));
         }, 100);
     });
 }
@@ -258,7 +253,7 @@ function postGeoLocateFormSelect(url, formId, source, $ajaxResults, $globalModal
         renumber_geolocate()
     }).fail(function (response) {
         let json = JSON.parse(response.responseText)
-        $globalModal.modal('hide');
+        closeModal('global-modal');
         notify("exclamation-circle", json.message, "warning")
     })
 }

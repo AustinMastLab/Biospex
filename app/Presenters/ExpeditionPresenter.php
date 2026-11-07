@@ -69,9 +69,7 @@ class ExpeditionPresenter extends Presenter
         $ariaLabel = e(t('Expedition tools for %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="" class="prevent-default"
-                       data-dismiss="modal"
-                       data-toggle="modal"
-                       data-target="#global-modal"
+                       data-modal-target="#global-modal"
                        data-size="modal-lg"
                        data-url="'.route('admin.expeditions.tools', [$this->model]).'"
                        data-hover="tooltip"
@@ -85,10 +83,9 @@ class ExpeditionPresenter extends Presenter
         $ariaLabel = e(t('Download expedition files for %s (expedition %s)', (string) $this->model->title, (string) $this->model->uuid));
 
         return '<a href="#" class="prevent-default" 
-                data-toggle="modal" 
                 data-title="'.e(t('Download expedition files')).'" 
                 data-url="'.$route.'"
-                data-dismiss="modal" data-toggle="modal" data-target="#global-modal" data-size="modal-xl" 
+                data-modal-target="#global-modal" data-size="modal-xl" 
                 data-hover="tooltip" 
                 title="'.e(t('Download expedition files')).'"
                 aria-label="'.$ariaLabel.'"><i class="fas fa-file-download fa-2x" aria-hidden="true"></i></a>';

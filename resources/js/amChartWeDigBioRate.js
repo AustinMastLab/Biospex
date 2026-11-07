@@ -23,11 +23,12 @@ let interval = null;
 let modalOpen = false;
 
 // The modal is in the menu of every page, so amCharts is only loaded the first time it opens.
-$('#wedigbio-rate-modal').on('show.bs.modal', function (e) {
+$('#wedigbio-rate-modal').on('modal:show', function (e) {
     modalOpen = true;
+    let $trigger = $(e.originalEvent.detail.relatedTarget);
     let $div = $(this).find('#weDigBioRateChartDiv');
-    let projectsUrl = $(e.relatedTarget).data('projects');
-    let url = $(e.relatedTarget).data('href');
+    let projectsUrl = $trigger.data('projects');
+    let url = $trigger.data('href');
 
     let createChart = function () {
         am4core.disposeAllCharts();
@@ -56,7 +57,7 @@ $('#wedigbio-rate-modal').on('show.bs.modal', function (e) {
     }).catch(function () {
         $div.html('<p class="d-flex justify-content-center">Failed to load the chart</p>');
     });
-}).on('hidden.bs.modal', function () {
+}).on('modal:hidden', function () {
     modalOpen = false;
     window.am4core?.disposeAllCharts();
     clearInterval(interval);

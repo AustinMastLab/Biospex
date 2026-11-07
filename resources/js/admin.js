@@ -315,7 +315,7 @@ $(function () {
         $bannerFile.val(img)
         $bannerFile.attr('value', img)
         $('#banner-img').attr('src', Laravel.habitatBannersPath + img)
-        $("#project-banner-modal .close").click()
+        closeModal('project-banner-modal')
     })
 
     // Restore: custom-file-input label update

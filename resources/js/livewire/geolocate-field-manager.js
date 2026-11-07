@@ -224,8 +224,8 @@ export class GeolocateFieldManager {
         const showHandler = () => this._handleModalShow();
         const hideHandler = () => this._handleModalHide();
 
-        $(modalElement).on('shown.bs.modal', showHandler);
-        $(modalElement).on('hidden.bs.modal', hideHandler);
+        modalElement.addEventListener('modal:shown', showHandler);
+        modalElement.addEventListener('modal:hidden', hideHandler);
 
         this.log('Modal event listeners set up');
     }

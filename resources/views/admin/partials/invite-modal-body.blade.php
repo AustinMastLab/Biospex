@@ -11,7 +11,7 @@
             @livewire('group-invite-manager', ['invites' => $group->invites, 'group' => $group, 'errors' => $errors->toArray()])
             <div class="form-group col-md-8 d-flex align-items-start justify-content-between mx-auto">
                 <button type="button" class="btn btn-primary mr-4 text-uppercase"
-                        data-dismiss="modal">{{ t('Cancel') }}
+                        data-modal-dismiss>{{ t('Cancel') }}
                 </button>
                 <button type="submit" class="btn btn-primary text-uppercase">{{ t('Submit') }}</button>
             </div>

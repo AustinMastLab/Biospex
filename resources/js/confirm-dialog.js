@@ -74,9 +74,6 @@ if (dialog) {
             method: (trigger.dataset.method || 'get').toLowerCase(),
         };
 
-        // Bootstrap 4 modals pull focus back into themselves, so a dialog opened from one has to live inside it.
-        (document.querySelector('.modal.show') ?? document.body).appendChild(dialog);
-
         window.dispatchEvent(new CustomEvent('confirm-dialog-open', {
             detail: {title: trigger.dataset.title ?? '', message: trigger.dataset.content ?? ''},
         }));
@@ -96,7 +93,6 @@ if (dialog) {
     dialog.addEventListener('close', () => {
         const action = pendingAction;
         pendingAction = null;
-        document.body.appendChild(dialog);
 
         if (dialog.returnValue === 'confirm' && action) {
             runAction(action);

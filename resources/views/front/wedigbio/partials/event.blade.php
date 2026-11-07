@@ -35,18 +35,16 @@
         @if(! event_before($event, 'UTC'))
             <div class="text-center">
                 <button class="btn btn-primary mb-4 text-uppercase"
-                        data-toggle="modal"
                         data-remote="false"
-                        data-target="#wedigbio-progress-modal"
+                        data-modal-target="#wedigbio-progress-modal"
                         data-href="{{ route('front.wedigbio-progress', [$event]) }}"
                         data-channel="{{ config('config.poll_wedigbio_progress_channel') . '.' . $event->channel_key }}"
                         data-uuid="{{ $event->channel_key }}">{{ t('Progress') }}
                 </button>
 
                 <button class="btn btn-primary mb-4 text-uppercase"
-                        data-toggle="modal"
                         data-remote="false"
-                        data-target="#wedigbio-rate-modal"
+                        data-modal-target="#wedigbio-rate-modal"
                         data-projects="{{ route('front.get.wedigbio-projects', [$event]) }}"
                         data-uuid="{{ $event->channel_key }}"
                         data-href="{{ route('front.get.wedigbio-rate', [$event]) }}">{{ t('Rates') }}

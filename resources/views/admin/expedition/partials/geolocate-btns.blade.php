@@ -4,9 +4,7 @@
 
 <button
         class="btn btn-primary rounded-0 mb-1"
-        data-dismiss="modal"
-        data-toggle="modal"
-        data-target="#global-modal"
+        data-modal-target="#global-modal"
         data-size="modal-xl"
         data-url="{{ route('admin.geolocate-form.index', [$expedition]) }}"
         data-title="{{ t('GeoLocate Export Form') }}">{{ t('GeoLocate Export Form') }}</button>
@@ -30,9 +28,7 @@
 
 @if($actor->pivot->state > ActorExpeditionState::NotStarted->value)
     <a href="" class="prevent-default btn btn-primary rounded-0 mb-1"
-       data-dismiss="modal"
-       data-toggle="modal"
-       data-target="#global-modal"
+       data-modal-target="#global-modal"
        data-size="modal-lg"
        data-url="{{ route('admin.geolocate-community.edit', [$expedition]) }}"
        data-title="{{ t('GeoLocate Community & Data Source Form') }}"> {{ t('GeoLocate Community & Data Source Form') }}</a>
@@ -41,9 +37,7 @@
 @if($actor->pivot->state > ActorExpeditionState::Exported->value)
     <button
             class="btn btn-primary rounded-0 mb-1"
-            data-dismiss="modal"
-            data-toggle="modal"
-            data-target="#global-modal"
+            data-modal-target="#global-modal"
             data-size="modal-lg"
             data-url="{{ route('admin.geolocate-stat.index', [$expedition]) }}"
             data-title="{{ t('GeoLocate Stats') }}">{{ t('GeoLocate Stats') }}</button>
@@ -52,7 +46,6 @@
 @if($actor->pivot->state === ActorExpeditionState::Complete->value)
     <a href="{{ route('admin.geolocate-stat.update', [$expedition]) }}"
        class="prevent-default btn btn-primary rounded-0 mb-1"
-       data-dismiss="modal"
        data-title="{{ t('Refresh GeoLocate Stats') }}"
        data-method="post"
        data-confirm="confirmation"

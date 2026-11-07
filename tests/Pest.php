@@ -2,6 +2,7 @@
 
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportTesting\Testable;
+use Tests\BrowserTestCase;
 use Tests\TestCase;
 
 /*
@@ -21,6 +22,11 @@ pest()->extend(TestCase::class)
         $this->withoutVite();
     })
     ->in('Feature');
+
+// Browser tests (pestphp/pest-plugin-browser): see BrowserTestCase. Run `yarn build` first.
+pest()->extend(BrowserTestCase::class)
+    ->use(RefreshDatabase::class)
+    ->in('Browser');
 
 /*
 |--------------------------------------------------------------------------

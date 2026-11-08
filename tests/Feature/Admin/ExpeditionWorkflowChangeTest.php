@@ -36,8 +36,8 @@ beforeEach(function () {
     $this->user->assignGroup(Group::factory()->create(['title' => config('config.admin.group', 'Admin')]));
     $this->actingAs($this->user);
 
-    $this->zooniverseActor = Actor::factory()->create(['title' => 'Zooniverse']);
-    $this->geoLocateActor = Actor::factory()->create(['title' => 'GeoLocate']);
+    $this->zooniverseActor = Actor::factory()->create(['title' => 'Zooniverse', 'class' => 'Zooniverse']);
+    $this->geoLocateActor = Actor::factory()->create(['title' => 'GeoLocate', 'class' => 'GeoLocate']);
     $this->zooniverseWorkflow = Workflow::factory()->create(['enabled' => 1]);
     $this->zooniverseWorkflow->actors()->attach($this->zooniverseActor, ['order' => 1]);
     $this->geoLocateWorkflow = Workflow::factory()->create(['enabled' => 1]);

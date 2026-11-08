@@ -55,26 +55,32 @@
                             </div>
                         </div>
 
+                        {{-- The workflow can change once, to GeoLocate, after Zooniverse is complete (ExpeditionService::canChangeToGeoLocate()). --}}
                         <div class="form-group">
-                            <label for="workflow-id" class="col-form-label col-12 required">{{ t('Workflows') }}:
-                                <i class="fa fa-question-circle-o"
-                                   data-hover="tooltip"
-                                   title="{{ t("Workflow can only be set once. If a mistake is made, please contact administration via email.") }}">
-
-                                </i></label>
+                            <label for="workflow-id" class="col-form-label col-12 required">{{ t('Workflows') }}:</label>
                             <select name="workflow_id" id="workflow-id"
-                                    class="form-control custom-select col-sm-5 {{ ($errors->has('workflow_id')) ? 'is-invalid' : '' }} a11y-form-control a11y-form-control"
-                                    {{ $expedition->locked === 1 ? 'disabled' : '' }}
+                                    class="form-control custom-select col-sm-5 {{ ($errors->has('workflow_id')) ? 'is-invalid' : '' }} a11y-form-control"
+                                    aria-describedby="workflow-help"
+                                    @disabled(! $canChangeToGeoLocate)
                                     required>
                                 @foreach($workflowOptions as $key => $name)
-                                    <option value="{{ $key }}" {{ $key == old('workflow_id', $expedition->workflow_id) ? ' selected=selected' : '' }}>{{ $name }}</option>
+                                    <option value="{{ $key }}" @selected($key == old('workflow_id', $expedition->workflow_id))>{{ $name }}</option>
                                 @endforeach
                             </select>
-                            @if($expedition->locked === 1)
-                                <input type="hidden" name="workflow_id"
-                                       value="{{ old('workflow_id', $expedition->workflow_id) }}">
-                            @endif
-                            <input type="hidden" name="locked" value="1">
+                            @unless($canChangeToGeoLocate)
+                                <input type="hidden" name="workflow_id" value="{{ $expedition->workflow_id }}">
+                            @endunless
+                            <small id="workflow-help" class="form-text text-muted col-12 pl-0">
+                                @if($canChangeToGeoLocate)
+                                    {{ t('Zooniverse is complete: the workflow can be changed to GeoLocate once. Saving that change locks the workflow.') }}
+                                @elseif((int) $expedition->workflow_id === (int) config('geolocate.workflow_id'))
+                                    {{ t('The workflow has been changed to GeoLocate and cannot be changed again.') }}
+                                @elseif($expedition->locked)
+                                    {{ t('The workflow is locked and cannot be changed.') }}
+                                @else
+                                    {{ t('The workflow can be changed to GeoLocate once, after Zooniverse is complete.') }}
+                                @endif
+                            </small>
                             <span class="invalid-feedback">{{ $errors->first('workflow_id') }}</span>
                         </div>
                     </div>

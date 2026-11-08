@@ -103,7 +103,7 @@ it('detaches removed subjects and attaches added ones on update', function () {
         ->getMock()
         ->shouldReceive('attachSubjects')->once()->withArgs(fn ($ids, $id) => $ids->values()->all() === ['c3'] && $id === $expedition->id);
 
-    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['subject-ids' => 'b2,c3']))
+    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['workflow_id' => $expedition->workflow_id, 'subject-ids' => 'b2,c3']))
         ->assertRedirect(route('admin.expeditions.show', $expedition))
         ->assertSessionHas('success', t('Record was updated successfully.'));
 
@@ -116,7 +116,7 @@ it('leaves subjects unchanged once a workflow manager exists', function () {
 
     mockSubjects(['a1'], 1)->shouldNotReceive('detachSubjects', 'attachSubjects');
 
-    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['subject-ids' => 'z9']))
+    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['workflow_id' => $expedition->workflow_id, 'subject-ids' => 'z9']))
         ->assertSessionHas('success');
 
     expect($expedition->stat()->sole()->local_subject_count)->toBe(1);
@@ -143,7 +143,7 @@ it('keeps updated details and asks to resubmit when subjects fail to save', func
         ->getMock()
         ->shouldReceive('attachSubjects')->andThrow(new RuntimeException('Mongo unavailable'));
 
-    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['title' => 'Renamed Expedition', 'subject-ids' => 'a1']))
+    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['workflow_id' => $expedition->workflow_id, 'title' => 'Renamed Expedition', 'subject-ids' => 'a1']))
         ->assertRedirect(route('admin.expeditions.edit', $expedition))
         ->assertSessionHas('danger', t('The Expedition was saved, but its subjects could not be. Please submit the form again.'));
 
@@ -166,7 +166,7 @@ it('ignores the admin-only skip flags in the expedition form', function () {
     mockSubjects([], 0)
         ->shouldReceive('detachSubjects', 'attachSubjects');
 
-    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['skip_api' => 1, 'skip_reconcile' => 0]))
+    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData(['workflow_id' => $expedition->workflow_id, 'skip_api' => 1, 'skip_reconcile' => 0]))
         ->assertSessionHas('success', t('Record was updated successfully.'));
 
     $expedition->refresh();

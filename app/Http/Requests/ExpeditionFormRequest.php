@@ -20,7 +20,10 @@
 
 namespace App\Http\Requests;
 
+use App\Models\Expedition;
 use App\Rules\FileUploadNameValidation;
+use App\Services\Expedition\ExpeditionService;
+use Closure;
 use Illuminate\Support\Facades\Auth;
 
 /**
@@ -51,11 +54,11 @@ class ExpeditionFormRequest extends Request
                 new FileUploadNameValidation,
             ],
             'logo_path' => 'nullable|string',
-            'workflow_id' => 'required',
+            'workflow_id' => ['required', 'integer', $this->workflowRule(...)],
             'subject-ids' => [
                 'nullable',
                 'string',
-                function (string $attribute, mixed $value, \Closure $fail): void {
+                function (string $attribute, mixed $value, Closure $fail): void {
                     $maximum = (int) config('config.expedition_size');
 
                     if (collect(explode(',', (string) $value))->filter()->unique()->count() > $maximum) {
@@ -64,6 +67,28 @@ class ExpeditionFormRequest extends Request
                 },
             ],
         ];
+    }
+
+    /**
+     * A new expedition can start on any workflow. An existing one keeps its workflow, except for the one
+     * change to GeoLocate that ExpeditionService::canChangeToGeoLocate() allows.
+     */
+    private function workflowRule(string $attribute, mixed $value, Closure $fail): void
+    {
+        $geoLocateWorkflowId = (int) config('geolocate.workflow_id');
+        $expedition = $this->route('expedition');
+
+        if (! $expedition instanceof Expedition) {
+            return;
+        }
+
+        if ((int) $value === (int) $expedition->workflow_id) {
+            return;
+        }
+
+        if ((int) $value !== $geoLocateWorkflowId || ! app(ExpeditionService::class)->canChangeToGeoLocate($expedition)) {
+            $fail(t('The workflow can only be changed once, to GeoLocate, after Zooniverse is complete.'));
+        }
     }
 
     /**

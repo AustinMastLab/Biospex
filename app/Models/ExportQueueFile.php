@@ -21,12 +21,17 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Casts\Attribute;
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 /**
  * Class ExportQueueFile
  */
 class ExportQueueFile extends BaseEloquentModel
 {
+    use HasFactory;
+
     /**
      * @ineritDoc
      */
@@ -47,7 +52,7 @@ class ExportQueueFile extends BaseEloquentModel
     /**
      * ExportQueue relationship.
      */
-    public function queue(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function queue(): BelongsTo
     {
         return $this->belongsTo(ExportQueue::class, 'queue_id', 'id');
     }
@@ -55,7 +60,7 @@ class ExportQueueFile extends BaseEloquentModel
     /**
      * Subject relation
      */
-    public function subject(): \Illuminate\Database\Eloquent\Relations\HasOne
+    public function subject(): HasOne
     {
         return $this->hasOne(Subject::class, '_id', 'subject_id');
     }

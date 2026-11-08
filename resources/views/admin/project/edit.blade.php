@@ -264,7 +264,7 @@
                                        readonly>
                             </div>
                             <div class="form-group col-sm-4 pt-3">
-                                <a href="#" data-toggle="modal" data-target="#project-banner-modal"
+                                <a href="#" data-modal-target="#project-banner-modal"
                                    data-hover="tooltip" title="{{ t('Click to select banner.') }}">
                                     {{ t('Click to select banner.') }}
                                     <img class="img-fluid" id="banner-img"

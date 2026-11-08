@@ -4,6 +4,7 @@
 # deploy.yml before each deploy, so a failing test stops the deploy.
 #
 # - test:  Pest (with a MongoDB service) and, on pull requests, Pint on the changed files.
+#          The browser tests (tests/Browser) need the built assets and Playwright's Chromium.
 # - audit: composer audit, on pull requests only. It reports vulnerable packages
 #          but never blocks a deploy.
 
@@ -63,6 +64,27 @@ jobs:
           echo 'APP_KEY=' > .env
           php artisan key:generate --force --ansi
           php artisan package:discover --ansi
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: '24'
+          cache: 'yarn'
+
+      - name: Install Yarn dependencies
+        run: yarn install --frozen-lockfile --ignore-engines
+
+      - name: Build assets (for the browser tests)
+        run: yarn build
+        env:
+          # Echo needs a Reverb key to start; the tests don't connect, so placeholders do.
+          VITE_REVERB_APP_KEY: browser-tests
+          VITE_REVERB_HOST: 127.0.0.1
+          VITE_REVERB_PORT: '8080'
+          VITE_REVERB_SCHEME: http
+
+      - name: Install Playwright's Chromium (for the browser tests)
+        run: npx playwright install --with-deps chromium
 
       - name: Check code style of changed files (Pint)
         if: github.event_name == 'pull_request'

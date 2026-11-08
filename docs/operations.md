@@ -105,6 +105,7 @@ The task order is in `deploy.php`:
 - **Services needed:** PHP 8.5, MySQL, MongoDB, Beanstalkd, Redis, and Supervisor. The local Supervisor configs come from the same templates, with the `loc-` prefix.
 - **Assets:** `yarn install`, then `yarn build` (or `yarn dev` for the Vite dev server). Set `VITE_REVERB_*` in `.env` so the build connects to the local Reverb.
 - **Tests:** `php artisan test --compact`. Tests use Pest on SQLite, with the sync queue and the array cache. MongoDB isn't available, so code that depends on MongoDB must be faked or kept out of tests.
+- **Browser tests:** `tests/Browser` runs real pages in Chromium (`pestphp/pest-plugin-browser` with Playwright). They load the built assets, so run `yarn build` first, and Node must be on the `PATH` (load nvm). Install the browser once with `npx playwright install chromium`. They boot the app for `127.0.0.1` (see `tests/BrowserTestCase.php`), so visit pages by path, never with `route()`, which would point at `APP_URL`. Run only them with `vendor/bin/pest tests/Browser`, or watch with `--headed`.
 - **Formatting:** `vendor/bin/pint --dirty`.
 - **Project guidelines:** these are in `.ai/guidelines` and `.ai/rules`. Laravel Boost compiles them into `CLAUDE.md` and `AGENTS.md`.
 

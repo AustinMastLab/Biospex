@@ -19,11 +19,12 @@
 let chart;
 am4core.ready(function () {
 
-    $('#step-chart-modal').on('show.bs.modal', function (e) {
+    $('#step-chart-modal').on('modal:show', function (e) {
 
-        let teams = $(e.relatedTarget).data('teams').split(',');
-        let timezone = $(e.relatedTarget).data('timezone');
-        let url = $(e.relatedTarget).data('href');
+        let $trigger = $(e.originalEvent.detail.relatedTarget);
+        let teams = $trigger.data('teams').split(',');
+        let timezone = $trigger.data('timezone');
+        let url = $trigger.data('href');
         let refresh = initialRefresh();
 
         am4core.useTheme(am4themes_animated);
@@ -170,11 +171,8 @@ am4core.ready(function () {
             return (rounded.getTime() - date.getTime());
         }
 
-        $('#step-chart-modal').one('hidden.bs.modal', function () {
-            stopSvgA11yObserver();
-        });
 
-    }).on('hidden.bs.modal', function () {
+    }).on('modal:hidden', function () {
         chart.dispose();
     });
 

@@ -82,15 +82,23 @@ $(function () {
         $(this).data('value', html);
     });
 
-    $('#scoreboard-modal').on('show.bs.modal', function (e) {
+    let scoreboardChannel = null;
+    $('#scoreboard-modal').on('modal:show', function (e) {
         let $modal = $(this).find('.modal-body');
-        let $button = $(e.relatedTarget); // Button that triggered the modal
+        let $button = $(e.originalEvent.detail.relatedTarget); // Button that triggered the modal
         let channel = $button.data('channel');
         let eventId = $button.data('event');
+        scoreboardChannel = channel;
 
         $modal.html('<div class="loader mx-auto"></div>');
 
         $modal.load($button.data('href'), function () {
+            // Closed before the scoreboard arrived: don't fill it or start listening.
+            if (!$modal.closest('dialog').prop('open')) {
+                $modal.html('');
+                return;
+            }
+
             let $clock = $modal.find('.clockdiv');
             let deadline = $modal.find('#date').html(); // Sun Sep 30 2018 14:26:26 GMT-0400 (Eastern Daylight Time)
             if (deadline === null) {
@@ -110,9 +118,14 @@ $(function () {
                     });
                 });
         });
-    }).on('hidden.bs.modal', function () {
+    }).on('modal:hidden', function () {
         $(this).find('.modal-body').html('');
         clearInterval(timeInterval);
+        // Stop the listener this opening added, so reopening doesn't stack them.
+        if (scoreboardChannel) {
+            Echo.channel(scoreboardChannel).stopListening('ScoreboardEvent');
+            scoreboardChannel = null;
+        }
     });
 
     // Used in Admin but placed in common.js because it calls notify function.
@@ -162,16 +175,24 @@ $(function () {
         }
     });
 
-    $('#wedigbio-progress-modal').on('show.bs.modal', function (e) {
+    let progressChannel = null;
+    $('#wedigbio-progress-modal').on('modal:show', function (e) {
         let $modal = $(this).find('.modal-body');
-        let $button = $(e.relatedTarget); // Button that triggered the modal
+        let $button = $(e.originalEvent.detail.relatedTarget); // Button that triggered the modal
 
         let channel = $button.data('channel');
+        progressChannel = channel;
         let uuid = $button.data('uuid');
 
         $modal.html('<div class="loader mx-auto"></div>');
 
         $modal.load($button.data('href'), function () {
+            // Closed before the progress arrived: don't fill it or start listening.
+            if (!$modal.closest('dialog').prop('open')) {
+                $modal.html('');
+                return;
+            }
+
             let deadline = $modal.find('#inProgress').html(); // Sun Sep 30 2018 14:26:26 GMT-0400 (Eastern Daylight Time)
             if (deadline === null) {
                 return;
@@ -187,9 +208,13 @@ $(function () {
                     });
                 });
         });
-    }).on('hidden.bs.modal', function () {
+    }).on('modal:hidden', function () {
         $(this).find('.modal-body').html('');
         clearInterval(timeInterval);
+        if (progressChannel) {
+            Echo.channel(progressChannel).stopListening('WeDigBioProgressEvent');
+            progressChannel = null;
+        }
     });
 });
 

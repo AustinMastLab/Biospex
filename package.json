@@ -17,6 +17,7 @@
     "jquery-datetimepicker": "^2.5.21",
     "jquery-ui": "^1.13.2",
     "laravel-vite-plugin": "^3.2.0",
+    "playwright": "^1.65.0",
     "popper.js": "^1.16.1",
     "postcss": "^8.5.31",
     "sass": "^1.106.1",

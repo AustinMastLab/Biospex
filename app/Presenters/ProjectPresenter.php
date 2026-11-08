@@ -469,7 +469,7 @@ class ProjectPresenter extends Presenter
 
         return '<a href="#" class="prevent-default" 
                     data-url="'.route('admin.imports.index', [$this->model]).'" 
-                    data-dismiss="modal" data-toggle="modal" data-target="#global-modal" data-size="modal-lg"
+                    data-modal-target="#global-modal" data-size="modal-lg"
                     data-title="'.e(t('Import project subjects')).'"
                     data-hover="tooltip" title="'.e(t('Import project subjects')).'"
                     aria-label="'.$ariaLabel.'">

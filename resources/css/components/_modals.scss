@@ -37,6 +37,51 @@ h2.modal-number > small {
   color: #fff;
 }
 
+/* Modals built on <dialog> (components/modal.blade.php, resources/js/modal.js). They keep Bootstrap's .modal markup and
+   classes; this undoes the user-agent dialog styles and Bootstrap's display: none, and draws the backdrop that
+   Bootstrap's .modal-backdrop element used to. */
+dialog.modal {
+  position: fixed;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  max-width: none;
+  max-height: none;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  overflow-x: hidden;
+  overflow-y: auto;
+
+  &[open] {
+    display: block;
+  }
+
+  &::backdrop {
+    background: rgba(0, 0, 0, .925);
+  }
+
+  &.fade::backdrop {
+    opacity: 0;
+    transition: opacity .15s linear;
+  }
+
+  &.fade.show::backdrop {
+    opacity: 1;
+  }
+
+  &.modal-no-backdrop::backdrop {
+    background: transparent;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  dialog.modal.fade::backdrop {
+    transition: none;
+  }
+}
+
 /* Confirmation dialog (components/confirm-dialog.blade.php). The padding is on the form, so a click on the dialog
    element itself is a click on the backdrop. */
 .confirm-dialog {

@@ -135,20 +135,26 @@ $(function () {
 });
 
 function showWinnerModal($bingoRows, msg, owner = false) {
-    $('#bingo-modal').modal('show').on('shown.bs.modal', function () {
+    const modal = document.getElementById('bingo-modal');
+    const $body = $(modal).find('.modal-body');
+
+    modal.addEventListener('modal:shown', function () {
         $('#bingo-conffeti').collapse('show');
-        const $body = $(this).find('.modal-body');
         $body.html(msg);
 
         setTimeout(function () {
-            $('#bingo-modal').modal('hide')
+            closeModal('bingo-modal');
             $('#bingo-conffeti').collapse('hide');
             $body.html('');
         }, 10000);
-    }).on('hidden.bs.modal', function () {
+    }, {once: true});
+
+    modal.addEventListener('modal:hidden', function () {
         createRows($bingoRows);
         $('#bingo-conffeti').collapse('hide');
-    });
+    }, {once: true});
+
+    openModal('bingo-modal');
 }
 
 function createRows($bingoRows) {

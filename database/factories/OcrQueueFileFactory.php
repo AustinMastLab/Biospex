@@ -22,11 +22,12 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\OcrQueue;
 use App\Models\OcrQueueFile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\OcrQueueFile>
+ * @extends Factory<OcrQueueFile>
  */
 final class OcrQueueFileFactory extends Factory
 {
@@ -43,8 +44,8 @@ final class OcrQueueFileFactory extends Factory
     public function definition(): array
     {
         return [
-            'queue_id' => \App\Models\OcrQueue::factory(),
-            'subject_id' => fake()->word,
+            'queue_id' => OcrQueue::factory(),
+            'subject_id' => fake()->unique()->regexify('[a-f0-9]{24}'),
             'access_uri' => fake()->word,
             'processed' => fake()->randomNumber(1),
             'tries' => fake()->randomNumber(1),

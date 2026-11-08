@@ -437,8 +437,8 @@ function mapFormatter(column) {
             const viewUrlAria = `View image URL ${safeUrlText}${context}`;
 
             return '<a href="' + cellValue + '" target="_blank" rel="noopener noreferrer" aria-label="' + viewImageAria + '">View Image</a>&nbsp;&nbsp;'
-                + '<a href="#" class="thumb-view" data-url="' + Laravel.imagePreviewPath + url + '" data-toggle="modal" data-dismiss="modal" data-toggle="modal" data-size="modal-lg" data-target="#global-modal" data-hover="tooltip" data-title="Preview Thumbnail" title="Preview Thumbnail" aria-label="' + viewThumbAria + '">View Thumb</a>&nbsp;&nbsp;'
-                + '<a href="#" class="url-view" data-url="' + Laravel.imagePreviewPath + cellValue + '&url-view=true" data-toggle="modal" data-dismiss="modal" data-toggle="modal" data-size="modal-lg" data-target="#global-modal" data-hover="tooltip" data-title="View URL" title="Preview URL" aria-label="' + viewUrlAria + '">View URL</a>';
+                + '<a href="#" class="thumb-view" data-url="' + Laravel.imagePreviewPath + url + '" data-size="modal-lg" data-modal-target="#global-modal" data-hover="tooltip" data-title="Preview Thumbnail" title="Preview Thumbnail" aria-label="' + viewThumbAria + '">View Thumb</a>&nbsp;&nbsp;'
+                + '<a href="#" class="url-view" data-url="' + Laravel.imagePreviewPath + cellValue + '&url-view=true" data-size="modal-lg" data-modal-target="#global-modal" data-hover="tooltip" data-title="View URL" title="Preview URL" aria-label="' + viewUrlAria + '">View URL</a>';
         }
     };
 

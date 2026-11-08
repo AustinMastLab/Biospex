@@ -11,9 +11,7 @@
         {{t('Generate Export File') }}</a>
 @endif
 <a href="" class="prevent-default btn btn-primary rounded-0 mb-1"
-   data-dismiss="modal"
-   data-toggle="modal"
-   data-target="#global-modal"
+   data-modal-target="#global-modal"
    data-size="modal-lg"
    data-url="{{ route('admin.panoptes-workflow.edit', [$expedition]) }}"
    data-title="{{ t('Edit Workflow Id') }}"> {{ t('Edit Workflow Id') }}</a>
@@ -46,9 +44,7 @@
         {{ t('Expert Review Ambiguities') }}</a>
 
     <a href="" class="prevent-default btn btn-primary rounded-0 mb-1"
-       data-dismiss="modal"
-       data-toggle="modal"
-       data-target="#global-modal"
+       data-modal-target="#global-modal"
        data-size="modal-lg"
        data-url="{{ route('admin.reconcile-user-form.edit', [$expedition]) }}"
        data-title="{{ t('Upload Reconciled With User Opinion') }}"> {{ t('Upload Reconciled With User Opinion') }}</a>

@@ -37,18 +37,18 @@
         </div>
         @if( ! event_before($event))
             <div class="text-center">
-                <button class="btn btn-primary mb-4 text-uppercase" data-toggle="modal"
+                <button class="btn btn-primary mb-4 text-uppercase"
                         data-remote="false"
-                        data-target="#scoreboard-modal"
+                        data-modal-target="#scoreboard-modal"
                         data-channel="{{ config('config.poll_scoreboard_channel') .'.'. $event->project_id }}"
                         data-event="{{ $event->id }}"
                         data-href="{{ route('event.get.scoreboard', [$event]) }}">{{ t('Scoreboard') }}
                 </button>
 
                 @if($event->teams->isNotEmpty())
-                    <button class="btn btn-primary mb-4 text-uppercase" data-toggle="modal"
+                    <button class="btn btn-primary mb-4 text-uppercase"
                             data-remote="false"
-                            data-target="#step-chart-modal"
+                            data-modal-target="#step-chart-modal"
                             data-event="{{ $event->id }}"
                             data-teams="{{ $event->teams->pluck('title')->implode(',') }}"
                             data-timezone="{{ event_rate_chart_timezone($event->timezone) }}"

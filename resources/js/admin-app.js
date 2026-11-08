@@ -19,6 +19,7 @@
 // Imports run in the order written: jQuery and the libraries first, then the page scripts that use them.
 import "./jquery-global.js";
 import "./app.js";
+import "./modal.js";
 import "./admin-globals.js";
 import "bootstrap-select/dist/js/bootstrap-select.min";
 import "bootstrap-notify/bootstrap-notify";

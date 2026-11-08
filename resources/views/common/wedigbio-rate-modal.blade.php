@@ -6,5 +6,7 @@
 
     <div class="jumbotron box-shadow m-5">
         <div id="weDigBioRateChartDiv" class="d-flex justify-content-center" style="width:100%; height: 500px"></div>
+        {{-- The chart's legend; it grows with the number of projects, so the chart keeps its height. --}}
+        <div id="weDigBioRateLegendDiv" style="width:100%"></div>
     </div>
 </x-modal>

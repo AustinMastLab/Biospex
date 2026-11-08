@@ -26,7 +26,7 @@ use App\Models\Actor;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\Actor>
+ * @extends Factory<Actor>
  */
 final class ActorFactory extends Factory
 {
@@ -43,9 +43,10 @@ final class ActorFactory extends Factory
     public function definition(): array
     {
         return [
-            'title' => fake()->title,
+            // title and class are unique columns (60 and 30 characters).
+            'title' => fake()->unique()->lexify('Actor ??????'),
             'url' => fake()->url,
-            'class' => fake()->word,
+            'class' => fake()->unique()->lexify('Actor??????'),
         ];
     }
 }

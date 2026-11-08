@@ -382,11 +382,20 @@ class ExpeditionService
      */
     public function canChangeToGeoLocate(Expedition $expedition): bool
     {
+        return $this->isGeoLocateAvailable($expedition)
+            && $expedition->zooActorExpedition?->state === ActorExpeditionState::Complete;
+    }
+
+    /**
+     * Whether GeoLocate is still open to the expedition: the GeoLocate workflow is enabled in the admin, and
+     * the expedition is unlocked and not on that workflow already. Zooniverse may still be running.
+     */
+    public function isGeoLocateAvailable(Expedition $expedition): bool
+    {
         $geoLocateWorkflowId = (int) config('geolocate.workflow_id');
 
         return ! $expedition->locked
             && (int) $expedition->workflow_id !== $geoLocateWorkflowId
-            && $expedition->zooActorExpedition?->state === ActorExpeditionState::Complete
             && Workflow::whereKey($geoLocateWorkflowId)->where('enabled', 1)->exists();
     }
 

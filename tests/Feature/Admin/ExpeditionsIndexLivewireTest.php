@@ -71,17 +71,18 @@ it('non-admin user sees only scoped subset', function () {
     $p1 = Project::factory()->for($g1)->create(['title' => 'Alpha Project']);
     $p2 = Project::factory()->for($g2)->create(['title' => 'Zebra Project']);
 
-    makeAdminExpedition($p1, ['title' => 'E1', 'completed' => 0]);
-    makeAdminExpedition($p2, ['title' => 'E2', 'completed' => 0]);
+    makeAdminExpedition($p1, ['title' => 'Scoped Group Expedition', 'completed' => 0]);
+    makeAdminExpedition($p2, ['title' => 'Other Group Expedition', 'completed' => 0]);
 
     $user = User::factory()->create();
     $user->assignGroup($g1);
 
     $this->actingAs($user->fresh());
 
+    // Titles a random Livewire id can't contain: the HTML checked includes wire:id.
     Livewire::test(ExpeditionsIndex::class)
-        ->assertSee('E1')
-        ->assertDontSee('E2');
+        ->assertSee('Scoped Group Expedition')
+        ->assertDontSee('Other Group Expedition');
 });
 
 it('loads no more than twelve expeditions initially and appends the next page', function () {

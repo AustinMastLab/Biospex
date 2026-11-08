@@ -67,14 +67,15 @@ it('non-admin user sees only scoped subset', function () {
     $user = User::factory()->create();
     $user->assignGroup($g1);
 
-    Event::factory()->for($p1)->create(['title' => 'E1', 'owner_id' => $user->id, 'start_date' => now()->addDay(), 'end_date' => now()->addDays(2)]);
-    Event::factory()->for($p2)->create(['title' => 'E2', 'start_date' => now()->addDays(2), 'end_date' => now()->addDays(3)]);
+    Event::factory()->for($p1)->create(['title' => 'Scoped Group Event', 'owner_id' => $user->id, 'start_date' => now()->addDay(), 'end_date' => now()->addDays(2)]);
+    Event::factory()->for($p2)->create(['title' => 'Other Group Event', 'start_date' => now()->addDays(2), 'end_date' => now()->addDays(3)]);
 
     $this->actingAs($user);
 
+    // Titles a random Livewire id can't contain: the HTML checked includes wire:id.
     Livewire::test(EventsIndex::class)
-        ->assertSee('E1')
-        ->assertDontSee('E2');
+        ->assertSee('Scoped Group Event')
+        ->assertDontSee('Other Group Event');
 });
 
 it('loads nine events initially and appends the final page for admins', function () {

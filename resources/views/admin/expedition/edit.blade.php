@@ -60,7 +60,7 @@
                             <label for="workflow-id" class="col-form-label col-12 required">{{ t('Workflows') }}:</label>
                             <select name="workflow_id" id="workflow-id"
                                     class="form-control custom-select col-sm-5 {{ ($errors->has('workflow_id')) ? 'is-invalid' : '' }} a11y-form-control"
-                                    aria-describedby="workflow-help"
+                                    @if($isGeoLocateAvailable) aria-describedby="workflow-help" @endif
                                     @disabled(! $canChangeToGeoLocate)
                                     required>
                                 @foreach($workflowOptions as $key => $name)
@@ -70,17 +70,16 @@
                             @unless($canChangeToGeoLocate)
                                 <input type="hidden" name="workflow_id" value="{{ $expedition->workflow_id }}">
                             @endunless
-                            <small id="workflow-help" class="form-text text-muted col-12 pl-0">
-                                @if($canChangeToGeoLocate)
-                                    {{ t('Zooniverse is complete: the workflow can be changed to GeoLocate once. Saving that change locks the workflow.') }}
-                                @elseif((int) $expedition->workflow_id === (int) config('geolocate.workflow_id'))
-                                    {{ t('The workflow has been changed to GeoLocate and cannot be changed again.') }}
-                                @elseif($expedition->locked)
-                                    {{ t('The workflow is locked and cannot be changed.') }}
-                                @else
-                                    {{ t('The workflow can be changed to GeoLocate once, after Zooniverse is complete.') }}
-                                @endif
-                            </small>
+                            {{-- Only while GeoLocate is still open to the expedition (ExpeditionService::isGeoLocateAvailable()). --}}
+                            @if($isGeoLocateAvailable)
+                                <small id="workflow-help" class="form-text text-muted col-12 pl-0">
+                                    @if($canChangeToGeoLocate)
+                                        {{ t('Zooniverse is complete: the workflow can be changed to GeoLocate once. Saving that change locks the workflow.') }}
+                                    @else
+                                        {{ t('The workflow can be changed to GeoLocate once, after Zooniverse is complete.') }}
+                                    @endif
+                                </small>
+                            @endif
                             <span class="invalid-feedback">{{ $errors->first('workflow_id') }}</span>
                         </div>
                     </div>

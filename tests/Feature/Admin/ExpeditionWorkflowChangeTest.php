@@ -202,3 +202,23 @@ it('offers GeoLocate on the edit page only when the workflow can change to it', 
         ->assertViewHas('canChangeToGeoLocate', false)
         ->assertViewHas('workflowOptions', fn (array $options) => array_keys($options) === [$this->zooniverseWorkflow->id]);
 });
+
+it('shows the workflow hint only while GeoLocate is open to the expedition', function (array $attributes, ActorExpeditionState $state, bool $geoLocateEnabled, ?string $hint) {
+    Storage::fake('s3');
+    $this->geoLocateWorkflow->update(['enabled' => (int) $geoLocateEnabled]);
+    $expedition = zooniverseExpedition($attributes, $state);
+
+    $response = $this->get(route('admin.expeditions.edit', $expedition));
+
+    $response->assertOk();
+    if ($hint === null) {
+        $response->assertDontSee('id="workflow-help"', false);
+    } else {
+        $response->assertSee($hint);
+    }
+})->with([
+    'Zooniverse complete' => [[], ActorExpeditionState::Complete, true, 'Zooniverse is complete: the workflow can be changed to GeoLocate once.'],
+    'Zooniverse still running' => [['completed' => 0], ActorExpeditionState::Processing, true, 'The workflow can be changed to GeoLocate once, after Zooniverse is complete.'],
+    'GeoLocate disabled' => [[], ActorExpeditionState::Complete, false, null],
+    'locked' => [['locked' => 1], ActorExpeditionState::Complete, true, null],
+]);

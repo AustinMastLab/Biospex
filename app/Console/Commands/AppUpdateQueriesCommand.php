@@ -21,6 +21,7 @@
 namespace App\Console\Commands;
 
 use Illuminate\Console\Command;
+use Illuminate\Support\Facades\DB;
 
 /**
  * One-off data updates run during deployment.
@@ -35,7 +36,7 @@ class AppUpdateQueriesCommand extends Command
      * The console command name.
      */
     protected $signature = 'app:update-queries
-                            {operation? : The operation to run}
+                            {operation? : The operation to run (unlock-expeditions)}
                             {--force : Run without confirmation prompts}';
 
     /**
@@ -52,6 +53,7 @@ class AppUpdateQueriesCommand extends Command
 
         return match ($operation) {
             '' => $this->noOperation(),
+            'unlock-expeditions' => $this->unlockExpeditions(),
             default => $this->unknownOperation($operation),
         };
     }
@@ -68,5 +70,24 @@ class AppUpdateQueriesCommand extends Command
         $this->error("Unknown operation: {$operation}");
 
         return self::FAILURE;
+    }
+
+    /**
+     * Unlock expeditions that were locked without changing to GeoLocate.
+     *
+     * The create, clone and edit forms used to lock an expedition on every save, so its workflow could no
+     * longer be changed to GeoLocate. An expedition now locks only when it changes to the GeoLocate workflow,
+     * so those stay locked. updated_at is left alone. Safe to re-run.
+     */
+    private function unlockExpeditions(): int
+    {
+        $unlocked = DB::table('expeditions')
+            ->where('locked', 1)
+            ->where('workflow_id', '!=', (int) config('geolocate.workflow_id'))
+            ->update(['locked' => 0]);
+
+        $this->info("Unlocked {$unlocked} expeditions.");
+
+        return self::SUCCESS;
     }
 }

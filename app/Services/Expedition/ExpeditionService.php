@@ -24,6 +24,7 @@ use App\Enums\ActorExpeditionState;
 use App\Models\Expedition;
 use App\Models\Project;
 use App\Models\User;
+use App\Models\Workflow;
 use App\Notifications\ZooniverseNewExpedition;
 use App\Services\Subject\SubjectService;
 use DB;
@@ -61,6 +62,8 @@ class ExpeditionService
         $this->handleLogoUploadForCreate($request);
 
         $request['project_id'] = $project->id;
+        // A new expedition starts unlocked; it locks only when its workflow changes to GeoLocate (update()).
+        unset($request['locked']);
 
         return DB::transaction(function () use ($request) {
             $expedition = Expedition::create($request);
@@ -336,7 +339,9 @@ class ExpeditionService
     /**
      * Update the expedition in MySQL.
      *
-     * If the expedition is completed and unlocked, this is a first change.
+     * The workflow only changes when it moves to the GeoLocate workflow and that change is allowed
+     * (see canChangeToGeoLocate()); ExpeditionFormRequest rejects any other change. That change locks the
+     * expedition and reopens it, and saveSubjects() then attaches the GeoLocate actor.
      * Subjects are applied afterwards with saveSubjects().
      *
      * @param  array<string, mixed>  $request
@@ -347,21 +352,42 @@ class ExpeditionService
     {
         $this->handleLogoUpload($request, $expedition);
 
-        return DB::transaction(function () use ($expedition, $request) {
-            $expedition->completed = $this->setExpeditionCompleted($expedition, $request['workflow_id']);
+        $requestedWorkflowId = (int) ($request['workflow_id'] ?? $expedition->workflow_id);
+        $changesToGeoLocate = $requestedWorkflowId !== (int) $expedition->workflow_id
+            && $requestedWorkflowId === (int) config('geolocate.workflow_id')
+            && $this->canChangeToGeoLocate($expedition);
 
-            $expedition->fill($request)->save();
+        unset($request['locked'], $request['completed']);
+        $request['workflow_id'] = $changesToGeoLocate ? $requestedWorkflowId : $expedition->workflow_id;
+
+        return DB::transaction(function () use ($expedition, $request, $changesToGeoLocate) {
+            $expedition->fill($request);
+
+            if ($changesToGeoLocate) {
+                $expedition->locked = 1;
+                $expedition->completed = 0;
+            }
+
+            $expedition->save();
 
             return $expedition;
         });
     }
 
     /**
-     * Reset Expedition completed according to workflow chosen.
+     * Whether the expedition's workflow can still be changed, once, to the GeoLocate workflow.
+     *
+     * The GeoLocate workflow must be enabled in the admin, the expedition must not be locked (it locks when
+     * it changes to GeoLocate), and its Zooniverse actor must be complete.
      */
-    private function setExpeditionCompleted(Expedition $expedition, int $workflow_id): int
+    public function canChangeToGeoLocate(Expedition $expedition): bool
     {
-        return ($expedition->completed && ! $expedition->locked && $workflow_id == config('geolocate.workflow_id')) ? 0 : $expedition->completed;
+        $geoLocateWorkflowId = (int) config('geolocate.workflow_id');
+
+        return ! $expedition->locked
+            && (int) $expedition->workflow_id !== $geoLocateWorkflowId
+            && $expedition->zooActorExpedition?->state === ActorExpeditionState::Complete
+            && Workflow::whereKey($geoLocateWorkflowId)->where('enabled', 1)->exists();
     }
 
     /**

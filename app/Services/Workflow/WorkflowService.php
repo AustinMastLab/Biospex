@@ -20,6 +20,7 @@
 
 namespace App\Services\Workflow;
 
+use App\Models\Expedition;
 use App\Models\Workflow;
 
 class WorkflowService
@@ -27,11 +28,30 @@ class WorkflowService
     public function __construct(public Workflow $workflow) {}
 
     /**
-     * Return workflow select options.
+     * Workflow options for a new expedition (create and clone): every enabled workflow, so a new expedition
+     * can start on GeoLocate when that workflow is enabled in the admin.
+     *
+     * @return array<int|string, string>
      */
     public function getWorkflowSelect(): array
     {
         return ['' => '--Select--'] + $this->workflow->where('enabled', '=', 1)
+            ->orderBy('id', 'asc')
+            ->pluck('title', 'id')
+            ->toArray();
+    }
+
+    /**
+     * Workflow options for editing an expedition: its current workflow, plus the GeoLocate workflow when it
+     * can change to it (see ExpeditionService::canChangeToGeoLocate()).
+     *
+     * @return array<int, string>
+     */
+    public function getEditWorkflowSelect(Expedition $expedition, bool $canChangeToGeoLocate): array
+    {
+        $ids = array_filter([$expedition->workflow_id, $canChangeToGeoLocate ? (int) config('geolocate.workflow_id') : null]);
+
+        return $this->workflow->whereKey($ids)
             ->orderBy('id', 'asc')
             ->pluck('title', 'id')
             ->toArray();

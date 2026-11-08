@@ -118,3 +118,6 @@ app:geolocate-stats → GeoLocateStatsJob → GeoLocateDownloadJob → GeoLocate
 ```
 
 Everything runs on the `geolocate` queue. Configuration is in `config/geolocate.php`.
+
+- **Adding GeoLocate to an expedition:** on the expedition's edit page, its workflow can be changed once, to "Zooniverse -> GeoLocate" (`geolocate.workflow_id`), when that workflow is enabled in the admin dashboard and the expedition's Zooniverse actor is complete. Saving the change locks the expedition, reopens it and attaches the GeoLocate actor (`ExpeditionService::canChangeToGeoLocate()`, `update()`). A new or cloned expedition can start on any enabled workflow, GeoLocate included.
+- **`GEOLOCATE_ENABLED`** only lets `workflow:manage` fetch stats automatically for expeditions already in GeoLocate. It is per server, so development and local can stay off GeoLocate's API.

@@ -50,7 +50,7 @@ class OcrModal extends Component
     public function openOcrModal(?string $cellContent = null): void
     {
         $this->ocrText = $cellContent;
-        $this->dispatch('open-bs-modal');
+        $this->dispatch('open-modal', id: 'ocr-modal');
     }
 
     /**

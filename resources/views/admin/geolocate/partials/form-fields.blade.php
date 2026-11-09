@@ -35,9 +35,7 @@
             </select>
         </div>
         <button id="user-upload" style="display: none"
-                data-dismiss="modal"
-                data-toggle="modal"
-                data-target="#global-modal"
+                data-modal-target="#global-modal"
                 data-size="modal-lg"
                 data-url="{{ route('admin.reconcile-user-form.edit', [$expedition]) }}"
                 data-title="{{ t('Upload Reconciled With User Opinion') }}"></button>

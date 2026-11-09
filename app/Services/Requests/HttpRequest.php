@@ -26,6 +26,7 @@ use GuzzleHttp\Client;
 use GuzzleHttp\ClientInterface;
 use GuzzleHttp\Exception\GuzzleException;
 use GuzzleHttp\Exception\RequestException;
+use GuzzleHttp\Exception\TransferException;
 use GuzzleHttp\Handler\CurlHandler;
 use GuzzleHttp\HandlerStack;
 use GuzzleHttp\Middleware;
@@ -35,6 +36,7 @@ use Illuminate\Support\Facades\Cache;
 use League\OAuth2\Client\Provider\Exception\IdentityProviderException;
 use League\OAuth2\Client\Provider\GenericProvider;
 use Psr\Http\Message\RequestInterface;
+use Psr\Http\Message\ResponseInterface;
 
 class HttpRequest
 {
@@ -54,23 +56,43 @@ class HttpRequest
     protected int $maxRetries = 3;
 
     /**
+     * HTTP status codes worth retrying: rate limiting and temporary server errors.
+     *
+     * @var array<int, int>
+     */
+    protected const RETRY_STATUS_CODES = [429, 500, 502, 503, 504];
+
+    /**
      * Set authentication provider with retry middleware
+     *
+     * The retrying Guzzle client is given to the provider as its httpClient collaborator.
+     * The provider ignores a "handler" option, so passing the stack that way left every
+     * token and API request without retries.
      *
      * @param  array  $config  Configuration options for the OAuth2 provider
      */
     public function setHttpProvider(array $config = []): GenericProvider
     {
-        $handlerStack = HandlerStack::create(new CurlHandler);
+        $handlerStack = HandlerStack::create($this->transportHandler());
         $handlerStack->push(Middleware::retry($this->retryDecider(), $this->retryDelay()));
 
-        $reqOpts = $config === null ? ['handler' => $handlerStack] : array_merge([
-            'handler' => $handlerStack,
+        $reqOpts = array_merge([
             'urlAccessToken' => '',
             'urlAuthorize' => '',
             'urlResourceOwnerDetails' => '',
         ], $config);
 
-        return $this->provider = new GenericProvider($reqOpts);
+        return $this->provider = new GenericProvider($reqOpts, [
+            'httpClient' => new Client(['handler' => $handlerStack]),
+        ]);
+    }
+
+    /**
+     * The handler that sends requests, below the retry middleware.
+     */
+    protected function transportHandler(): callable
+    {
+        return new CurlHandler;
     }
 
     /**
@@ -158,29 +180,27 @@ class HttpRequest
      * Create retry decision callback for failed requests
      *
      * Retries requests on:
-     * - Server errors (5xx)
+     * - Server errors (500, 502, 503, 504)
      * - Rate limiting (429)
-     * - Connection timeouts
-     * - Network errors
+     * - Connection timeouts and network errors (no response at all)
+     *
+     * Other responses, such as a 404 or 401, are not retried. With http_errors on, an
+     * error response arrives as a RequestException, so its status is read from there.
      */
     public function retryDecider(): \Closure
     {
-        return function (int $retries, $request, $response = null, $exception = null): bool {
+        return function (int $retries, RequestInterface $request, ?ResponseInterface $response = null, mixed $exception = null): bool {
             if ($retries >= $this->maxRetries) {
                 return false;
             }
 
-            // Retry on server errors (5xx) or rate limiting (429)
-            if ($response && in_array($response->getStatusCode(), [429, 500, 502, 503, 504])) {
-                return true;
+            $response ??= $exception instanceof RequestException ? $exception->getResponse() : null;
+
+            if ($response !== null) {
+                return in_array($response->getStatusCode(), self::RETRY_STATUS_CODES, true);
             }
 
-            // Retry on connection timeouts or network errors
-            if ($exception instanceof RequestException) {
-                return true;
-            }
-
-            return false;
+            return $exception instanceof TransferException;
         };
     }
 

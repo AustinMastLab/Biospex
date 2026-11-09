@@ -25,7 +25,7 @@
 
                 @if(count($invites) > 1)
                     <div class="input-group-append">
-                        <span class="input-group-text btn btn-danger px-3 py-0"
+                        <span class="input-group-text btn btn-primary px-3 py-0"
                               wire:click="removeInvite({{ $index }})"
                               style="cursor: pointer;">
                             <i class="fas fa-minus"></i>

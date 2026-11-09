@@ -135,13 +135,15 @@ class ExpeditionController extends Controller
             return Redirect::route('admin.projects.index');
         }
 
-        $workflowOptions = $workflowService->getWorkflowSelect();
+        $canChangeToGeoLocate = $this->expeditionService->canChangeToGeoLocate($expedition);
+        $isGeoLocateAvailable = $this->expeditionService->isGeoLocateAvailable($expedition);
+        $workflowOptions = $workflowService->getEditWorkflowSelect($expedition, $canChangeToGeoLocate);
 
         $subjectIds = $this->expeditionService->getSubjectIdsByExpeditionId($expedition)->toArray();
 
         $this->javascriptService->expeditionEdit($expedition, $subjectIds);
 
-        return View::make('admin.expedition.edit', compact('expedition', 'workflowOptions'));
+        return View::make('admin.expedition.edit', compact('expedition', 'workflowOptions', 'canChangeToGeoLocate', 'isGeoLocateAvailable'));
     }
 
     /**

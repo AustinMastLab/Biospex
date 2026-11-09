@@ -65,7 +65,6 @@
                             </select>
                             <span class="invalid-feedback">{{ $errors->first('workflow_id') }}</span>
                         </div>
-                        <input type="hidden" name="locked" value="1">
                     </div>
                 </div>
             </div>

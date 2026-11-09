@@ -22,11 +22,12 @@ declare(strict_types=1);
 
 namespace Database\Factories;
 
+use App\Models\ExportQueue;
 use App\Models\ExportQueueFile;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\ExportQueueFile>
+ * @extends Factory<ExportQueueFile>
  */
 final class ExportQueueFileFactory extends Factory
 {
@@ -43,8 +44,8 @@ final class ExportQueueFileFactory extends Factory
     public function definition(): array
     {
         return [
-            'queue_id' => \App\Models\ExportQueue::factory(),
-            'subject_id' => fake()->word,
+            'queue_id' => ExportQueue::factory(),
+            'subject_id' => fake()->unique()->regexify('[a-f0-9]{24}'),
             'access_uri' => fake()->word,
             'message' => fake()->optional()->word,
             'processed' => fake()->randomNumber(1),

@@ -151,7 +151,7 @@ $(function () {
                 });
 
                 transcripts.events.on('ready', function () {
-                    $("#script-modal").modal("hide");
+                    closeModal('script-modal');
                     observeTranscriptChartA11y();
                     scheduleTranscriptChartA11yFix();
                 });
@@ -175,7 +175,7 @@ $(function () {
     }
 
     $('.btn-transcription').on('click', function () {
-        $("#script-modal").modal("show");
+        openModal('script-modal');
         $(this).removeClass('btn-primary').addClass('btn-transcription-year');
         $(this).siblings().removeClass('btn-transcription-year').addClass('btn-primary');
         let url = $(this).data('href');

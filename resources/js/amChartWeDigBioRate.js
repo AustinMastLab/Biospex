@@ -23,11 +23,12 @@ let interval = null;
 let modalOpen = false;
 
 // The modal is in the menu of every page, so amCharts is only loaded the first time it opens.
-$('#wedigbio-rate-modal').on('show.bs.modal', function (e) {
+$('#wedigbio-rate-modal').on('modal:show', function (e) {
     modalOpen = true;
+    let $trigger = $(e.originalEvent.detail.relatedTarget);
     let $div = $(this).find('#weDigBioRateChartDiv');
-    let projectsUrl = $(e.relatedTarget).data('projects');
-    let url = $(e.relatedTarget).data('href');
+    let projectsUrl = $trigger.data('projects');
+    let url = $trigger.data('href');
 
     let createChart = function () {
         am4core.disposeAllCharts();
@@ -56,7 +57,7 @@ $('#wedigbio-rate-modal').on('show.bs.modal', function (e) {
     }).catch(function () {
         $div.html('<p class="d-flex justify-content-center">Failed to load the chart</p>');
     });
-}).on('hidden.bs.modal', function () {
+}).on('modal:hidden', function () {
     modalOpen = false;
     window.am4core?.disposeAllCharts();
     clearInterval(interval);
@@ -109,23 +110,23 @@ function buildChart(url, projects) {
     weDigBioRateChart.dateFormatter.inputDateFormat = "yyyy-MM-dd HH:mm:ss";
     weDigBioRateChart.hiddenState.properties.opacity = 0;
     weDigBioRateChart.padding(0, 0, 0, 0);
-    weDigBioRateChart.zoomOutButton.disabled = true;
+    // Shown once the chart is zoomed in (see below), to go back to the whole event.
+    weDigBioRateChart.zoomOutButton.disabled = false;
 
-    let cellSize = .3;
-    weDigBioRateChart.events.on("datavalidated", function (ev) {
-        dateAxis.zoom({start: 1 / 15, end: 1.2}, false, true);
-        let chart = ev.target;
-        let categoryAxis = chart.yAxes.getIndex(0);
-
-        let adjustHeight = chart.data.length * cellSize - categoryAxis.pixelHeight;
-        let targetHeight = chart.pixelHeight + adjustHeight;
-
-        chart.svgContainer.htmlElement.style.height = targetHeight + "px";
+    // Once, when the chart first appears, so it doesn't undo the user's own zooming.
+    weDigBioRateChart.events.once("ready", function () {
+        zoomToStartingView(weDigBioRateChart, dateAxis);
     });
 
     weDigBioRateChart.scrollbarX = null;
 
     let dateAxis = weDigBioRateChart.xAxes.push(new am4charts.DateAxis());
+
+    // The data has a point every 5 minutes. On a long range, amCharts groups them into larger periods
+    // (averaged per series, below), so the chart stays readable and fast instead of drawing every point.
+    dateAxis.baseInterval = {timeUnit: "minute", count: 5};
+    dateAxis.groupData = true;
+    dateAxis.groupCount = 300;
 
     dateAxis.renderer.minGridDistance = 20;
     dateAxis.title.text = 'UTC Timezone';
@@ -180,6 +181,8 @@ function buildChart(url, projects) {
         project.interpolationDuration = 500;
         project.defaultState.transitionDuration = 0;
         project.tensionX = 0.8;
+        // Values are rates (records per hour), so a grouped period shows their average, not their sum.
+        project.groupFields.valueY = "average";
 
         let bullet = project.createChild(am4charts.CircleBullet);
         bullet.circle.radius = 5;
@@ -195,11 +198,51 @@ function buildChart(url, projects) {
         });
     });
 
+    // The legend lives in its own container under the chart, so each project adds a legend row there instead of
+    // squeezing the plot, which keeps the height set on #weDigBioRateChartDiv.
+    let legendContainer = am4core.create("weDigBioRateLegendDiv", am4core.Container);
+    legendContainer.width = am4core.percent(100);
+    legendContainer.height = am4core.percent(100);
+
     weDigBioRateChart.legend = new am4charts.Legend();
+    weDigBioRateChart.legend.parent = legendContainer;
+    weDigBioRateChart.legend.events.on("datavalidated", resizeLegend);
+    weDigBioRateChart.events.on("maxsizechanged", resizeLegend);
+
+    function resizeLegend() {
+        document.getElementById("weDigBioRateLegendDiv").style.height = weDigBioRateChart.legend.contentHeight + "px";
+    }
     weDigBioRateChart.legend.labels.template.text = "[bold]{name}";
     weDigBioRateChart.legend.useDefaultMarker = true;
     let marker = weDigBioRateChart.legend.markers.template.children.getIndex(0);
     marker.cornerRadius(12, 12, 12, 12);
     marker.strokeWidth = 2;
     marker.strokeOpacity = 1;
+}
+
+/**
+ * Starting view: the last 24 hours while the event is running (its data reaches the present), otherwise the whole
+ * event. The zoom-out button returns to the whole event.
+ *
+ * Decided from the data rows (whose dates amCharts has parsed by now) rather than the axis, whose end moves out to the
+ * edge of a grouped period.
+ */
+function zoomToStartingView(chart, dateAxis) {
+    const rows = chart.data;
+    if (!rows || rows.length === 0) {
+        return;
+    }
+
+    const toTime = (value) => (value instanceof Date ? value : chart.dateFormatter.parse(value, "yyyy-MM-dd HH:mm:ss")).getTime();
+    const first = toTime(rows[0].date);
+    const last = toTime(rows[rows.length - 1].date);
+    const day = 24 * 60 * 60 * 1000;
+    // The chart shows UTC times as they are (the axis is titled "UTC Timezone"), so compare with the current UTC
+    // time read the same way.
+    const nowOnAxis = Date.now() + new Date().getTimezoneOffset() * 60 * 1000;
+    const isRunning = Math.abs(nowOnAxis - last) < 30 * 60 * 1000;
+
+    if (isRunning && last - first > day) {
+        dateAxis.zoomToDates(new Date(last - day), new Date(last), false, true);
+    }
 }

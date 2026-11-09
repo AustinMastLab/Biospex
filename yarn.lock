@@ -626,6 +626,18 @@ picomatch@^4.0.4, picomatch@^4.0.7:
   resolved "https://registry.yarnpkg.com/picomatch/-/picomatch-4.0.7.tgz#6313360034ccb36b3dc61ecbdff78121f90fe21f"
   integrity sha512-qcJu88Q2IWqJsDD529JKMdwGm/dvInW4HvQnRwiH9JtihJvzGOscDtHE3x1pBKeUOTysQ8kVmLnJ2kJu7yhcGA==
 
+playwright-core@1.65.0:
+  version "1.65.0"
+  resolved "https://registry.yarnpkg.com/playwright-core/-/playwright-core-1.65.0.tgz#2b4671949db79c6ea47facf09f4aeffb90bc5c7f"
+  integrity sha512-vNSKgH6YqtN7cdT/L334zo0a+YwkrpicyrHJlWWPIm/Q+Nn2SWInil01oT0mbu96U4GgoRtCYQD9CzJQgju+lA==
+
+playwright@^1.65.0:
+  version "1.65.0"
+  resolved "https://registry.yarnpkg.com/playwright/-/playwright-1.65.0.tgz#d890f700bf7a04b42cbdc4baab8d0e16b1d73f41"
+  integrity sha512-F3AMWcR44qMBt4kq+6Kb6mX7bjGXshktKFOPULd7reED6ZJWevjbNRqysP7q+AATE9kdPEZBibex1BYsvpVoeA==
+  dependencies:
+    playwright-core "1.65.0"
+
 popper.js@^1.16.1:
   version "1.16.1"
   resolved "https://registry.yarnpkg.com/popper.js/-/popper.js-1.16.1.tgz#2a223cb3dc7b6213d740e40372be40de43e65b1b"
@@ -686,10 +698,10 @@ rolldown@~1.2.16:
     "@rolldown/binding-win32-arm64-msvc" "1.2.16"
     "@rolldown/binding-win32-x64-msvc" "1.2.16"
 
-sass@^1.106.1:
-  version "1.107.1"
-  resolved "https://registry.yarnpkg.com/sass/-/sass-1.107.1.tgz#a8a461744666e31f8973041a6b9ae7fcb265befd"
-  integrity sha512-aJ1/LvxOOb04YhmiBjzZn3jVwdHKol+OVhoMV6fFl02fF9T3i+5Mg9l/CnzqtM+NX5Jn5o3lAbs/ZJivTCLHfQ==
+sass@^1.108.0:
+  version "1.108.0"
+  resolved "https://registry.yarnpkg.com/sass/-/sass-1.108.0.tgz#f459d748b3dc8885e15b9cb9304979efd68e70ab"
+  integrity sha512-9HwnefouIfwY+XuA1rS5xOhALH5vsoe3SzYICG3MEwpkMbE7tpuh5ytZFRXUKPYkxY7lKdIbqxl+DxQGo8jwQQ==
   dependencies:
     chokidar "^5.0.0"
     immutable "^5.1.5"

@@ -20,7 +20,7 @@
     "playwright": "^1.65.0",
     "popper.js": "^1.16.1",
     "postcss": "^8.5.31",
-    "sass": "^1.106.1",
+    "sass": "^1.108.0",
     "summernote": "0.9.1",
     "vite": "^8.3.5"
   },

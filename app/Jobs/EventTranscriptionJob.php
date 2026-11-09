@@ -37,6 +37,15 @@ class EventTranscriptionJob implements ShouldQueue
      */
     public int $timeout = 60;
 
+    public int $tries = 3;
+
+    /**
+     * Seconds to wait before each retry, so a short Panoptes outage can pass.
+     *
+     * @var array<int, int>
+     */
+    public array $backoff = [10, 60];
+
     /**
      * Create a new job instance.
      *

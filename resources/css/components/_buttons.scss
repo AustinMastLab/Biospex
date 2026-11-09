@@ -44,6 +44,13 @@
   border-color: $brand-red;
 }
 
+/* bootstrap-select shows an empty choice ("None") in faded white in every state, so on hover it vanished against
+   the transparent background above. Give it the same brand-red text as a picker with a selection. */
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:hover,
+.bootstrap-select > .dropdown-toggle.bs-placeholder.btn-primary:focus {
+  color: $brand-red;
+}
+
 .btn.btn-primary.green:hover {
   background-color: transparent;
   color: #1e7e34;

@@ -136,9 +136,37 @@ $(function () {
 
 // Make select box rows sortable and bootstrap-select
 window.makeSelect = function ($entry) {
-    $entry.find('select').each(function () {
+    let $selects = $entry.find('select').each(function () {
         $(this).selectpicker();
-    }).disableSelection();
+    });
+
+    // disableSelection() is jQuery UI, which only loads on pages with the subjects grid.
+    if (typeof $.fn.disableSelection === 'function') {
+        $selects.disableSelection();
+    }
+}
+
+/**
+ * Style GeoLocate field dropdowns that Livewire adds to the export form ("+" adds a row): only the rows that were
+ * there when the form loaded went through makeSelect(). An existing picker is left as it is.
+ */
+function styleAddedGeoLocateSelects(el) {
+    if (!(el instanceof Element)) {
+        return;
+    }
+
+    $(el).find('select').addBack('select').filter(function () {
+        return $(this).closest('.controls').length > 0 && !$(this).data('selectpicker');
+    }).selectpicker();
+}
+
+// Livewire's script runs before this module, so it may already be set up.
+if (window.Livewire) {
+    window.Livewire.hook('morph.added', ({el}) => styleAddedGeoLocateSelects(el));
+} else {
+    document.addEventListener('livewire:init', () => {
+        window.Livewire.hook('morph.added', ({el}) => styleAddedGeoLocateSelects(el));
+    });
 }
 
 // Renumber prefixes when rows add and removed.

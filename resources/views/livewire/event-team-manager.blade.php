@@ -34,7 +34,7 @@
                     <div class="input-group-append">
                         <button
                                 type="button"
-                                class="input-group-text btn btn-danger px-3 py-0"
+                                class="input-group-text btn btn-primary px-3 py-0"
                                 wire:click="removeTeam({{ $index }})"
                                 style="cursor: pointer;"
                                 aria-label="{{ t('Remove team') }}"

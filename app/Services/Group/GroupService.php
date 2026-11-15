@@ -148,13 +148,18 @@ class GroupService
     }
 
     /**
-     * Retrieves a list of groups the specified user belongs to, formatted for selection input.
+     * Groups the user can choose for a project, formatted for selection input: every group for an admin,
+     * who can edit any project, otherwise the groups the user belongs to.
      *
      * @param  User  $user  The user whose groups are to be retrieved.
-     * @return array An associative array where the keys are the group IDs and the values are the group titles.
+     * @return array<int, string> Group titles keyed by group ID.
      */
     public function getUsersGroupsSelect(User $user): array
     {
+        if ($user->isAdmin()) {
+            return $this->group->orderBy('title')->pluck('title', 'id')->toArray();
+        }
+
         return $this->group->whereHas('users', function ($query) use ($user) {
             $query->where('user_id', $user->id);
         })->pluck('title', 'id')->toArray();
@@ -165,9 +170,9 @@ class GroupService
      * Used for user sessions.
      *
      * @param  int  $userId  The ID of the user for which to fetch associated group IDs.
-     * @return \Illuminate\Support\Collection A collection of group IDs linked to the user.
+     * @return Collection A collection of group IDs linked to the user.
      */
-    public function getUserGroupIds($userId): \Illuminate\Support\Collection
+    public function getUserGroupIds($userId): Collection
     {
         return $this->group->whereHas('users', function ($query) use ($userId) {
             $query->where('user_id', $userId);

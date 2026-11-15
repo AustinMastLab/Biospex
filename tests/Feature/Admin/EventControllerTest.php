@@ -296,4 +296,91 @@ describe('Admin Event Controller Tests', function () {
             $response->assertRedirect(route('admin.events.index'));
         });
     });
+
+    describe('Event Dates', function () {
+
+        /**
+         * Event form data with each date sent as a date field and a time from the list.
+         *
+         * @param  array<string, mixed>  $overrides
+         * @return array<string, mixed>
+         */
+        function eventDateFormData(array $overrides = []): array
+        {
+            return array_merge([
+                'project_id' => test()->project->id,
+                'title' => 'Date Field Event',
+                'description' => 'Event with split date fields',
+                'contact' => 'John Doe',
+                'contact_email' => 'john@example.com',
+                'start_date_date' => '2025-12-01',
+                'start_date_time' => '10:00',
+                'end_date_date' => '2025-12-31',
+                'end_date_time' => '18:30',
+                'timezone' => 'America/New_York',
+                'owner_id' => test()->user->id,
+                'teams' => [['id' => null, 'title' => 'Team Alpha']],
+            ], $overrides);
+        }
+
+        it('saves the date field and time in the event time zone', function () {
+            $response = $this->post(route('admin.events.store'), eventDateFormData());
+
+            $response->assertRedirect();
+            $event = Event::where('title', 'Date Field Event')->firstOrFail();
+            expect($event->getRawOriginal('start_date'))->toBe('2025-12-01 15:00:00')
+                ->and($event->getRawOriginal('end_date'))->toBe('2025-12-31 23:30:00');
+        });
+
+        it('rejects a date without a time', function () {
+            $response = $this->post(route('admin.events.store'), eventDateFormData(['start_date_time' => '']));
+
+            $response->assertSessionHasErrors(['start_date']);
+            $this->assertDatabaseMissing('events', ['title' => 'Date Field Event']);
+        });
+
+        it('shows a saved time that is not on the half hour in the edit form', function () {
+            $event = Event::factory()->create([
+                'project_id' => $this->project->id,
+                'owner_id' => $this->user->id,
+                'timezone' => 'America/New_York',
+                'start_date' => Carbon\Carbon::parse('2022-01-27 01:00:00', 'UTC'),
+                'end_date' => Carbon\Carbon::parse('2022-04-21 12:39:00', 'UTC'),
+            ]);
+
+            $response = $this->get(route('admin.events.edit', $event));
+
+            $response->assertOk()
+                ->assertSee('name="start_date_date"', false)
+                ->assertSee('value="2022-01-26"', false)
+                ->assertSee('<option value="20:00" selected>', false)
+                ->assertSee('value="2022-04-21"', false)
+                ->assertSee('<option value="08:39" selected>', false);
+        });
+
+        it('keeps the stored dates when an event is saved with the dates the edit form shows', function () {
+            $event = Event::factory()->create([
+                'project_id' => $this->project->id,
+                'owner_id' => $this->user->id,
+                'timezone' => 'America/Chicago',
+                'start_date' => Carbon\Carbon::parse('2019-10-31 08:11:00', 'UTC'),
+                'end_date' => Carbon\Carbon::parse('2019-11-08 23:30:00', 'UTC'),
+            ]);
+
+            $response = $this->put(route('admin.events.update', $event), eventDateFormData([
+                'title' => $event->title,
+                'timezone' => 'America/Chicago',
+                'start_date_date' => '2019-10-31',
+                'start_date_time' => '03:11',
+                'end_date_date' => '2019-11-08',
+                'end_date_time' => '17:30',
+                'teams' => [],
+            ]));
+
+            $response->assertRedirect();
+            $event->refresh();
+            expect($event->getRawOriginal('start_date'))->toBe('2019-10-31 08:11:00')
+                ->and($event->getRawOriginal('end_date'))->toBe('2019-11-08 23:30:00');
+        });
+    });
 });

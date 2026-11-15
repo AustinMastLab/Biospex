@@ -39,6 +39,19 @@ class EventFormRequest extends FormRequest
     }
 
     /**
+     * The form sends each date as a date field and a time list ({field}_date and {field}_time);
+     * combine them into the "Y-m-d H:i" value the rules and EventService expect.
+     */
+    protected function prepareForValidation(): void
+    {
+        foreach (['start_date', 'end_date'] as $field) {
+            if ($this->has($field.'_date') || $this->has($field.'_time')) {
+                $this->merge([$field => trim($this->input($field.'_date').' '.$this->input($field.'_time'))]);
+            }
+        }
+    }
+
+    /**
      * Get the validation rules that apply to the request.
      *
      * @return array
@@ -53,8 +66,8 @@ class EventFormRequest extends FormRequest
             'description' => 'required|between:6,140',
             'contact' => 'required',
             'contact_email' => 'required|email',
-            'start_date' => 'required|date|before:end_date',
-            'end_date' => 'required|date|after:start_date',
+            'start_date' => 'required|date_format:Y-m-d H:i|before:end_date',
+            'end_date' => 'required|date_format:Y-m-d H:i|after:start_date',
             'timezone' => 'required|string',
             'teams.*.title' => 'max:20',
         ];

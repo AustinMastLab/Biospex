@@ -22,10 +22,16 @@ namespace App\Models;
 
 use App\Facades\DateHelper;
 use App\Presenters\ProjectPresenter;
+use App\Services\Helpers\GeneralService;
+use App\Services\Html\RichTextSanitizer;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Support\Facades\Config;
 use Str;
@@ -132,7 +138,7 @@ class Project extends BaseEloquentModel
     /**
      * Group relation.
      */
-    public function group(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function group(): BelongsTo
     {
         return $this->belongsTo(Group::class, 'group_id');
     }
@@ -172,7 +178,7 @@ class Project extends BaseEloquentModel
     /**
      * Expedition Stat relation.
      */
-    public function expeditionStats(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    public function expeditionStats(): HasManyThrough
     {
         return $this->hasManyThrough(ExpeditionStat::class, Expedition::class);
     }
@@ -196,7 +202,7 @@ class Project extends BaseEloquentModel
     /**
      * Header relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasOne
+     * @return HasOne
      */
     public function header()
     {
@@ -206,7 +212,7 @@ class Project extends BaseEloquentModel
     /**
      * Imports relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function imports()
     {
@@ -216,7 +222,7 @@ class Project extends BaseEloquentModel
     /**
      * Meta relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function metas()
     {
@@ -226,7 +232,7 @@ class Project extends BaseEloquentModel
     /**
      * OcrQueue relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function ocrQueue()
     {
@@ -252,7 +258,7 @@ class Project extends BaseEloquentModel
     /**
      * Panoptes transcription relation.
      */
-    public function panoptesTranscriptions(): Project|\Illuminate\Database\Eloquent\Builder|HasMany
+    public function panoptesTranscriptions(): Project|Builder|HasMany
     {
         return $this->hasMany(PanoptesTranscription::class, 'subject_projectId');
     }
@@ -260,7 +266,7 @@ class Project extends BaseEloquentModel
     /**
      * Assets relation.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\HasMany
+     * @return HasMany
      */
     public function assets()
     {
@@ -270,7 +276,7 @@ class Project extends BaseEloquentModel
     /**
      * Subject relation.
      */
-    public function subjects(): Project|\Illuminate\Database\Eloquent\Builder|HasMany
+    public function subjects(): Project|Builder|HasMany
     {
         return $this->hasMany(Subject::class);
     }
@@ -286,9 +292,17 @@ class Project extends BaseEloquentModel
     /**
      * Workflow Manager relation.
      */
-    public function workflowManagers(): \Illuminate\Database\Eloquent\Relations\HasManyThrough
+    public function workflowManagers(): HasManyThrough
     {
         return $this->hasManyThrough(WorkflowManager::class, Expedition::class);
+    }
+
+    /**
+     * Keep the long description to what the rich text editor offers (see RichTextSanitizer), whichever form saves it.
+     */
+    protected function descriptionLong(): Attribute
+    {
+        return Attribute::make(set: fn (?string $value) => app(RichTextSanitizer::class)->sanitize($value));
     }
 
     /**
@@ -454,7 +468,7 @@ class Project extends BaseEloquentModel
             }
         } elseif (is_string($data)) {
             // Clean UTF-8 encoding using the GeneralService method
-            $generalService = app(\App\Services\Helpers\GeneralService::class);
+            $generalService = app(GeneralService::class);
             $data = $generalService->forceUtf8($data, 'UTF-8');
         }
 

@@ -267,23 +267,44 @@ window.initializeClock = function ($clock, endTime) {
     timeInterval = setInterval(updateClock, 1000);
 }
 
+/**
+ * Show a notification at the top centre of the page for six seconds (dismissible with ×).
+ * Notifications stack below each other; styles are in components/_notifications.scss. The message is shown as text.
+ *
+ * @param {string} icon Font Awesome icon name without the "fa-" prefix, e.g. "check-circle"
+ * @param {string} msg  The message
+ * @param {string} type success, info, warning or danger
+ */
 window.notify = function (icon, msg, type) {
-    $.notify({
-        icon: 'fas fa-' + icon + ' fa-2x',
-        message: msg
-    }, {
-        type: type,
-        allow_dismiss: true,
-        placement: {
-            from: "top",
-            align: "center"
-        },
-        offset: 5,
-        spacing: 10,
-        animate: {
-            enter: "animate__animated animate__fadeInDown",
-            exit: "animate__animated animate__fadeOutUp"
-        },
-        delay: 6000,
-    });
+    let stack = document.getElementById('notify-stack');
+    if (!stack) {
+        stack = document.createElement('div');
+        stack.id = 'notify-stack';
+        stack.className = 'notify-stack';
+        document.body.appendChild(stack);
+    }
+
+    const alert = document.createElement('div');
+    alert.className = 'notify-alert notify-' + type;
+    alert.setAttribute('role', 'alert');
+
+    const close = document.createElement('button');
+    close.type = 'button';
+    close.className = 'notify-close';
+    close.setAttribute('aria-label', 'Close');
+    close.textContent = '×';
+
+    const iconSpan = document.createElement('span');
+    iconSpan.className = 'fas fa-' + icon + ' fa-2x';
+    iconSpan.setAttribute('aria-hidden', 'true');
+
+    const message = document.createElement('span');
+    message.textContent = msg;
+
+    alert.append(close, iconSpan, ' ', message);
+    stack.appendChild(alert);
+
+    const dismiss = () => alert.remove();
+    close.addEventListener('click', dismiss);
+    setTimeout(dismiss, 6000);
 }

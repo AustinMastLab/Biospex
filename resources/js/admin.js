@@ -140,56 +140,6 @@ $(function () {
         });
     }
 
-    // Datetimepicker a11y patch:
-    // - add scope="col" to weekday header <th>
-    // - label icon-only navigation buttons (prev/next) so Silktide doesn't report "Field labels"
-    // - re-apply whenever the widget regenerates its calendar
-    function patchDateTimePickerA11y(root) {
-        const $root = root ? $(root) : $(document);
-
-        $root.find('.xdsoft_calendar thead th').each(function () {
-            const $th = $(this);
-
-            // Only set what's missing so we don't fight the library
-            if (!$th.attr('scope')) {
-                $th.attr('scope', 'col');
-            }
-        });
-
-        // Month navigation (datepicker)
-        $root.find('.xdsoft_datetimepicker .xdsoft_datepicker .xdsoft_prev').each(function () {
-            const $btn = $(this);
-            if (!$btn.attr('aria-label')) $btn.attr('aria-label', 'Previous month');
-            if (!$btn.attr('title')) $btn.attr('title', 'Previous month');
-        });
-
-        $root.find('.xdsoft_datetimepicker .xdsoft_datepicker .xdsoft_next').each(function () {
-            const $btn = $(this);
-            if (!$btn.attr('aria-label')) $btn.attr('aria-label', 'Next month');
-            if (!$btn.attr('title')) $btn.attr('title', 'Next month');
-        });
-
-        // TODAY button (icon-only) — this is commonly the last remaining “field labels” warning
-        $root.find('.xdsoft_datetimepicker .xdsoft_today_button').each(function () {
-            const $btn = $(this);
-            if (!$btn.attr('aria-label')) $btn.attr('aria-label', 'Today');
-            if (!$btn.attr('title')) $btn.attr('title', 'Today');
-        });
-
-        // Time scrollers (timepicker) — label accurately (avoid “month” wording here)
-        $root.find('.xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_prev').each(function () {
-            const $btn = $(this);
-            if (!$btn.attr('aria-label')) $btn.attr('aria-label', 'Scroll time up');
-            if (!$btn.attr('title')) $btn.attr('title', 'Scroll time up');
-        });
-
-        $root.find('.xdsoft_datetimepicker .xdsoft_timepicker .xdsoft_next').each(function () {
-            const $btn = $(this);
-            if (!$btn.attr('aria-label')) $btn.attr('aria-label', 'Scroll time down');
-            if (!$btn.attr('title')) $btn.attr('title', 'Scroll time down');
-        });
-    }
-
     // Copy buttons: copy their data-clipboard-text with the Clipboard API.
     $(document).on('click', '.clipboard', function () {
         navigator.clipboard.writeText($(this).data('clipboard-text'))
@@ -261,52 +211,11 @@ $(function () {
                     i = mutations.length;
                     break;
                 }
-
-                // If datetimepicker/calendar was added or rebuilt, patch header scopes
-                if (
-                    node.matches('.xdsoft_datetimepicker, .xdsoft_calendar') ||
-                    (node.querySelector && node.querySelector('.xdsoft_datetimepicker, .xdsoft_calendar'))
-                ) {
-                    patchDateTimePickerA11y(node);
-                }
             }
         }
     });
 
     observer.observe(document.body, { childList: true, subtree: true });
-
-    // Restore: datetimepicker init. The picker is only loaded on pages with date fields.
-    let $dateTimePickers = $('.date-time-picker')
-    if ($dateTimePickers.length) {
-        import('jquery-datetimepicker/build/jquery.datetimepicker.full').then(() => initDateTimePickers($dateTimePickers))
-    }
-
-    function initDateTimePickers($pickers) {
-        $.datetimepicker.setLocale('en')
-        $pickers.datetimepicker({
-            format: 'Y-m-d H:i',
-            allowTimes: [
-                '00:00', '00:30', '01:00', '01:30', '02:00', '02:30', '03:00', '03:30',
-                '04:00', '04:30', '05:00', '05:30', '06:00', '06:30', '07:00', '07:30',
-                '08:00', '08:30', '09:00', '09:30', '10:00', '10:30', '11:00', '11:30',
-                '12:00', '12:30', '13:00', '13:30', '14:00', '14:30', '15:00', '15:30',
-                '16:00', '16:30', '17:00', '17:30', '18:00', '18:30', '19:00', '19:30',
-                '20:00', '20:30', '21:00', '21:30', '22:00', '22:30'
-            ],
-            onShow: function () {
-                // Patch immediately and on next tick (some scanners snapshot fast)
-                patchDateTimePickerA11y(document);
-                setTimeout(function () {
-                    patchDateTimePickerA11y(document);
-                }, 0);
-            },
-            onGenerate: function () {
-                // Fired when the widget regenerates its HTML (month nav, etc.)
-                patchDateTimePickerA11y(document);
-            }
-        })
-    }
-
 
     // Restore: banner picker behavior
     $('.project-banner').on('click', function () {

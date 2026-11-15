@@ -11,15 +11,12 @@
         <div id="controls" class="controls col-sm-12">
             @foreach($fields as $index => $field)
                 <div class="row entry" wire:key="field-{{ $index }}">
-                    <div class="col-sm-6 mt-3" wire:ignore>
-                        <select class="geolocate-field" 
+                    <div class="col-sm-6 mt-3">
+                        <select class="geolocate-field form-control custom-select select-primary"
+                                style="width: 80%"
                                 wire:model="fields.{{ $index }}.geo"
                                 name="fields[{{ $index }}][geo]"
-                                data-live-search="true"
-                                data-actions-box="true"
-                                data-header="{{ t('Select GeoLocateExport Field ( * required)') }}"
-                                data-width="80%"
-                                data-style="btn-primary"
+                                aria-label="{{ t('Select GeoLocateExport Field ( * required)') }}"
                                 required>
                             <option value="">{{ t('None') }}</option>
                             @foreach($geoOptions as $key => $value)
@@ -30,14 +27,12 @@
                             @endforeach
                         </select>
                     </div>
-                    <div class="col-sm-6 mt-3" wire:ignore>
-                        <select class="header-select" 
+                    <div class="col-sm-6 mt-3">
+                        <select class="header-select form-control custom-select select-primary"
+                                style="width: 80%"
                                 wire:model="fields.{{ $index }}.csv"
                                 name="fields[{{ $index }}][csv]"
-                                data-live-search="true"
-                                data-header="{{ t('Select CSV Column') }}"
-                                data-width="80%"
-                                data-style="btn-primary"
+                                aria-label="{{ t('Select CSV Column') }}"
                                 required>
                             <option value="">{{ t('None') }}</option>
                             @foreach($csvOptions as $column)

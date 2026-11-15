@@ -16,12 +16,7 @@
             <div class="controls form-group col-sm-6">
                 <label for="community-form-select"
                        class="col-form-label">{{ t('GeoLocate Community') }}:</label>
-                <select id="community-form-select" class="selectpicker form-select"
-                        data-live-search="true"
-                        data-actions-box="true"
-                        data-header="{{ t('Select New or Saved Community') }}"
-                        data-width="300"
-                        data-style="btn-primary"
+                <select id="community-form-select" class="form-control custom-select select-primary"
                         name="community_id">
                     <option value="" class="text-uppercase">{{ t('New') }}</option>
                     @foreach($expedition->project->geoLocateCommunities as $community)

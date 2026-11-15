@@ -22,6 +22,5 @@ import "./app.js";
 import "./modal.js";
 import "./front-globals.js";
 import "bootstrap";
-import "bootstrap-notify/bootstrap-notify";
 import "./common.js";
 import "./front.js";

@@ -21,7 +21,6 @@ import "./jquery-global.js";
 import "./app.js";
 import "./modal.js";
 import "./admin-globals.js";
-import "bootstrap-notify/bootstrap-notify";
 import "./common.js";
 import "./admin.js";
 import "./admin-modals.js";

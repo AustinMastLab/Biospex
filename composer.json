@@ -46,6 +46,7 @@
     "spatie/laravel-honeypot": "^4.0",
     "spatie/laravel-responsecache": "^8.0",
     "supervisorphp/supervisor": "^5.0",
+    "symfony/html-sanitizer": "^8.1",
     "tio/laravel": "^1.0"
   },
   "require-dev": {

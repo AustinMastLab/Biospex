@@ -19,7 +19,10 @@
  */
 
 use App\Models\Expedition;
+use App\Models\Project;
 use App\Models\Workflow;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 it('succeeds without changes when no operation is given', function () {
     $this->artisan('app:update-queries')->assertSuccessful();
@@ -49,4 +52,37 @@ it('unlocks expeditions that were locked without changing to GeoLocate', functio
         ->updated_at->toDateTimeString()->toBe('2026-01-02 03:04:05')
         ->and($onGeoLocate->fresh()->locked)->toBe(1)
         ->and($unlocked->fresh()->locked)->toBe(0);
+});
+
+it('cleans project descriptions and saves the originals first', function () {
+    Storage::fake('local');
+    $styled = Project::factory()->create(['updated_at' => '2026-01-02 03:04:05']);
+    $clean = Project::factory()->create();
+    $original = '<p style="font-size:18px"><span style="color:red">Wading</span> through <b>water</b> plants</p><style>p{}</style>';
+    // Saved the way older descriptions were, before the model cleaned them.
+    DB::table('projects')->where('id', $styled->id)->update(['description_long' => $original]);
+    DB::table('projects')->where('id', $clean->id)->update(['description_long' => '<p>Already clean</p>']);
+
+    $this->artisan('app:update-queries', ['operation' => 'clean-project-descriptions', '--force' => true])
+        ->expectsOutputToContain('Cleaned 1 project descriptions.')
+        ->assertSuccessful();
+
+    expect(DB::table('projects')->where('id', $styled->id)->value('description_long'))->toBe('<p>Wading through <b>water</b> plants</p>')
+        ->and($styled->fresh()->updated_at->toDateTimeString())->toBe('2026-01-02 03:04:05')
+        ->and(DB::table('projects')->where('id', $clean->id)->value('description_long'))->toBe('<p>Already clean</p>');
+    $backups = Storage::disk('local')->files('backups');
+    expect($backups)->toHaveCount(1)
+        ->and(json_decode(Storage::disk('local')->get($backups[0]), true))->toBe([(string) $styled->id => $original]);
+});
+
+it('changes nothing and writes no backup when the descriptions are already clean', function () {
+    Storage::fake('local');
+    $project = Project::factory()->create();
+    DB::table('projects')->where('id', $project->id)->update(['description_long' => '<p>Already clean</p>']);
+
+    $this->artisan('app:update-queries', ['operation' => 'clean-project-descriptions', '--force' => true])
+        ->expectsOutput('Cleaned 0 project descriptions.')
+        ->assertSuccessful();
+
+    expect(Storage::disk('local')->files('backups'))->toBeEmpty();
 });

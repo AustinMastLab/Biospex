@@ -18,10 +18,14 @@
     "popper.js": "^1.16.1",
     "postcss": "^8.5.31",
     "sass": "^1.108.0",
-    "summernote": "0.9.1",
     "vite": "^8.3.5"
   },
   "dependencies": {
+    "@tiptap/core": "^3.34.0",
+    "@tiptap/extension-subscript": "^3.34.0",
+    "@tiptap/extension-superscript": "^3.34.0",
+    "@tiptap/pm": "^3.34.0",
+    "@tiptap/starter-kit": "^3.34.0",
     "axios": "^1.20.0",
     "laravel-echo": "^2.6.1",
     "pusher-js": "^8.6.0"

@@ -20,8 +20,10 @@
 
 namespace App\Console\Commands;
 
+use App\Services\Html\RichTextSanitizer;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Storage;
 
 /**
  * One-off data updates run during deployment.
@@ -36,7 +38,7 @@ class AppUpdateQueriesCommand extends Command
      * The console command name.
      */
     protected $signature = 'app:update-queries
-                            {operation? : The operation to run (unlock-expeditions)}
+                            {operation? : The operation to run (unlock-expeditions, clean-project-descriptions)}
                             {--force : Run without confirmation prompts}';
 
     /**
@@ -54,6 +56,7 @@ class AppUpdateQueriesCommand extends Command
         return match ($operation) {
             '' => $this->noOperation(),
             'unlock-expeditions' => $this->unlockExpeditions(),
+            'clean-project-descriptions' => $this->cleanProjectDescriptions(),
             default => $this->unknownOperation($operation),
         };
     }
@@ -87,6 +90,47 @@ class AppUpdateQueriesCommand extends Command
             ->update(['locked' => 0]);
 
         $this->info("Unlocked {$unlocked} expeditions.");
+
+        return self::SUCCESS;
+    }
+
+    /**
+     * Clean every project's long description to what the rich text editor offers (RichTextSanitizer):
+     * font sizes, colours, line heights and pasted Word markup go, the text and its bold, italics, lists and
+     * links stay. The original descriptions that change are saved first to storage/app/backups as JSON
+     * (project id => description). updated_at is left alone. Safe to re-run: clean descriptions don't change.
+     */
+    private function cleanProjectDescriptions(): int
+    {
+        $sanitizer = app(RichTextSanitizer::class);
+        $originals = [];
+        $cleaned = [];
+
+        DB::table('projects')->whereNotNull('description_long')->orderBy('id')
+            ->select(['id', 'description_long'])
+            ->each(function (object $project) use ($sanitizer, &$originals, &$cleaned) {
+                $clean = $sanitizer->sanitize($project->description_long);
+
+                if ($clean !== $project->description_long) {
+                    $originals[$project->id] = $project->description_long;
+                    $cleaned[$project->id] = $clean;
+                }
+            });
+
+        if ($cleaned === []) {
+            $this->info('Cleaned 0 project descriptions.');
+
+            return self::SUCCESS;
+        }
+
+        $backup = 'backups/project-descriptions-'.now()->format('Y-m-d-His').'.json';
+        Storage::disk('local')->put($backup, json_encode($originals, JSON_PRETTY_PRINT | JSON_UNESCAPED_SLASHES | JSON_UNESCAPED_UNICODE));
+
+        foreach ($cleaned as $id => $description) {
+            DB::table('projects')->where('id', $id)->update(['description_long' => $description]);
+        }
+
+        $this->info('Cleaned '.count($cleaned).' project descriptions. Originals saved to storage/app/'.$backup.'.');
 
         return self::SUCCESS;
     }

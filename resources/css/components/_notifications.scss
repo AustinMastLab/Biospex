@@ -1,0 +1,80 @@
+/* ==========================================================================
+   Notifications (window.notify in common.js)
+   Stacked at the top centre of the page. Own classes, so they don't depend on Bootstrap; the sizes and
+   colours match the Bootstrap 4 alerts bootstrap-notify used before.
+   ========================================================================== */
+
+.notify-stack {
+  position: fixed;
+  top: 5px;
+  left: 0;
+  right: 0;
+  z-index: 1031;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  pointer-events: none;
+}
+
+.notify-alert {
+  position: relative;
+  width: 91.666667%;
+  margin-bottom: 10px;
+  padding: .75rem 1.25rem;
+  border: 1px solid transparent;
+  border-radius: .25rem;
+  font-size: 1rem;
+  line-height: 1.5;
+  pointer-events: auto;
+}
+
+@media (min-width: 576px) {
+  .notify-alert {
+    width: 33.333333%;
+  }
+}
+
+.notify-success {
+  background-color: #d4edda;
+  border-color: #c3e6cb;
+  color: #155724;
+}
+
+.notify-info {
+  background-color: #d1ecf1;
+  border-color: #bee5eb;
+  color: #0c5460;
+}
+
+.notify-warning {
+  background-color: #fff3cd;
+  border-color: #ffeeba;
+  color: #856404;
+}
+
+.notify-danger {
+  background-color: #f8d7da;
+  border-color: #f5c6cb;
+  color: #721c24;
+}
+
+.notify-close {
+  position: absolute;
+  top: 5px;
+  right: 10px;
+  padding: 0;
+  border: 0;
+  background-color: transparent;
+  color: #000000;
+  font-size: 1.5rem;
+  font-weight: 700;
+  line-height: 1;
+  text-shadow: 0 1px 0 #ffffff;
+  opacity: .5;
+  cursor: pointer;
+}
+
+.notify-close:hover,
+.notify-close:focus {
+  opacity: .75;
+}

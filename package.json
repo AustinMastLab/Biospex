@@ -13,7 +13,6 @@
     "free-jqgrid": "^4.15.5",
     "hamburgers": "^1.2.1",
     "jquery": "^3.7.1",
-    "jquery-datetimepicker": "^2.5.21",
     "jquery-ui": "^1.13.2",
     "laravel-vite-plugin": "^3.2.0",
     "playwright": "^1.65.0",

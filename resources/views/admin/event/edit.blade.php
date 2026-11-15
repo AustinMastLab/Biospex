@@ -78,25 +78,10 @@
                         </div>
                         <div class="form-row">
                             <div class="col-sm-4 form-group">
-                                <label for="start_date"
-                                       class="col-form-label required">{{ t('Start Date') }}
-                                    :</label>
-                                <input type="text"
-                                       class="form-control date-time-picker {{ ($errors->has('start_date')) ? 'is-invalid' : '' }} a11y-form-control"
-                                       id="start_date" name="start_date"
-                                       value="{{ old('start_date', $event->start_date->setTimezone($event->timezone)->format('Y-m-d H:i')) }}"
-                                       required>
-                                <span class="invalid-feedback">{{ $errors->first('start_date') }}</span>
+                                @include('admin.event.partials.date-time-field', ['name' => 'start_date', 'label' => t('Start Date'), 'value' => $event->start_date->setTimezone($event->timezone)])
                             </div>
                             <div class="col-sm-4 form-group">
-                                <label for="end_date"
-                                       class="col-form-label required">{{ t('End Date') }}:</label>
-                                <input type="text"
-                                       class="form-control date-time-picker {{ ($errors->has('end_date')) ? 'is-invalid' : '' }} a11y-form-control"
-                                       id="end_date" name="end_date"
-                                       value="{{ old('end_date', $event->end_date->setTimezone($event->timezone)->format('Y-m-d H:i')) }}"
-                                       required>
-                                <span class="invalid-feedback">{{ $errors->first('end_date') }}</span>
+                                @include('admin.event.partials.date-time-field', ['name' => 'end_date', 'label' => t('End Date'), 'value' => $event->end_date->setTimezone($event->timezone)])
                             </div>
                             <div class="col-sm-4 form-group">
                                 <label for="timezone"

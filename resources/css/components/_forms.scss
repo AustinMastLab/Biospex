@@ -37,3 +37,35 @@
 .a11y-form-control.is-invalid:focus {
   outline-color: rgba(220, 53, 69, 0.35) !important;
 }
+
+/*
+ * Native select styled like .btn-primary (the GeoLocate forms used bootstrap-select with data-style="btn-primary").
+ * The arrow is redrawn in white, and in brand red on hover; the option list keeps the browser's normal colours.
+ */
+.custom-select.select-primary {
+  height: auto;
+  padding: 10px 2.5rem 10px 1rem;
+  border: 1px solid $brand-red;
+  border-radius: 0;
+  background: $brand-red url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23ffffff' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e") no-repeat right .75rem center / 8px 10px;
+  color: #ffffff;
+  transition: .25s ease-out;
+}
+
+.custom-select.select-primary:hover {
+  background-color: transparent;
+  background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' width='4' height='5' viewBox='0 0 4 5'%3e%3cpath fill='%23c83f29' d='M2 0L0 2h4zm0 5L0 3h4z'/%3e%3c/svg%3e");
+  color: $brand-red;
+}
+
+.custom-select.select-primary:focus {
+  border-color: $brand-red;
+  outline: 3px solid rgba(11, 94, 215, 0.35);
+  outline-offset: 1px;
+  box-shadow: none;
+}
+
+.custom-select.select-primary option {
+  background-color: #ffffff;
+  color: #212529;
+}

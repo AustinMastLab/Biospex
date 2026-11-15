@@ -14,23 +14,23 @@
     </div>
     <div class="form-group col-sm-10 mx-auto text-center">
         <div class="form-row mt-2 entry">
-            <select id="geolocate-source-select" class="select selectpicker mx-auto" name="source"
-                    title="{{ t('GeoLocateExport CSV Source') }}"
-                    data-header="{{ t('Select CSV source') }}"
-                    data-width="350"
-                    data-hide-disabled="true"
-                    data-style="btn-primary"
+            <select id="geolocate-source-select" class="form-control custom-select select-primary mx-auto" name="source"
+                    aria-label="{{ t('GeoLocateExport CSV Source') }}"
+                    style="max-width: 350px"
                     data-url="{{ route('admin.geolocate-field.index', [$expedition]) }}"
                     required>
+                <option value="" disabled hidden {{ empty($form['source']) ? 'selected' : '' }}>{{ t('GeoLocateExport CSV Source') }}</option>
                 <option value="reconciled"
                         {{ $form['source'] === 'reconciled' ? 'selected' : '' }}>{{ t('Reconciled') }}</option>
-                <option value="reconciled-with-expert"
-                        {{ $form['source'] === 'reconciled-with-expert' ? 'selected' : '' }}
-                        {{ $form['expert_reconciled'] && $form['expert_review'] ? '' : 'disabled' }}>
-                    {{ t('Reconciled With Expert Opinion') }}</option>
-                <option value="reconciled-with-user"
-                        {{ $form['source'] === 'reconciled-with-user' ? 'selected' : '' }}
-                        {{ $form['user_reconciled'] ? '' : 'disabled' }}>{{ t('Reconciled With User Opinion') }}</option>
+                @if($form['expert_reconciled'] && $form['expert_review'])
+                    <option value="reconciled-with-expert"
+                            {{ $form['source'] === 'reconciled-with-expert' ? 'selected' : '' }}>
+                        {{ t('Reconciled With Expert Opinion') }}</option>
+                @endif
+                @if($form['user_reconciled'])
+                    <option value="reconciled-with-user"
+                            {{ $form['source'] === 'reconciled-with-user' ? 'selected' : '' }}>{{ t('Reconciled With User Opinion') }}</option>
+                @endif
                 <option value="upload">{{ t('Upload Reconciled With User Opinion') }}</option>
             </select>
         </div>

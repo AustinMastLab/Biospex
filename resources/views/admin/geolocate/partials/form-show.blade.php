@@ -1,13 +1,10 @@
 <div class="row">
     <div class="controls col-sm-10 mx-auto mt-3 text-center">
-        <select id="geolocate-form-select" class="selectpicker" name="geolocate-form-select"
-                data-url="{{ route('admin.geolocate-form.show', [$expedition]) }}"
-                data-live-search="true"
-                data-actions-box="true"
-                title="{{ t('New') }}"
-                data-header="{{ t('Select New or Saved Form') }}"
-                data-width="350"
-                data-style="btn-primary">
+        <select id="geolocate-form-select" class="form-control custom-select select-primary mx-auto"
+                name="geolocate-form-select"
+                aria-label="{{ t('Select New or Saved Form') }}"
+                style="max-width: 350px"
+                data-url="{{ route('admin.geolocate-form.show', [$expedition]) }}">
             <option value="" class="text-uppercase">{{ t('New') }}</option>
             @foreach($expedition->project->group->geoLocateForms as $form)
                 <option value="{{ $form->id }}" {{ $selectedForm === $form->id ? 'selected' : ''}}>

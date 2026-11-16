@@ -92,7 +92,8 @@ class GridExportCsvJob implements ShouldQueue
             $subjectArray['updated_at'] = $subject->updated_at ? $subject->updated_at->toDateTimeString() : '';
             $subjectArray['created_at'] = $subject->created_at ? $subject->created_at->toDateTimeString() : '';
             $subjectArray['ocr'] = $generalService->forceUtf8($subject->ocr);
-            $subjectArray['occurrence'] = $this->decodeAndEncode($subject['occurrence']->getAttributes());
+            // The embedded document's raw attributes: the relation would count as lazy loading on these cursor models.
+            $subjectArray['occurrence'] = $this->decodeAndEncode((array) ($subjectArray['occurrence'] ?? []));
 
             // Only header columns: the model exposes the key as `id`, and a subject
             // can carry fields the project header doesn't list.

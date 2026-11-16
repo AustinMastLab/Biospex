@@ -78,7 +78,8 @@ it('writes each subject id under the _id column', function () {
     expect($header[0])->toBe('_id')
         ->and($record['_id'])->toBe((string) Subject::first()->id)
         ->and($record['imageId'])->toBe('image-1')
-        ->and($record['accessURI'])->toBe('https://example.org/image-1.jpg');
+        ->and($record['accessURI'])->toBe('https://example.org/image-1.jpg')
+        ->and($record['occurrence'])->toBe('{"id":"occurrence-1"}');
 });
 
 it('leaves out subject fields that are not in the header', function () {

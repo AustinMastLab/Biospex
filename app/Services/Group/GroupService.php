@@ -79,7 +79,7 @@ class GroupService
     }
 
     /**
-     * Display the specified group with its related data.
+     * Load what a group's page shows. Its Expeditions and GeoLocateExport Forms tables load their own rows.
      *
      * @param  Group  &$group  The group instance to be displayed, with related data loaded.
      */
@@ -87,11 +87,9 @@ class GroupService
     {
         $group->load([
             'projects',
-            'expeditions',
-            'geoLocateForms.expeditions',
             'owner',
             'users',
-        ])->loadCount('expeditions');
+        ])->loadCount(['expeditions', 'geoLocateForms']);
     }
 
     /**

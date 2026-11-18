@@ -2,11 +2,7 @@
    Tables
    ========================================================================== */
 
-#transcribers-tbl_info, #transcribers-tbl_paginate {
-  font-size: .8rem;
-}
-
-/* Global: improve Bootstrap/DataTables pagination contrast */
+/* Global: improve Bootstrap pagination contrast */
 .page-link {
   color: $brand-red;
 }
@@ -22,62 +18,105 @@
   color: #ffffff;
 }
 
-/* DataTables table links */
-table.dataTable tbody a {
+/* Data tables: the plain and Livewire tables that replaced DataTables (see components/data-table) */
+table.data-table {
+  width: 100%;
+  font-size: .8rem;
+}
+
+table.data-table tbody a {
   color: $brand-red;
 }
 
-table.dataTable.table-striped tbody tr:nth-of-type(odd) a {
+table.data-table.table-striped tbody tr:nth-of-type(odd) a {
   color: darken($brand-red, 14%);
 }
 
-table.dataTable tbody a:hover,
-table.dataTable tbody a:focus {
+table.data-table tbody a:hover,
+table.data-table tbody a:focus {
   color: darken($brand-red, 8%);
   text-decoration: underline;
 }
 
-/* DataTables search input */
-.dataTables_wrapper {
-  .dataTables_filter {
-    input[type="search"] {
-      color: #212529;
-      background-color: #ffffff;
-      border: 2px solid #495057;
+/* A short list that scrolls inside its card once it is long (group members and projects) */
+.data-table-scroll {
+  width: 100%;
+  max-height: 22rem;
+  overflow-y: auto;
 
-      &::placeholder {
-        color: #6c757d;
-        opacity: 1;
-      }
+  table.data-table {
+    margin-bottom: 0;
+  }
 
-      &:focus {
-        border-color: #005fcc;
-        box-shadow: 0 0 0 0.2rem rgba(0, 95, 204, 0.25);
-        outline: 0;
-      }
-    }
+  thead th {
+    position: sticky;
+    top: 0;
+    z-index: 1;
+    background-color: #ffffff;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #005fcc;
+    outline-offset: 2px;
   }
 }
 
-/* DataTables pagination target size */
-.dataTables_wrapper .dataTables_paginate .pagination .page-item:not(.previous):not(.next) {
-  width: 44px;
-  height: 44px;
+/* Sortable column headers */
+.data-table-sort {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-weight: inherit;
+  text-align: left;
+  white-space: nowrap;
+
+  i {
+    margin-left: .25rem;
+  }
+
+  &:focus-visible {
+    outline: 2px solid #005fcc;
+    outline-offset: 2px;
+  }
 }
 
-.dataTables_wrapper .dataTables_paginate .pagination .page-item .page-link {
-  display: flex !important;
+/* "Show N entries" and the search box */
+.data-table-controls,
+.data-table-footer {
+  width: 100%;
+  font-size: .8rem;
+}
+
+.data-table-controls input[type="search"] {
+  color: #212529;
+  background-color: #ffffff;
+  border: 2px solid #495057;
+
+  &::placeholder {
+    color: #6c757d;
+    opacity: 1;
+  }
+
+  &:focus {
+    border-color: #005fcc;
+    box-shadow: 0 0 0 0.2rem rgba(0, 95, 204, 0.25);
+    outline: 0;
+  }
+}
+
+/* Pager: wraps in narrow cards; target size */
+.data-table-footer .pagination {
+  flex-wrap: wrap;
+}
+
+.data-table-footer .pagination .page-item .page-link {
+  display: flex;
   align-items: center;
   justify-content: center;
   box-sizing: border-box;
-  width: 100%;
-  height: 44px !important;
-  min-width: 44px !important;
-  padding: 0 12px !important;
-  line-height: 1 !important;
-}
-
-.dataTables_wrapper .dataTables_paginate .pagination .page-item.previous .page-link,
-.dataTables_wrapper .dataTables_paginate .pagination .page-item.next .page-link {
-  min-width: 44px !important;
+  height: 44px;
+  min-width: 44px;
+  padding: 0 12px;
+  line-height: 1;
 }

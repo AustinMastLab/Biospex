@@ -22,6 +22,7 @@ namespace App\Services\Transcriptions;
 
 use App\Models\PanoptesTranscription;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use MongoDB\BSON\UTCDateTime;
 
@@ -166,19 +167,52 @@ class PanoptesTranscriptionService
     }
 
     /**
-     * Get transcribers transcription count.
+     * Each participant's digitization count, expedition count and last digitization date (a UTC timestamp) for a project.
+     *
+     * Cached as plain arrays (a large project has thousands of participants) and rebuilt every four hours
+     * by app:update-participant-counts.
+     *
+     * @return Collection<int, array{user_name: string, transcriptionCount: int, expeditionCount: int, last_date: int}>
      */
-    public function getTranscribersTranscriptionCount(int $projectId): mixed
+    public function getTranscribersTranscriptionCount(int $projectId): Collection
+    {
+        return $this->participantsCache()->rememberForever(
+            $this->participantsKey($projectId),
+            fn () => $this->countProjectParticipants($projectId)
+        );
+    }
+
+    /**
+     * Count a project's participants again and store the result. If the count fails, the stored one stays.
+     */
+    public function refreshProjectParticipants(int $projectId): void
+    {
+        $this->participantsCache()->forever($this->participantsKey($projectId), $this->countProjectParticipants($projectId));
+    }
+
+    /**
+     * Ids of the projects that have transcriptions.
+     *
+     * @return array<int, int>
+     */
+    public function getTranscribedProjectIds(): array
+    {
+        $projectIds = $this->model->raw(fn ($collection) => $collection->distinct('subject_projectId'));
+
+        return collect($projectIds)->filter(fn ($projectId) => is_int($projectId))->sort()->values()->all();
+    }
+
+    /**
+     * Group a project's transcriptions by participant.
+     *
+     * @return Collection<int, array{user_name: string, transcriptionCount: int, expeditionCount: int, last_date: int}>
+     */
+    protected function countProjectParticipants(int $projectId): Collection
     {
         $aggregationQuery = [
             [
                 '$match' => [
-                    'subject_projectId' => (int) $projectId,
-                ],
-            ],
-            [
-                '$sort' => [
-                    'classification_finished_at' => -1,
+                    'subject_projectId' => $projectId,
                 ],
             ],
             [
@@ -208,14 +242,24 @@ class PanoptesTranscriptionService
             ],
         ];
 
-        $key = "transcribers_transcription_count:{$projectId}";
-        $tags = ['panoptes_transcriptions'];
+        return $this->model->raw(function ($collection) use ($aggregationQuery) {
+            return $collection->aggregate($aggregationQuery, ['allowDiskUse' => true]);
+        })->map(fn ($participant) => [
+            'user_name' => (string) $participant['user_name'],
+            'transcriptionCount' => (int) $participant['transcriptionCount'],
+            'expeditionCount' => (int) $participant['expeditionCount'],
+            'last_date' => $participant['last_date']?->getTimestamp() ?? 0,
+        ])->values()->toBase();
+    }
 
-        return Cache::tags($tags)->rememberForever($key, function () use ($aggregationQuery) {
-            return $this->model->raw(function ($collection) use ($aggregationQuery) {
-                return $collection->aggregate($aggregationQuery);
-            });
-        });
+    protected function participantsKey(int $projectId): string
+    {
+        return "project_participants:{$projectId}";
+    }
+
+    protected function participantsCache(): Repository
+    {
+        return Cache::tags(['panoptes_transcriptions']);
     }
 
     /**

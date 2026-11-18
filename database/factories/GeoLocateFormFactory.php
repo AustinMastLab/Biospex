@@ -23,10 +23,11 @@ declare(strict_types=1);
 namespace Database\Factories;
 
 use App\Models\GeoLocateForm;
+use App\Models\Group;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\GeoLocateForm>
+ * @extends Factory<GeoLocateForm>
  */
 final class GeoLocateFormFactory extends Factory
 {
@@ -43,11 +44,10 @@ final class GeoLocateFormFactory extends Factory
     public function definition(): array
     {
         return [
-            'group_id' => \App\Models\Group::factory(),
+            'group_id' => Group::factory(),
             'name' => fake()->name,
-            'source' => fake()->word,
             'hash' => fake()->sha256,
-            'fields' => fake()->word,
+            'fields' => [],
         ];
     }
 }

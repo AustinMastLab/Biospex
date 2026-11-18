@@ -22,6 +22,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Services\Asset\Thumbnail;
+use Illuminate\Contracts\Filesystem\FileNotFoundException;
 use Request;
 
 /**
@@ -36,21 +37,21 @@ class ImageController extends Controller
     ) {}
 
     /**
-     * Return resized image
+     * The subject grid's preview dialogs: the image URL as text (url-view), or a thumbnail that scales to the dialog.
      *
-     * @return string
-     *
-     * @throws \Illuminate\Contracts\Filesystem\FileNotFoundException
+     * @throws FileNotFoundException
      */
-    public function preview()
+    public function preview(): string
     {
+        $url = (string) Request::input('url');
+
         if (Request::has('url-view')) {
-            return Request::input('url');
+            // Escaped, and wrapping anywhere so a long URL stays inside the dialog on a phone.
+            return '<p class="text-left px-3 mb-0 user-select-all" style="overflow-wrap: anywhere;">'.e($url).'</p>';
         }
 
-        $url = Request::input('url');
         $thumb = $this->thumbnail->getThumbnail(urldecode($url));
 
-        return '<img src="data:image/jpeg;base64,'.base64_encode($thumb).'" />';
+        return '<img class="img-fluid" src="data:image/jpeg;base64,'.base64_encode($thumb).'" alt="'.e(t('Subject image thumbnail')).'">';
     }
 }

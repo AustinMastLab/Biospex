@@ -36,7 +36,7 @@
 @section('content')
     <section class="home-heading text-center" id="learn-more">
         <div class="container">
-            <img src="/images/page/logo-tagline-action.png" alt="BIOSPEX: Lead Public Digitization Expeditions">
+            <img class="img-fluid" src="/images/page/logo-tagline-action.png" alt="BIOSPEX: Lead Public Digitization Expeditions">
             <p class="text-left mt-4">{{ t('BIOSPEX is a base camp for launching, advertising, and managing targeted
             efforts to digitize the world\'s 3 billion biodiversity research specimens in ways that involve the public.
             Such specimens include fish in jars, plants on sheets, fossils in drawers, insects on pins, and many other
@@ -51,8 +51,8 @@
     <!-- Carousel Section -->
     <section>
         <div class="row">
-            <div class="col d-flex justify-content-center">
-                <div class="col-md-4 text-center" role="group" aria-label="{{ t('Process steps') }}">
+            <div class="col d-flex flex-wrap justify-content-center">
+                <div class="col-12 col-md-4 text-center" role="group" aria-label="{{ t('Process steps') }}">
                     <h2>The Process<br>
                         <span class="smallertext">{{ t('Specimen digitization is easy as 123') }}</span></h2>
                     <ul id="external-carousel-btns" class="list-inline">
@@ -89,7 +89,7 @@
                         </li>
                     </ul>
                 </div>
-                <div id="processCarousel" class="carousel slide col-md-6">
+                <div id="processCarousel" class="carousel slide col-12 col-md-6">
                     <div class="carousel-inner box-shadow inside-carousel">
                         <div class="carousel-item active"
                              style="background-image: url(/images/slider/slider1.png);">
@@ -132,7 +132,7 @@
     <section class="tutorial">
         <div class="container" style="position:relative;">
             <img src="/images/page/arrow-curved.svg" alt="-->" class="home-arrow d-none d-sm-none d-md-block">
-            <div class="row p-5">
+            <div class="row p-2 p-md-5">
 
                 <div class="col-sm-6 mt-5 p-1 pb-md-3">
                     <h2 class="home-header-cta">{{ t('A Project') }}</h2>
@@ -205,14 +205,14 @@
                                 <div class="card-img-overlay">
                                     <h3 class="card-title text-center pt-4 expedition-card-title">{{ $expedition->title }}</h3>
                                     <i class="card-info fas fa-info-circle fa-2x float-right"
-                                       style="top: 20rem; left: 31.25rem;"></i>
+                                       style="top: 20rem;"></i>
                                     <p>{{ $expedition->description }}</p>
                                 </div>
                             </div>
 
                             <div class="card-body white"
                                  style="border-bottom-left-radius: 10px; border-bottom-right-radius: 10px;">
-                                <div class="d-flex justify-content-between">
+                                <div class="d-flex flex-wrap justify-content-between">
                                     <div class="p-2">
                                         <p>{{ $expedition->stat->local_transcriptions_completed }} {{ t('Digitizations') }}</p>
                                     </div>

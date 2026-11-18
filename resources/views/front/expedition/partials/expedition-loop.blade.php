@@ -1,5 +1,5 @@
 @use('App\Enums\ActorExpeditionState')
-<div wire:key="expedition-{{ $expedition->id }}" class="mx-auto mb-4">
+<div wire:key="expedition-{{ $expedition->id }}" class="card-col mx-auto mb-4">
     <div class="card black box-shadow h-100">
         <div class="card-top m-0 p-0">
             <img class="card-img-top"

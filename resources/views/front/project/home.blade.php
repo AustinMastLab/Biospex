@@ -36,27 +36,32 @@
 
                 <hr class="pt-0 pb-4">
 
-                <div class="col-12 col-md-10 offset-md-1">
-                    <div class="col-5 float-right">
-                        <img src="{{ $project->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'" class="img-fluid"
-                             alt="{{ $project->title }} logo">
-                    </div>
-                    @if($project->contact !== null)
-                        <h2 class="project-detail-heading">{{ t('Contact') }}</h2>
-                        <p>
-                            <a href="mailto:{{ $project->contact_email }}" class="text">{{ $project->contact }}</a>
-                        </p>
-                    @endif
+                <div class="col-12 col-md-10 offset-md-1 project-details">
+                    {{-- Logo beside Contact and Organization (above them on phones), so text never wraps under it (#601) --}}
+                    <div class="row">
+                        <div class="col-md-5 order-md-2 mb-4 text-center">
+                            <img src="{{ $project->present()->show_logo }}" onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'" class="img-fluid"
+                                 alt="{{ $project->title }} logo">
+                        </div>
+                        <div class="col-md-7 order-md-1">
+                            @if($project->contact !== null)
+                                <h2 class="project-detail-heading">{{ t('Contact') }}</h2>
+                                <p>
+                                    <a href="mailto:{{ $project->contact_email }}" class="text">{{ $project->contact }}</a>
+                                </p>
+                            @endif
 
-                    @if($project->organization !== null)
-                        <h2 class="project-detail-heading">{{ t('Organization') }}</h2>
-                        @if($project->organization_website !== null)
-                            <p><a href="{{ $project->organization_website }}"
-                                  target="_blank">{{ $project->organization }}</a></p>
-                        @else
-                            <p>{{ $project->organization }}</p>
-                        @endif
-                    @endif
+                            @if($project->organization !== null)
+                                <h2 class="project-detail-heading">{{ t('Organization') }}</h2>
+                                @if($project->organization_website !== null)
+                                    <p><a href="{{ $project->organization_website }}"
+                                          target="_blank">{{ $project->organization }}</a></p>
+                                @else
+                                    <p>{{ $project->organization }}</p>
+                                @endif
+                            @endif
+                        </div>
+                    </div>
 
                     @if($project->project_partners !== null)
                         <h2 class="project-detail-heading">{{ t('Partners') }}</h2>
@@ -73,7 +78,7 @@
                         @if($project->description_short !== null)
                             <p><strong>{{ $project->description_short  }}</strong></p>
                         @endif
-                        <p>{!! $project->description_long !!}</p>
+                        <div>{!! $project->description_long !!}</div>
                     @endif
 
                     @if($project->incentives !== null)

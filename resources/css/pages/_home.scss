@@ -81,7 +81,8 @@ h1.home-banner-tag {
 }
 
 h1.project-wide {
-  font-size: 3.875rem;
+  font-size: clamp(1.75rem, 8vw, 3.875rem); /* shrinks so a long one-word title fits a phone (#601) */
+  overflow-wrap: anywhere;
   padding-bottom: 1rem;
   line-height: 2.875rem;
   color: #666; /* was #888; darkened to meet WCAG AA on white */
@@ -103,7 +104,7 @@ h1.project-wide {
     transform: translateY(70%);
   }
   h1.project-wide {
-    font-size: 3.125rem;
+    font-size: clamp(1.75rem, 8vw, 3.125rem);
   }
 }
 
@@ -125,6 +126,15 @@ h1.project-wide {
     overflow: hidden;
     width: 400px;
     height: 400px;
+  }
+}
+
+/* Phones: a full-width rounded box that grows with its text instead of a fixed circle (#601) */
+@media only screen and (max-width: 575.98px) {
+  .inside-carousel {
+    width: 100%;
+    height: auto;
+    border-radius: 10px;
   }
 }
 
@@ -192,6 +202,11 @@ h1.project-wide {
   font-size: 1rem;
   color: black;
   text-align: center;
+}
+
+/* Long URLs in a project's details wrap instead of widening the page (#601) */
+.project-details {
+  overflow-wrap: anywhere;
 }
 
 .project-detail-heading {

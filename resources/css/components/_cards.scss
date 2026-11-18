@@ -10,16 +10,26 @@
   background-color: white;
 }
 
-/* cards */
+/* cards: 333px where there is room, never wider than their column (#601) */
 .card {
   position: relative;
   border: 0;
   border-radius: 10px;
-  min-width: 333px;
+  min-width: min(333px, 100%);
 }
 
 .card.team {
-  min-width: 400px;
+  min-width: min(400px, 100%);
+}
+
+/* A card wrapper in a wrapping flex row (expeditions, team): its own width, so the card's 100% has something to measure */
+.card-col {
+  width: 333px;
+  max-width: 100%;
+}
+
+.card-col-wide {
+  width: 400px;
 }
 
 .card.black {
@@ -110,7 +120,7 @@
   color: white;
   position: absolute;
   top: 11.875rem;
-  left: 18.75rem;
+  right: 1rem;
   opacity: 1;
   transition: .5s ease;
 }

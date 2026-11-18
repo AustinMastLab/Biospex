@@ -14,7 +14,7 @@
             <div class="card white px-4 box-shadow h-100">
                 <h3 class="text-center pt-4">{{ t('Members') }}</h3>
                 <hr>
-                <div class="row card-body">
+                <div class="row card-body align-content-start">
                     <p>{{ t('Group Owner') }}: {{ $group->owner->present()->full_name_or_email }}</p>
                     @if($group->users->isEmpty())
                         <p class="text-center">{{ t('No users') }}</p>
@@ -47,10 +47,11 @@
             <div class="card white px-4 box-shadow h-100">
                 <h3 class="text-center pt-4">{{ t('Projects') }}</h3>
                 <hr>
-                <div class="row card-body">
+                <div class="row card-body align-content-start">
                     @if($group->projects->isEmpty())
                         <p class="text-center">{{ t('No Projects Exist') }}</p>
                     @else
+                        <div class="data-table-scroll" tabindex="0" role="region" aria-label="{{ t('Projects') }}">
                         <table id="projects-tbl" class="table table-striped table-bordered data-table">
                             <thead>
                             <tr>
@@ -62,6 +63,7 @@
                             @each('admin.group.partials.project-loop', $group->projects->sortBy('title', SORT_NATURAL | SORT_FLAG_CASE), 'project')
                             </tbody>
                         </table>
+                        </div>
                     @endif
                 </div>
             </div>
@@ -72,7 +74,7 @@
             <div class="card white px-4 box-shadow h-100">
                 <h3 class="text-center pt-4">{{ t('Expeditions') }}</h3>
                 <hr>
-                <div class="row card-body">
+                <div class="row card-body align-content-start">
                     @if($group->expeditions_count === 0)
                         <p class="text-center">{{ t('No Expeditions') }}</p>
                     @else
@@ -85,7 +87,7 @@
             <div class="card white px-4 box-shadow h-100">
                 <h3 id="geolocate-forms" class="text-center pt-4">{{ t('GeoLocateExport Forms') }}</h3>
                 <hr>
-                <div class="row card-body">
+                <div class="row card-body align-content-start">
                     @if($group->geo_locate_forms_count === 0)
                         <p class="text-center">{{ t('No GeoLocateExport Forms Exist') }}</p>
                     @else

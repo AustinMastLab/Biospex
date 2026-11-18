@@ -5,10 +5,6 @@
     {{ $project->title }} {{ t('Statistics') }}
 @stop
 
-@push('styles')
-    <link href="https://cdn.datatables.net/1.10.18/css/dataTables.bootstrap4.min.css"
-          rel="stylesheet"/>
-@endpush
 @section('content')
     @include('admin.project.partials.project-panel')
     <div class="row">
@@ -19,22 +15,8 @@
                 @if($transcribers->isEmpty())
                     <p class="text-center">{{ t('No digitizations exist.') }}</p>
                 @else
-                    <div class="color-action text-center">{{ t('Use shift + click to multi-sort') }}</div>
                     <div class="row card-body">
-                        <table id="transcribers-tbl" class="table table-striped table-bordered dt-responsive nowrap"
-                               style="width:100%; font-size: .8rem">
-                            <thead>
-                            <tr>
-                                <th scope="col">{{ t('User') }}</th>
-                                <th scope="col">{{ t('Expeditions') }}</th>
-                                <th scope="col">{{ t('Digitizations') }}</th>
-                                <th scope="col">{{ t('Last Date') }}</th>
-                            </tr>
-                            </thead>
-                            <tbody>
-                            @each('admin.project.partials.transcribers', $transcribers, 'transcriber')
-                            </tbody>
-                        </table>
+                        <livewire:admin.project-participants-table :project="$project"/>
                     </div>
                 @endif
             </div>
@@ -62,36 +44,8 @@
     </div>
 @endsection
 @push('scripts')
-    @if($transcribers->isNotEmpty())
-        <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js" defer></script>
-        <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js" defer></script>
-        <script type="module">
-            const $tbl = $('#transcribers-tbl');
-
-            $tbl
-                .on('init.dt draw.dt', function () {
-                    if (window.improveDataTablePaginationA11y) {
-                        setTimeout(function () {
-                            window.improveDataTablePaginationA11y('transcribers-tbl');
-                        }, 0);
-                    }
-                })
-                .DataTable({
-                    initComplete: function () {
-                        const $filterInput = $('#transcribers-tbl_filter input[type="search"]');
-
-                        $filterInput.attr({
-                            id: 'transcribers-tbl-search',
-                            name: 'transcribers-tbl-search',
-                            autocomplete: 'off'
-                        });
-                    }
-                });
-        </script>
-        </script>
-        @endif
-        @if(isset($transcriptions))
-            @include('common.amchart')
-            @vite('resources/js/amChartStat-entry.js')
-        @endif
-    @endpush
+    @if(isset($transcriptions))
+        @include('common.amchart')
+        @vite('resources/js/amChartStat-entry.js')
+    @endif
+@endpush

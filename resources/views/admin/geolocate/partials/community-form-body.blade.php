@@ -59,13 +59,12 @@
 
 <div class="col-md-10 mx-auto mt-5 mb-3">
     <h2 class="">{{ t('Communities') }}</h2>
-    <table id="geolocate-tbl" class="table table-striped table-bordered dt-responsive nowrap"
-           style="width:100%; font-size: .8rem">
+    <table id="geolocate-tbl" class="table table-striped table-bordered data-table">
         <thead>
         <tr>
-            <th></th>
-            <th>{{ t('Community') }}</th>
-            <th>{{ t('# Assigned DataSources') }}</th>
+            <th scope="col"><span class="sr-only">{{ t('Delete') }}</span></th>
+            <th scope="col">{{ t('Community') }}</th>
+            <th scope="col">{{ t('# Assigned DataSources') }}</th>
         </tr>
         </thead>
         <tbody>
@@ -75,19 +74,9 @@
             @endforeach
         @else
             <tr>
-                <td colspan="2">{{ t('No Communities Found') }}</td>
+                <td colspan="3">{{ t('No Communities Found') }}</td>
             </tr>
         @endif
         </tbody>
     </table>
 </div>
-
-@push('scripts')
-    <script src="https://cdn.datatables.net/1.10.18/js/jquery.dataTables.min.js"></script>
-    <script src="https://cdn.datatables.net/1.10.18/js/dataTables.bootstrap4.min.js"></script>
-    @if($expedition->project->geoLocateCommunities->isNotEmpty())
-        <script>
-            $('#geolocate-tbl').DataTable();
-        </script>
-    @endif
-@endpush

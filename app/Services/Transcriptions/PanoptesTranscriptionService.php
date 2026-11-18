@@ -22,6 +22,7 @@ namespace App\Services\Transcriptions;
 
 use App\Models\PanoptesTranscription;
 use Illuminate\Contracts\Cache\Repository;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Cache;
 use MongoDB\BSON\UTCDateTime;
 
@@ -166,9 +167,13 @@ class PanoptesTranscriptionService
     }
 
     /**
-     * Get transcribers transcription count.
+     * Each participant's digitization count, expedition count and last digitization date (a UTC timestamp) for a project.
+     *
+     * Cached as plain arrays: a large project has thousands of participants.
+     *
+     * @return Collection<int, array{user_name: string, transcriptionCount: int, expeditionCount: int, last_date: int}>
      */
-    public function getTranscribersTranscriptionCount(int $projectId): mixed
+    public function getTranscribersTranscriptionCount(int $projectId): Collection
     {
         $aggregationQuery = [
             [
@@ -208,13 +213,18 @@ class PanoptesTranscriptionService
             ],
         ];
 
-        $key = "transcribers_transcription_count:{$projectId}";
+        $key = "project_participants:{$projectId}";
         $tags = ['panoptes_transcriptions'];
 
         return Cache::tags($tags)->rememberForever($key, function () use ($aggregationQuery) {
             return $this->model->raw(function ($collection) use ($aggregationQuery) {
                 return $collection->aggregate($aggregationQuery);
-            });
+            })->map(fn ($participant) => [
+                'user_name' => (string) $participant['user_name'],
+                'transcriptionCount' => (int) $participant['transcriptionCount'],
+                'expeditionCount' => (int) $participant['expeditionCount'],
+                'last_date' => $participant['last_date']?->getTimestamp() ?? 0,
+            ])->values()->toBase();
         });
     }
 

@@ -30,7 +30,7 @@ Schedule::command('bingo:clean')->dailyAt('10:05');
 // Store the home page contributor and transcription counts (too slow to count during a request)
 Schedule::command('app:update-site-counts')->everyFourHours()->withoutOverlapping()->runInBackground();
 
-// Count each project's participants again for the statistics pages
+// Count each project's participants and per-state transcriptions again (statistics and public project pages)
 Schedule::command('app:update-participant-counts')->everyFourHours()->withoutOverlapping()->runInBackground();
 
 // Run lambda-reconciliation check every morning at 6:00

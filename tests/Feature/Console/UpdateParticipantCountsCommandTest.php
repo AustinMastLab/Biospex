@@ -20,6 +20,7 @@
 
 use App\Models\PanoptesTranscription;
 use App\Services\Transcriptions\PanoptesTranscriptionService;
+use App\Services\Transcriptions\StateCountyService;
 use Illuminate\Support\Carbon;
 
 beforeEach(function () {
@@ -77,4 +78,16 @@ it('keeps the previous counts of a project whose count fails and updates the res
 
     expect($failing->getTranscribersTranscriptionCount(7)->pluck('user_name')->all())->toBe(['fern_fan'])
         ->and($failing->getTranscribersTranscriptionCount(8)->pluck('user_name')->sort()->values()->all())->toBe(['moss_maven', 'oak_lover']);
+});
+
+it('refreshes each project\'s per-state counts too', function () {
+    $states = Mockery::mock(StateCountyService::class);
+    $states->shouldReceive('getLocatedProjectIds')->andReturn([7, 8]);
+    $states->shouldReceive('refreshStateTranscriptCount')->with(7)->once();
+    $states->shouldReceive('refreshStateTranscriptCount')->with(8)->once();
+    app()->instance(StateCountyService::class, $states);
+
+    $this->artisan('app:update-participant-counts')
+        ->expectsOutput('Updated state counts for 2 of 2 projects.')
+        ->assertSuccessful();
 });

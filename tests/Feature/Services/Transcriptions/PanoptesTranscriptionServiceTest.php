@@ -55,3 +55,16 @@ it('summarises each participant of a project as plain values', function () {
         'last_date' => Carbon::parse('2024-03-05 08:30:00', 'UTC')->getTimestamp(),
     ]]);
 });
+
+it('counts a project\'s participants from the participant summary', function () {
+    foreach (['fern_fan', 'fern_fan', 'moss_maven'] as $userName) {
+        PanoptesTranscription::create([
+            'subject_projectId' => 7,
+            'subject_expeditionId' => 31,
+            'user_name' => $userName,
+            'classification_finished_at' => Carbon::parse('2024-01-01', 'UTC'),
+        ]);
+    }
+
+    expect(app(PanoptesTranscriptionService::class)->getProjectTranscriberCount(7))->toBe(2);
+});

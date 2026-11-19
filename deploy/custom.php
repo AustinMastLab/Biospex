@@ -131,6 +131,24 @@ task('artisan:responsecache:clear', function () {
 });
 
 /*
+ * The deploy's cache:clear also empties the participant and per-state counts that the statistics and public project
+ * pages read; without this, the first visit to a large project after a deploy would count them again (seconds).
+ * A failure here only warns: the release is already live, and the scheduler counts again within four hours.
+ */
+desc('Count each project\'s participants and per-state transcriptions so the first page visits are fast');
+task('artisan:app:update-participant-counts', function () {
+    cd('{{current_path}}');
+
+    try {
+        run(withUmask('php artisan app:update-participant-counts'), timeout: 1800);
+        writeln('✅ Participant and state counts stored');
+    } catch (\Throwable $exception) {
+        writeln('⚠️  app:update-participant-counts failed; the scheduler will count again within four hours.');
+        writeln('   '.$exception->getMessage());
+    }
+});
+
+/*
  * =============================================================================
  * SUPERVISOR PROCESS MANAGEMENT
  * =============================================================================

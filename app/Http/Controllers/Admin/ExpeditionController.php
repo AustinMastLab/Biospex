@@ -26,7 +26,7 @@ use App\Jobs\DeleteExpeditionJob;
 use App\Models\Expedition;
 use App\Models\Project;
 use App\Services\Expedition\ExpeditionService;
-use App\Services\JavascriptService;
+use App\Services\Grid\SubjectSelection;
 use App\Services\Permission\CheckPermission;
 use App\Services\Workflow\WorkflowService;
 use Auth;
@@ -51,7 +51,7 @@ class ExpeditionController extends Controller
      */
     public function __construct(
         protected ExpeditionService $expeditionService,
-        protected JavascriptService $javascriptService
+        protected SubjectSelection $subjectSelection
     ) {}
 
     /**
@@ -75,8 +75,6 @@ class ExpeditionController extends Controller
 
         $workflowOptions = $workflowService->getWorkflowSelect();
 
-        $this->javascriptService->expeditionCreate($project);
-
         return View::make('admin.expedition.create', compact('project', 'workflowOptions'));
     }
 
@@ -97,7 +95,7 @@ class ExpeditionController extends Controller
             return Redirect::route('admin.projects.show', [$project])->with('danger', t('An error occurred when saving record. Please contact the administrator.'));
         }
 
-        if (! $this->saveSubjects($expedition, $request->input('subject-ids'))) {
+        if (! $this->saveSubjects($expedition, $this->submittedSubjectIds($request))) {
             return $this->subjectSaveFailed($expedition);
         }
 
@@ -119,8 +117,6 @@ class ExpeditionController extends Controller
             return Redirect::route('admin.projects.index');
         }
 
-        $this->javascriptService->expeditionShow($expedition);
-
         return View::make('admin.expedition.show', compact('expedition'));
     }
 
@@ -138,10 +134,6 @@ class ExpeditionController extends Controller
         $canChangeToGeoLocate = $this->expeditionService->canChangeToGeoLocate($expedition);
         $isGeoLocateAvailable = $this->expeditionService->isGeoLocateAvailable($expedition);
         $workflowOptions = $workflowService->getEditWorkflowSelect($expedition, $canChangeToGeoLocate);
-
-        $subjectIds = $this->expeditionService->getSubjectIdsByExpeditionId($expedition)->toArray();
-
-        $this->javascriptService->expeditionEdit($expedition, $subjectIds);
 
         return View::make('admin.expedition.edit', compact('expedition', 'workflowOptions', 'canChangeToGeoLocate', 'isGeoLocateAvailable'));
     }
@@ -164,7 +156,7 @@ class ExpeditionController extends Controller
                 ->with('danger', t('An error occurred when saving record. Please contact the administrator.'));
         }
 
-        if (! $this->saveSubjects($expedition, $request->input('subject-ids'))) {
+        if (! $this->saveSubjects($expedition, $this->submittedSubjectIds($request))) {
             return $this->subjectSaveFailed($expedition);
         }
 
@@ -175,6 +167,19 @@ class ExpeditionController extends Controller
     /**
      * Apply the submitted subjects to MongoDB, reporting rather than throwing on failure.
      */
+    /**
+     * The subjects chosen in the form's subject grid: the ids kept under its selection token, or the
+     * comma-separated ids an older form posts.
+     */
+    private function submittedSubjectIds(ExpeditionFormRequest $request): ?string
+    {
+        if ($request->filled('subject-selection')) {
+            return implode(',', $this->subjectSelection->ids((int) Auth::id(), (string) $request->input('subject-selection')));
+        }
+
+        return $request->input('subject-ids');
+    }
+
     private function saveSubjects(Expedition $expedition, ?string $subjectIds): bool
     {
         try {

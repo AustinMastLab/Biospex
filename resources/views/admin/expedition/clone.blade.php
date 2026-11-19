@@ -72,12 +72,10 @@
             @include('common.cancel-submit-buttons')
         </div>
     </form>
-    <div id="jqGridDiv" class="row">
-        <h3 class="mx-auto">{{ t('Subjects currently assigned') }}
-            <span id="max">{{ t('(%s max. per Expedition)', Config::get('config.expedition_size')) }}</span>:
-            <span id="subject-count-html">0</span></h3>
+    <div class="row">
+        <h3 class="col-12 text-center">{{ t('Select subjects for the Expedition') }}</h3>
         <div class="col-md-12">
-            <table class="table table-bordered" id="jqGridTable" data-a11y-label="{{ t('Select Subjects for Expedition') }}"></table>
+            <livewire:admin.subject-grid :project="$expedition->project" mode="create" :selectable="true"/>
         </div>
     </div>
 @endsection

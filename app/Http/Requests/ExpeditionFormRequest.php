@@ -23,6 +23,7 @@ namespace App\Http\Requests;
 use App\Models\Expedition;
 use App\Rules\FileUploadNameValidation;
 use App\Services\Expedition\ExpeditionService;
+use App\Services\Grid\SubjectSelection;
 use Closure;
 use Illuminate\Support\Facades\Auth;
 
@@ -55,6 +56,25 @@ class ExpeditionFormRequest extends Request
             ],
             'logo_path' => 'nullable|string',
             'workflow_id' => ['required', 'integer', $this->workflowRule(...)],
+            'subject-selection' => [
+                'nullable',
+                'string',
+                function (string $attribute, mixed $value, Closure $fail): void {
+                    $selection = app(SubjectSelection::class);
+
+                    if (! $selection->exists((int) $this->user()->id, (string) $value)) {
+                        $fail(t('Your subject selection has expired. Please reload the page and select the subjects again.'));
+
+                        return;
+                    }
+
+                    $maximum = (int) config('config.expedition_size');
+
+                    if ($selection->count((int) $this->user()->id, (string) $value) > $maximum) {
+                        $fail(t('An Expedition can have at most %s subjects.', number_format($maximum)));
+                    }
+                },
+            ],
             'subject-ids' => [
                 'nullable',
                 'string',

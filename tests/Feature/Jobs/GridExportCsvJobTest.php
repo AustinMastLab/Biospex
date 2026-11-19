@@ -24,7 +24,6 @@ use App\Models\Project;
 use App\Models\Subject;
 use App\Models\User;
 use App\Services\Api\AwsS3ApiService;
-use App\Services\Grid\JqGridEncoder;
 use Illuminate\Support\Facades\Notification;
 use Illuminate\Support\Facades\Storage;
 
@@ -50,11 +49,10 @@ afterEach(function () {
 
 function exportGridCsv(Project $project): array
 {
-    test()->mock(JqGridEncoder::class)
-        ->shouldReceive('encodeGridExportData')
-        ->andReturn(Subject::where('project_id', $project->id)->cursor());
-
-    app()->call([new GridExportCsvJob(User::factory()->create(), ['projectId' => $project->id, 'expeditionId' => null]), 'handle']);
+    app()->call([new GridExportCsvJob(User::factory()->create(), [
+        'projectId' => $project->id,
+        'criteria' => ['projectId' => $project->id, 'mode' => 'explore'],
+    ]), 'handle']);
 
     $file = Storage::disk('s3')->files(config('config.report_dir'))[0];
 

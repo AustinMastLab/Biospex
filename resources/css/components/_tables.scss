@@ -120,3 +120,63 @@ table.data-table tbody a:focus {
   padding: 0 12px;
   line-height: 1;
 }
+
+/* Subject grid (App\Livewire\Admin\SubjectGrid) */
+.subject-grid-table {
+  th,
+  td {
+    white-space: nowrap;
+    vertical-align: middle;
+  }
+
+  .subject-grid-cell {
+    max-width: 16rem;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .subject-grid-check {
+    width: 2rem;
+    text-align: center;
+  }
+
+  .subject-grid-filters td {
+    padding: .25rem;
+    min-width: 7rem;
+  }
+}
+
+.subject-grid-ocr {
+  max-width: 100%;
+  padding: 0;
+  border: 0;
+  background: none;
+  color: $brand-red;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  text-decoration: underline;
+}
+
+.subject-grid-loading {
+  opacity: .6;
+  transition: opacity .2s;
+}
+
+.subject-grid-drag {
+  cursor: grab;
+  color: #6c757d;
+}
+
+/* Column chooser: as many columns of fields as fit the dialog, one on a phone */
+.subject-grid-column-list {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(13rem, 1fr));
+  gap: .25rem 1rem;
+
+  li {
+    min-width: 0;
+    padding: .2rem 0;
+  }
+}

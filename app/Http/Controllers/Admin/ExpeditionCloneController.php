@@ -22,8 +22,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Models\Expedition;
 use App\Services\Expedition\ExpeditionService;
-use App\Services\Grid\JqGridEncoder;
-use App\Services\JavascriptService;
 use App\Services\Permission\CheckPermission;
 use App\Services\Workflow\WorkflowService;
 use Redirect;
@@ -38,21 +36,18 @@ class ExpeditionCloneController
      */
     public function __construct(
         protected ExpeditionService $expeditionService,
-        protected JqGridEncoder $jqGridEncoder,
         protected WorkflowService $workflowService
     ) {}
 
-    public function __invoke(Expedition $expedition, JavascriptService $javascriptService): mixed
+    public function __invoke(Expedition $expedition): mixed
     {
         $expedition->load(['project.group', 'downloads', 'stat']);
 
-        if (! CheckPermission::handle('create', $expedition->project->group)) {
+        if (! CheckPermission::handle('createProject', $expedition->project->group)) {
             return Redirect::route('admin.projects.index');
         }
 
         $workflowOptions = $this->workflowService->getWorkflowSelect();
-
-        $javascriptService->expeditionCreate($expedition->project);
 
         return View::make('admin.expedition.clone', compact('expedition', 'workflowOptions'));
     }

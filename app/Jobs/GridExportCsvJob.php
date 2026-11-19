@@ -24,8 +24,8 @@ use App\Models\Header;
 use App\Models\User;
 use App\Notifications\Generic;
 use App\Services\Csv\AwsS3CsvService;
-use App\Services\Grid\JqGridEncoder;
 use App\Services\Helpers\GeneralService;
+use App\Services\Subject\SubjectGridQuery;
 use App\Traits\ButtonTrait;
 use Exception;
 use Illuminate\Bus\Queueable;
@@ -40,7 +40,9 @@ use League\Csv\CannotInsertRecord;
 use Throwable;
 
 /**
- * Class GridExportCsvJob
+ * Writes the subject grid's filtered subjects to a CSV on S3 and emails the user a download link.
+ *
+ * $data: projectId, criteria (SubjectGridQuery criteria), sortField, sortDirection.
  */
 class GridExportCsvJob implements ShouldQueue
 {
@@ -70,11 +72,15 @@ class GridExportCsvJob implements ShouldQueue
      * @throws Exception
      */
     public function handle(
-        JqGridEncoder $jqGridEncoder,
+        SubjectGridQuery $gridQuery,
         AwsS3CsvService $awsS3CsvService,
         GeneralService $generalService): void
     {
-        $cursor = $jqGridEncoder->encodeGridExportData($this->data);
+        $cursor = $gridQuery->cursor(
+            $this->data['criteria'],
+            $this->data['sortField'] ?? '_id',
+            $this->data['sortDirection'] ?? 'desc'
+        );
 
         $header = $this->buildHeader();
 
@@ -110,8 +116,9 @@ class GridExportCsvJob implements ShouldQueue
 
         $route = route('admin.downloads.report', ['file' => base64_encode($this->csvName)]);
         $btn = $this->createButton($route, t('Download CSV'));
-        $html = ! is_null($this->data['expeditionId']) ?
-            t('Your grid export for Expedition Id %s is complete. Click the button provided to download:', $this->data['expeditionId']) :
+        $expeditionId = $this->data['criteria']['expeditionId'] ?? null;
+        $html = $expeditionId !== null ?
+            t('Your grid export for Expedition Id %s is complete. Click the button provided to download:', $expeditionId) :
             t('Your grid export for Project Id %s is complete. Click the button provided to download:', $this->data['projectId']);
 
         $attributes = [
@@ -128,7 +135,8 @@ class GridExportCsvJob implements ShouldQueue
      */
     private function buildHeader(): Collection
     {
-        $header = Header::where('project_id', $this->data['projectId'])->first()->header['image'];
+        // A project imported without a header still exports its standard columns.
+        $header = Header::where('project_id', $this->data['projectId'])->first()?->header['image'] ?? ['accessURI'];
         array_unshift($header, '_id', 'project_id', 'imageId', 'expedition_ids', 'exported');
         array_push($header, 'ocr', 'occurrence', 'updated_at', 'created_at');
 
@@ -172,8 +180,9 @@ class GridExportCsvJob implements ShouldQueue
      */
     public function failed(Throwable $throwable): void
     {
-        $idMessage = ! is_null($this->data['expeditionId']) ?
-            t('Expedition Id: %s', $this->data['expeditionId']) :
+        $expeditionId = $this->data['criteria']['expeditionId'] ?? null;
+        $idMessage = $expeditionId !== null ?
+            t('Expedition Id: %s', $expeditionId) :
             t('Project Id: %s', $this->data['projectId']);
 
         $attributes = [

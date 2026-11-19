@@ -31,7 +31,7 @@ export default defineConfig({
         },
     },
     build: {
-        // The admin bundle carries jqGrid, jQuery UI and Summernote.
+        // The admin bundle carries the rich text editor.
         chunkSizeWarningLimit: 1000,
     },
 });

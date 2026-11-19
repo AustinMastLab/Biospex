@@ -26,6 +26,7 @@ use App\Models\Project;
 use App\Models\User;
 use App\Models\Workflow;
 use App\Models\WorkflowManager;
+use App\Services\Grid\SubjectSelection;
 use App\Services\Subject\SubjectService;
 use Mockery\MockInterface;
 
@@ -173,4 +174,43 @@ it('ignores the admin-only skip flags in the expedition form', function () {
 
     expect($expedition->skip_api)->toBeFalse()
         ->and($expedition->skip_reconcile)->toBeTrue();
+});
+
+it('attaches the subjects chosen in the grid, read from the selection token', function () {
+    $token = app(SubjectSelection::class)->start($this->user->id, ['a1', 'b2']);
+
+    mockSubjects([], 2)
+        ->shouldReceive('detachSubjects')->once()->withArgs(fn ($ids) => $ids->isEmpty())
+        ->getMock()
+        ->shouldReceive('attachSubjects')->once()->withArgs(fn ($ids) => $ids->values()->all() === ['a1', 'b2']);
+
+    $this->post(route('admin.expeditions.store', $this->project), expeditionFormData([
+        'subject-ids' => null,
+        'subject-selection' => $token,
+    ]))->assertSessionHas('success', t('Record was created successfully.'));
+
+    expect(Expedition::where('title', 'Expedition Save Test')->exists())->toBeTrue();
+});
+
+it('rejects an expired or unknown selection token without changing the subjects', function () {
+    $expedition = existingExpedition($this->project);
+    mockSubjects(['a1'], 1)->shouldNotReceive('attachSubjects', 'detachSubjects');
+
+    $this->put(route('admin.expeditions.update', $expedition), expeditionFormData([
+        'workflow_id' => $expedition->workflow_id,
+        'subject-ids' => null,
+        'subject-selection' => 'not-a-token',
+    ]))->assertSessionHasErrors('subject-selection');
+});
+
+it('does not accept another user\'s selection token', function () {
+    $token = app(SubjectSelection::class)->start(User::factory()->create()->id, ['a1']);
+    mockSubjects([], 0)->shouldNotReceive('attachSubjects', 'detachSubjects');
+
+    $this->post(route('admin.expeditions.store', $this->project), expeditionFormData([
+        'subject-ids' => null,
+        'subject-selection' => $token,
+    ]))->assertSessionHasErrors('subject-selection');
+
+    expect(Expedition::count())->toBe(0);
 });

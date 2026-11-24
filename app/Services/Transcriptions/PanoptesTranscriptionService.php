@@ -383,29 +383,11 @@ class PanoptesTranscriptionService
     }
 
     /**
-     * Get transcriber count for project.
+     * How many people have transcribed for the project: the length of the cached participant summary, which groups
+     * the same transcriptions by user and is rebuilt every four hours.
      */
     public function getProjectTranscriberCount(int $projectId): int
     {
-        $aggregationQuery = [
-            [
-                '$match' => ['subject_projectId' => (int) $projectId],
-            ],
-            [
-                '$group' => ['_id' => '$user_name'],
-            ],
-            ['$count' => 'count'],
-        ];
-
-        $key = "max_finished_date:{$projectId}";
-        $tags = ['panoptes_transcriptions'];
-
-        $result = Cache::tags($tags)->remember($key, 14440, function () use ($aggregationQuery) {
-            return $this->model->raw(function ($collection) use ($aggregationQuery) {
-                return $collection->aggregate($aggregationQuery);
-            })->first();
-        });
-
-        return $result === null ? 0 : $result->count;
+        return $this->getTranscribersTranscriptionCount($projectId)->count();
     }
 }

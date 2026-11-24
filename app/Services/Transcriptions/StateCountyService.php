@@ -21,6 +21,9 @@
 namespace App\Services\Transcriptions;
 
 use App\Models\StateCounty;
+use Illuminate\Support\Collection;
+use Illuminate\Support\Facades\Cache;
+use Illuminate\Support\Facades\DB;
 
 class StateCountyService
 {
@@ -35,24 +38,67 @@ class StateCountyService
     }
 
     /**
-     * Get state transcript count for project.
+     * Each state's transcription count for a project's map on its public page.
+     *
+     * Cached, and rebuilt every four hours by app:update-participant-counts: counting reads all of a project's
+     * transcription locations, which takes seconds for a large project.
+     *
+     * @return Collection<int, array{id: string, value: int, name: string, statenum: int}>
      */
-    public function getStateTranscriptCount($projectId): mixed
+    public function getStateTranscriptCount(int $projectId): Collection
     {
-        $results = $this->model->withCount(['transcriptionLocations' => function ($q) use ($projectId) {
-            $q->where('project_id', $projectId);
-        }])->get();
+        return Cache::rememberForever($this->stateCountKey($projectId), fn () => $this->countStateTranscriptions($projectId));
+    }
 
-        return $results->groupBy('state_num')->reject(function ($row, $key) {
-            return empty($key);
-        })->map(function ($row) {
-            $stateAbbr = $row->first()->state_abbr_cap;
-            $stateNum = $row->first()->state_num;
-            $id = 'US-'.$stateAbbr;
-            $count = (int) $row->sum('transcription_locations_count');
+    /**
+     * Count a project's transcriptions per state again and store the result.
+     */
+    public function refreshStateTranscriptCount(int $projectId): void
+    {
+        Cache::forever($this->stateCountKey($projectId), $this->countStateTranscriptions($projectId));
+    }
 
-            return ['id' => $id, 'value' => $count ?: 0, 'name' => $stateAbbr, 'statenum' => $stateNum];
-        })->values();
+    /**
+     * Ids of the projects that have transcription locations.
+     *
+     * @return array<int, int>
+     */
+    public function getLocatedProjectIds(): array
+    {
+        return DB::table('transcription_locations')->distinct()->orderBy('project_id')->pluck('project_id')->map(fn ($id) => (int) $id)->all();
+    }
+
+    /**
+     * One grouped query counts the project's transcription locations by state; every state is listed, with 0 where
+     * the project has none, as the map expects.
+     *
+     * @return Collection<int, array{id: string, value: int, name: string, statenum: int}>
+     */
+    protected function countStateTranscriptions(int $projectId): Collection
+    {
+        $counts = DB::table('transcription_locations')
+            ->join('state_counties', 'state_counties.id', '=', 'transcription_locations.state_county_id')
+            ->where('transcription_locations.project_id', $projectId)
+            ->groupBy('state_counties.state_num')
+            ->pluck(DB::raw('count(*)'), 'state_counties.state_num');
+
+        return $this->model->newQuery()
+            ->whereNotNull('state_num')
+            ->where('state_num', '!=', '')
+            ->get(['state_num', 'state_abbr_cap'])
+            ->groupBy('state_num')
+            ->map(fn ($counties, $stateNum) => [
+                'id' => 'US-'.$counties->first()->state_abbr_cap,
+                'value' => (int) ($counts[$stateNum] ?? 0),
+                'name' => $counties->first()->state_abbr_cap,
+                'statenum' => $counties->first()->state_num,
+            ])
+            ->values();
+    }
+
+    protected function stateCountKey(int $projectId): string
+    {
+        return "project_state_counts:{$projectId}";
     }
 
     /**

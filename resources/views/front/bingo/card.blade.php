@@ -31,13 +31,16 @@
 
         </div>
     </div>
-    <div id="bingodiv" class="d-flex" style="width:100%; height: 500px"></div>
+    <div id="bingodiv" aria-hidden="true" style="width: 100%; height: 500px"></div>
+    <details class="container mb-4">
+        <summary>{{ t('Where players are') }} (<span id="bingo-players-count">0</span>)</summary>
+        <ul id="bingo-players" class="mt-2"></ul>
+    </details>
     @include('front.bingo.partials.bingo-modal')
 </div>
 @include('common.php-vars-javascript')
 @vite('resources/js/front-app.js')
-@include('common.amchart', ['maps' => true])
-@vite('resources/js/amChartBingo-entry.js')
+@vite('resources/js/bingo-entry.js')
 <script type="module">
     let bingoConfetti = new ConfettiGenerator({target: 'bingo-conffeti'});
     bingoConfetti.render();

@@ -316,7 +316,6 @@ class ProjectService
             ->withCount('expeditions')
             ->withSum('expeditionStats', 'transcriptions_completed')
             ->with([
-                'amChart',
                 'group.users.profile',
                 'assets',
                 'lastPanoptesProject',

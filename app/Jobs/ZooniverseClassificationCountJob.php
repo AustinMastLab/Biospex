@@ -85,7 +85,7 @@ class ZooniverseClassificationCountJob implements ShouldQueue
 
         $this->checkFinishedAt($this->expedition, $workflow['finished_at']);
 
-        AmChartJob::dispatch($this->expedition->project);
+        RefreshProjectChartJob::dispatch($this->expedition->project);
     }
 
     /**

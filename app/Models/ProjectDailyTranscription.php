@@ -1,5 +1,7 @@
+<?php
+
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,8 +18,29 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// AmChart Bingo Entry Point - Import jQuery before executing chart code
-import "./jquery-global.js";
+namespace App\Models;
 
-// Import the original amChart file
-import "./amChartBingo.js";
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * How many transcriptions an expedition received on one day: the data behind a project's Digitizations chart.
+ */
+class ProjectDailyTranscription extends Model
+{
+    public $timestamps = false;
+
+    protected $fillable = [
+        'project_id',
+        'expedition_id',
+        'date',
+        'count',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'date' => 'date:Y-m-d',
+            'count' => 'integer',
+        ];
+    }
+}

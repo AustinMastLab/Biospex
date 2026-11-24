@@ -175,15 +175,18 @@
                     id="digitizations">{{ t('Digitizations') }}</h2>
                 <div class="text-center mt-4 mb-4">
                     @foreach($years as $year)
-                        <button class="btn btn-primary btn-transcription" id="year{{ $year }}"
-                                data-href="{{ route('front.projects.transcriptions', [$project, $year]) }}">{{ $year }}
-                        </button>
+                        <button type="button" class="btn btn-primary btn-transcription" aria-pressed="false"
+                                data-digitizations-year="{{ $year }}">{{ $year }}</button>
                     @endforeach
                 </div>
                 <hr class="header mx-auto">
                 <div class="jumbotron box-shadow pt-2 pb-5">
-                    <div id="transcripts"
-                         style="color: #000000; font-size: 0.8em"></div>
+                    <div id="digitizations-chart" aria-hidden="true" style="width: 100%; height: 500px"
+                         data-url="{{ url('projects/'.$project->uuid.'/digitizations') }}"></div>
+                    <details class="mt-3">
+                        <summary>{{ t('Digitizations data table') }}</summary>
+                        <div id="digitizations-table" class="mt-2"></div>
+                    </details>
                 </div>
             </div>
         </div>
@@ -194,24 +197,29 @@
                     id="specimens">{{ t('Digitized Specimens Heat Map') }}</h2>
                 <hr class="header mx-auto">
                 <div class="jumbotron box-shadow pt-2 pb-5">
-                    <div id="mapDiv" class="d-flex" style="width:100%; height: 500px"></div>
-                    <div id="mapLegendDiv" style="width:100%; height: 100px"></div>
-                    <div class="hide" id="projectUrl"
-                         data-href="{{ route('front.projects.state', [$project]) }}"></div>
+                    <div class="d-flex justify-content-between align-items-center mb-2">
+                        <h3 id="state-map-title" class="h5 mb-0">{{ t('United States') }}</h3>
+                        <button type="button" id="state-map-back" class="btn btn-primary btn-sm" hidden>{{ t('Back to the United States') }}</button>
+                    </div>
+                    <div id="state-map" aria-hidden="true" style="width: 100%; height: 560px"
+                         data-states='@json($states)'
+                         data-county-url="{{ route('front.projects.state', [$project]) }}"></div>
+                    <details class="mt-3">
+                        <summary>{{ t('Heat map data table') }}</summary>
+                        <div id="state-map-table" class="mt-2"></div>
+                    </details>
                 </div>
             </div>
         </div>
-        @include('common.script-modal')
     @endif
 
 @endsection
 @push('scripts')
-    @include('common.amchart', ['maps' => $years !== null])
     @if ($years !== null)
-        @vite('resources/js/amChartTranscript-entry.js')
-        @vite('resources/js/amChartMap-entry.js')
+        @vite('resources/js/charts/digitizations-chart.js')
+        @vite('resources/js/charts/state-map.js')
     @endif
-    @vite('resources/js/amChartEventRate-entry.js')
+    @vite('resources/js/charts/event-rate-chart.js')
     <script>
         let expeditionConfetti;
         document.addEventListener('livewire:init', () => {

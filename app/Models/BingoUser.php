@@ -20,15 +20,17 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class BingoUser
  */
 class BingoUser extends BaseEloquentModel
 {
-    use HasFactory, UuidTrait;
+    use ClearsResponseCache, HasFactory, UuidTrait;
 
     /**
      * {@inheritDoc}
@@ -78,7 +80,7 @@ class BingoUser extends BaseEloquentModel
     /**
      * Bingo relation.
      */
-    public function bingo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function bingo(): BelongsTo
     {
         return $this->belongsTo(Bingo::class);
     }

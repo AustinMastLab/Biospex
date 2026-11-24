@@ -21,6 +21,7 @@
 namespace App\Models;
 
 use App\Presenters\SiteAssetPresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -30,7 +31,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class SiteAsset extends BaseEloquentModel
 {
-    use HasFactory, Presentable, UuidTrait;
+    use ClearsResponseCache, HasFactory, Presentable, UuidTrait;
 
     /**
      * {@inheritDoc}

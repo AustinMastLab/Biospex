@@ -20,14 +20,16 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Faq
  */
 class Faq extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * @ineritDoc
@@ -46,7 +48,7 @@ class Faq extends BaseEloquentModel
     /**
      * FaqCategory relationship.
      */
-    public function faqCategory(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function faqCategory(): BelongsTo
     {
         return $this->belongsTo(FaqCategory::class);
     }

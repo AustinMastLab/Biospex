@@ -21,18 +21,21 @@
 namespace App\Models;
 
 use App\Presenters\EventPresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
 use DateTimeZone;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Event
  */
 class Event extends BaseEloquentModel
 {
-    use HasFactory, Presentable, UuidTrait;
+    use ClearsResponseCache, HasFactory, Presentable, UuidTrait;
 
     /**
      * {@inheritDoc}
@@ -113,7 +116,7 @@ class Event extends BaseEloquentModel
     /**
      * Project relationship.
      */
-    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
@@ -121,7 +124,7 @@ class Event extends BaseEloquentModel
     /**
      * Owner relationship.
      */
-    public function owner(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function owner(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -129,7 +132,7 @@ class Event extends BaseEloquentModel
     /**
      * EventTeam relationship.
      */
-    public function teams(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function teams(): HasMany
     {
         return $this->hasMany(EventTeam::class);
     }
@@ -137,7 +140,7 @@ class Event extends BaseEloquentModel
     /**
      * Event transcription relationship.
      */
-    public function transcriptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function transcriptions(): HasMany
     {
         return $this->hasMany(EventTranscription::class);
     }

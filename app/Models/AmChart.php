@@ -20,8 +20,10 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class AmChart
@@ -38,7 +40,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class AmChart extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * The name of the database table associated with the model.
@@ -64,7 +66,7 @@ class AmChart extends BaseEloquentModel
      * An AmChart belongs to a single Project, representing the chart
      * data and configuration associated with that project.
      */
-    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }

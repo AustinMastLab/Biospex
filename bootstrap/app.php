@@ -39,8 +39,11 @@ return Application::configure(basePath: dirname(__DIR__))
 
             // Migrated from mapWebRoutes()
             Route::domain(config('app.domain'))->middleware('web')->group(function () use ($require_files) {
-                $require_files('routes/front');
-                $require_files('routes/front/appauth');
+                // Only the public pages are response-cached; admin pages always render fresh.
+                Route::middleware('cacheResponse')->group(function () use ($require_files) {
+                    $require_files('routes/front');
+                    $require_files('routes/front/appauth');
+                });
 
                 Route::prefix('admin')->middleware(['auth', 'verified'])->group(function () use ($require_files) {
                     $require_files('routes/admin');
@@ -84,7 +87,6 @@ return Application::configure(basePath: dirname(__DIR__))
         $middleware->web(
             append: [
                 FlashHelperMessage::class,
-                CacheResponse::class,
             ], replace: [
                 EncryptCookies::class => App\Http\Middleware\EncryptCookies::class,
             ]
@@ -103,6 +105,7 @@ return Application::configure(basePath: dirname(__DIR__))
             'auth' => Authenticate::class,
             'guest' => RedirectIfAuthenticated::class,
             'ability' => CheckForAnyAbility::class,
+            'cacheResponse' => CacheResponse::class,
             'doNotCacheResponse' => DoNotCacheResponse::class,
         ]);
     })

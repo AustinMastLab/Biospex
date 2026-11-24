@@ -21,6 +21,7 @@
 namespace App\Models;
 
 use App\Presenters\ExpeditionPresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Builder;
@@ -41,7 +42,7 @@ use Illuminate\Database\Eloquent\Relations\HasOneThrough;
  */
 class Expedition extends BaseEloquentModel
 {
-    use HasFactory, Presentable, UuidTrait;
+    use ClearsResponseCache, HasFactory, Presentable, UuidTrait;
 
     protected $table = 'expeditions';
 

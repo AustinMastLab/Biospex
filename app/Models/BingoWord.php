@@ -20,14 +20,16 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class BingoWord
  */
 class BingoWord extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * {@inheritDoc}
@@ -46,7 +48,7 @@ class BingoWord extends BaseEloquentModel
     /**
      * Bingo relation.
      */
-    public function bingo(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function bingo(): BelongsTo
     {
         return $this->belongsTo(Bingo::class);
     }

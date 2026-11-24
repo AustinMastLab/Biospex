@@ -20,14 +20,16 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class FaqCategory
  */
 class FaqCategory extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * {@inheritDoc}
@@ -42,7 +44,7 @@ class FaqCategory extends BaseEloquentModel
     /**
      * Faq relationship.
      */
-    public function faqs(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function faqs(): HasMany
     {
         return $this->hasMany(Faq::class);
     }

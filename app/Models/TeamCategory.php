@@ -20,14 +20,16 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class TeamCategory
  */
 class TeamCategory extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * {@inheritDoc}
@@ -42,7 +44,7 @@ class TeamCategory extends BaseEloquentModel
     /**
      * Faq relationship.
      */
-    public function teams(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function teams(): HasMany
     {
         return $this->hasMany(Team::class);
     }

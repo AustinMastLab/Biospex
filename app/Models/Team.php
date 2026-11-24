@@ -21,16 +21,18 @@
 namespace App\Models;
 
 use App\Presenters\TeamPresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class Team
  */
 class Team extends BaseEloquentModel
 {
-    use HasFactory, Presentable;
+    use ClearsResponseCache, HasFactory, Presentable;
 
     /**
      * {@inheritDoc}
@@ -57,7 +59,7 @@ class Team extends BaseEloquentModel
     /**
      * TeamCategory relationship.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function teamCategory()
     {

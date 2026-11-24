@@ -20,7 +20,6 @@
 
 namespace App\Models;
 
-use App\Traits\ClearsResponseCache;
 use Eloquent;
 use Illuminate\Database\Eloquent\Model;
 
@@ -42,8 +41,6 @@ use Illuminate\Database\Eloquent\Model;
  */
 class BaseEloquentModel extends Model
 {
-    use ClearsResponseCache;
-
     /**
      * The database connection name for the model.
      * Defaults to MySQL but switches to SQLite during testing.

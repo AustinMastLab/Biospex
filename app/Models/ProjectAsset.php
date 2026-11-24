@@ -21,15 +21,17 @@
 namespace App\Models;
 
 use App\Presenters\ProjectAssetPresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class ProjectAsset
  */
 class ProjectAsset extends BaseEloquentModel
 {
-    use HasFactory, Presentable;
+    use ClearsResponseCache, HasFactory, Presentable;
 
     /**
      * {@inheritDoc}
@@ -63,7 +65,7 @@ class ProjectAsset extends BaseEloquentModel
     /**
      * Project relationship.
      *
-     * @return \Illuminate\Database\Eloquent\Relations\BelongsTo
+     * @return BelongsTo
      */
     public function project()
     {

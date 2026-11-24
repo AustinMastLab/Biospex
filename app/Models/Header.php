@@ -20,6 +20,7 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
@@ -28,7 +29,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Header extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * {@inheritDoc}

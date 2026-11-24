@@ -22,24 +22,23 @@ namespace App\Traits;
 
 use Spatie\ResponseCache\Facades\ResponseCache;
 
+/**
+ * Clears the cached public pages when the model is created, updated or deleted.
+ *
+ * Only for models whose content the public (response-cached) pages show.
+ */
 trait ClearsResponseCache
 {
-    public static function bootClearsResponseCache()
+    public static function bootClearsResponseCache(): void
     {
-        if (! config('responsecache.enabled')) {
-            return;
-        }
+        $clear = function (): void {
+            if (config('responsecache.enabled')) {
+                ResponseCache::clear();
+            }
+        };
 
-        self::created(function () {
-            ResponseCache::clear();
-        });
-
-        self::updated(function () {
-            ResponseCache::clear();
-        });
-
-        self::deleted(function () {
-            ResponseCache::clear();
-        });
+        static::created($clear);
+        static::updated($clear);
+        static::deleted($clear);
     }
 }

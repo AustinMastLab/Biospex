@@ -21,6 +21,7 @@
 namespace App\Models;
 
 use App\Enums\ActorExpeditionState;
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
@@ -39,6 +40,8 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
  */
 class ActorExpedition extends BaseEloquentModel
 {
+    use ClearsResponseCache;
+
     /**
      * The name of the database table associated with the model.
      *

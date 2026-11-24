@@ -20,6 +20,7 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 
 /**
@@ -27,7 +28,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
  */
 class Notice extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * {@inheritDoc}

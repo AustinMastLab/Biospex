@@ -20,14 +20,16 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 /**
  * Class ExpeditionStat
  */
 class ExpeditionStat extends BaseEloquentModel
 {
-    use HasFactory;
+    use ClearsResponseCache, HasFactory;
 
     /**
      * {@inheritDoc}
@@ -51,7 +53,7 @@ class ExpeditionStat extends BaseEloquentModel
     /**
      * Return Expedition relation.
      */
-    public function expedition(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function expedition(): BelongsTo
     {
         return $this->belongsTo(Expedition::class);
     }

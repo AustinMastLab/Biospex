@@ -21,16 +21,19 @@
 namespace App\Models;
 
 use App\Presenters\BingoPresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class Bingo
  */
 class Bingo extends BaseEloquentModel
 {
-    use HasFactory, Presentable, UuidTrait;
+    use ClearsResponseCache, HasFactory, Presentable, UuidTrait;
 
     /**
      * {@inheritDoc}
@@ -73,7 +76,7 @@ class Bingo extends BaseEloquentModel
     /**
      * User relation.
      */
-    public function user(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
     }
@@ -81,7 +84,7 @@ class Bingo extends BaseEloquentModel
     /**
      * Project relation
      */
-    public function project(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
@@ -89,7 +92,7 @@ class Bingo extends BaseEloquentModel
     /**
      * Word relationship.
      */
-    public function words(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function words(): HasMany
     {
         return $this->hasMany(BingoWord::class);
     }
@@ -97,7 +100,7 @@ class Bingo extends BaseEloquentModel
     /**
      * Map relationship.
      */
-    public function maps(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function maps(): HasMany
     {
         return $this->hasMany(BingoUser::class);
     }

@@ -20,15 +20,18 @@
 
 namespace App\Models;
 
+use App\Traits\ClearsResponseCache;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class EventUser
  */
 class EventUser extends BaseEloquentModel
 {
-    use HasFactory, UuidTrait;
+    use ClearsResponseCache, HasFactory, UuidTrait;
 
     /**
      * {@inheritDoc}
@@ -72,7 +75,7 @@ class EventUser extends BaseEloquentModel
     /**
      * EventTeam relationship.
      */
-    public function teams(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function teams(): BelongsToMany
     {
         return $this->belongsToMany(EventTeam::class, 'event_team_user', 'user_id', 'team_id')
             ->withPivot('team_id', 'user_id');
@@ -81,7 +84,7 @@ class EventUser extends BaseEloquentModel
     /**
      * Event transcription relationship.
      */
-    public function transcriptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function transcriptions(): HasMany
     {
         return $this->hasMany(EventTranscription::class, 'user_id');
     }

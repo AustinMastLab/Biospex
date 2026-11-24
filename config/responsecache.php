@@ -7,6 +7,7 @@ use Spatie\ResponseCache\Replacers\CsrfTokenReplacer;
 use Spatie\ResponseCache\Serializers\JsonSerializer;
 
 $tag = config('app.tag', 'biospex');
+$store = env('RESPONSE_CACHE_DRIVER', 'file');
 
 return [
     /*
@@ -20,7 +21,7 @@ return [
          * to store requests. This can be the name of any store
          * that is configured in your app's cache.php config
          */
-        'store' => env('RESPONSE_CACHE_DRIVER', 'file'),
+        'store' => $store,
 
         /*
          * The default number of seconds responses will be cached
@@ -34,8 +35,11 @@ return [
          * the responsecache only items with that tag flushed.
          *
          * You may use a string or an array here.
+         *
+         * Tagged by default on stores that support tags: without a tag,
+         * clearing the response cache empties the whole cache store.
          */
-        'tag' => env('RESPONSE_CACHE_TAGS_ENABLED', false) ? "{$tag}-tag" : '',
+        'tag' => env('RESPONSE_CACHE_TAGS_ENABLED', in_array($store, ['redis', 'memcached', 'array'], true)) ? "{$tag}-tag" : '',
     ],
 
     'bypass' => [

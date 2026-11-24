@@ -20,7 +20,6 @@
 
 namespace App\Models;
 
-use App\Traits\ClearsResponseCache;
 use MongoDB\Laravel\Eloquent\Model;
 
 /**
@@ -42,8 +41,6 @@ use MongoDB\Laravel\Eloquent\Model;
  */
 class BaseMongoModel extends Model
 {
-    use ClearsResponseCache;
-
     /**
      * The database connection name for the model.
      * Uses MongoDB connection for all MongoDB-based models.
@@ -97,7 +94,7 @@ class BaseMongoModel extends Model
      *
      * @param  string  $key  The attribute name
      * @param  mixed  $value  The attribute value
-     * @return \MongoDB\Laravel\Eloquent\Model|mixed|void
+     * @return Model|mixed|void
      */
     public function setAttribute($key, $value)
     {

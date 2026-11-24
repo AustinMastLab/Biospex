@@ -72,9 +72,6 @@ return [
         'site-assets' => env('UPLOAD_SITE_ASSETS', 'uploads/site-assets'),
     ],
 
-    'project_chart_series' => resource_path('json/projectChartSeries.json'),
-    'project_chart_config' => resource_path('json/projectChartConfig.json'),
-
     // Whether OCR is enabled for overnight scripts.
     'ocr_enabled' => env('OCR_ENABLED', true),
 

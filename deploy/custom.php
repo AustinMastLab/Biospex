@@ -149,6 +149,25 @@ task('artisan:app:update-participant-counts', function () {
 });
 
 /*
+ * The Digitizations chart data (project_daily_transcriptions) is counted from the last stored day, so this is quick
+ * once filled; the first deploy with the table fills it. The project pages show the Digitizations chart and the heat
+ * map only for projects with chart data. A failure here only warns: each project is refreshed again when its
+ * classification counts change.
+ */
+desc('Bring each project\'s Digitizations chart data up to date');
+task('artisan:app:refresh-project-chart-data', function () {
+    cd('{{current_path}}');
+
+    try {
+        run(withUmask('php artisan app:refresh-project-chart-data'), timeout: 1800);
+        writeln('✅ Project chart data refreshed');
+    } catch (\Throwable $exception) {
+        writeln('⚠️  app:refresh-project-chart-data failed; projects are refreshed again as their counts change.');
+        writeln('   '.$exception->getMessage());
+    }
+});
+
+/*
  * =============================================================================
  * SUPERVISOR PROCESS MANAGEMENT
  * =============================================================================

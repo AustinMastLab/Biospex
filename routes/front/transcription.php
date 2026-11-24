@@ -19,6 +19,7 @@
  */
 
 // Project Transcriptions
-use App\Http\Controllers\Front\TranscriptionController;
+use App\Http\Controllers\Front\ProjectDigitizationController;
 
-Route::get('projects/{project}/transcriptions/{year}', TranscriptionController::class)->name('front.projects.transcriptions');
+Route::get('projects/{project}/digitizations/{year}', ProjectDigitizationController::class)->name('front.projects.digitizations')
+    ->whereNumber('year');

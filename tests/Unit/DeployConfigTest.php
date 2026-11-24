@@ -54,6 +54,17 @@ it('stores the participant and state counts after the caches are cleared and the
         ->and($order['artisan:app:update-participant-counts'])->toBeGreaterThan($order['artisan:responsecache:clear']);
 });
 
+it('refreshes the Digitizations chart data once the release is live', function () {
+    $contents = file_get_contents(base_path('deploy.php'));
+
+    preg_match("/task\\('deploy', \\[(.*?)\\]\\);/s", $contents, $matches);
+    preg_match_all("/'([a-z:_-]+)',/", $matches[1], $tasks);
+    $order = array_flip($tasks[1]);
+
+    expect($order)->toHaveKey('artisan:app:refresh-project-chart-data')
+        ->and($order['artisan:app:refresh-project-chart-data'])->toBeGreaterThan($order['deploy:publish']);
+});
+
 it('uses the shared deploy tasks and reloads only its own Supervisor group', function () {
     $deploy = file_get_contents(base_path('deploy.php'));
     $custom = file_get_contents(base_path('deploy/custom.php'));

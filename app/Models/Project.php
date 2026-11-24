@@ -145,14 +145,6 @@ class Project extends BaseEloquentModel
     }
 
     /**
-     * AmChart relation.
-     */
-    public function amChart(): HasOne
-    {
-        return $this->hasOne(AmChart::class);
-    }
-
-    /**
      * Bingos relation.
      */
     public function bingos(): HasMany

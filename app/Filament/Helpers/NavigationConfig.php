@@ -27,7 +27,6 @@ class NavigationConfig
         'App\Filament\Resources\ActorExpeditions\ActorExpeditionResource' => ['group' => 'Secondary'],
         'App\Filament\Resources\Actors\ActorResource' => ['group' => 'Secondary'],
         'App\Filament\Resources\ActorWorkflows\ActorWorkflowResource' => ['group' => 'Secondary'],
-        'App\Filament\Resources\AmCharts\AmChartResource' => ['group' => 'Secondary'],
         'App\Filament\Resources\ApiTokens\ApiTokenResource' => ['group' => 'Secondary'],
         'App\Filament\Resources\Bingos\BingoResource' => ['group' => 'Secondary'],
         'App\Filament\Resources\BingoUsers\BingoUserResource' => ['group' => 'Secondary'],

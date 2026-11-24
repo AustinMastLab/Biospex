@@ -27,14 +27,11 @@
                 <hr>
                 @if(isset($transcriptions))
                     <div class="row card-body">
-                        <div id="statDiv" style="width: 100%; height: 600px; color: #000000; font-size: 0.8em"></div>
-
-                        <p id="statDiv-desc" class="sr-only">
-                            Bar chart showing digitizations and the number of participants per digitization count.
-                            A table with the same values follows.
-                        </p>
-
-                        <div id="statDiv-a11y-table" class="sr-only" aria-describedby="statDiv-desc"></div>
+                        <div id="statDiv" aria-hidden="true" style="width: 100%; height: 600px"></div>
+                        <details class="mt-3 w-100">
+                            <summary>{{ t('Digitizations data table') }}</summary>
+                            <div id="statDiv-table" class="mt-2"></div>
+                        </details>
                     </div>
                 @else
                     <p class="text-center">{{ t('No digitizations exist.') }}</p>
@@ -45,7 +42,6 @@
 @endsection
 @push('scripts')
     @if(isset($transcriptions))
-        @include('common.amchart')
-        @vite('resources/js/amChartStat-entry.js')
+        @vite('resources/js/charts/stat-chart.js')
     @endif
 @endpush

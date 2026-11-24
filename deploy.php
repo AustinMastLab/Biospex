@@ -134,6 +134,7 @@ task('deploy', [
     'deploy:publish',          // <--- SYMLINK SWITCHES HERE
     'artisan:responsecache:clear', // Drop pages cached by the old release, which name its asset files
     'artisan:app:update-participant-counts', // Store the counts cache:clear emptied, so first page visits are fast
+    'artisan:app:refresh-project-chart-data', // Bring the Digitizations chart data up to date
 
     // Phase 7: Supervisor and long-running processes, after the symlink switch,
     // so Supervisor starts them from the new release instead of the one being

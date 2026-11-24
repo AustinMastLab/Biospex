@@ -16,8 +16,7 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// AmChart Stat Entry Point - Import jQuery before executing chart code
+// Bingo card entry point: jQuery first, then the card and its map
 import "./jquery-global.js";
 
-// Import the original amChart file
-import "./amChartStat.js";
+import "./bingo.js";

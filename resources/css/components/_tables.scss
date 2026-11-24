@@ -43,6 +43,8 @@ table.data-table tbody a:focus {
   width: 100%;
   max-height: 22rem;
   overflow-y: auto;
+  // Wide tables (a column per team or expedition) scroll sideways too.
+  overflow-x: auto;
 
   table.data-table {
     margin-bottom: 0;

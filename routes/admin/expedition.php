@@ -29,17 +29,13 @@ Route::resource('expeditions', ExpeditionController::class)->except(['create', '
     'edit' => 'admin.expeditions.edit',
     'update' => 'admin.expeditions.update',
     'destroy' => 'admin.expeditions.delete',
-])->middlewareFor('edit', 'doNotCacheResponse');
+]);
 
-// The expedition forms are never served from the response cache: each visit starts a new subject selection
-// (App\Livewire\Admin\SubjectGrid), and a cached page would bring back an old one.
-Route::get('expeditions/{project}/create', [ExpeditionController::class, 'create'])->name('admin.expeditions.create')
-    ->middleware('doNotCacheResponse');
+Route::get('expeditions/{project}/create', [ExpeditionController::class, 'create'])->name('admin.expeditions.create');
 Route::post('expeditions/{project}/store', [ExpeditionController::class, 'store'])->name('admin.expeditions.store');
 
 // # New
-Route::get('expeditions/{expedition}/clone', ExpeditionCloneController::class)->name('admin.expeditions.clone')
-    ->middleware('doNotCacheResponse');
+Route::get('expeditions/{expedition}/clone', ExpeditionCloneController::class)->name('admin.expeditions.clone');
 Route::get('expeditions/{expedition}/tools', ExpeditionToolController::class)->name('admin.expeditions.tools');
 
 Route::match(['get', 'post'], 'expeditions/{expedition}/export', ExpeditionExportController::class)

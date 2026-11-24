@@ -21,6 +21,7 @@
 namespace App\Models;
 
 use App\Presenters\WeDigBioDatePresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -31,7 +32,7 @@ use Illuminate\Database\Eloquent\Relations\HasMany;
  */
 class WeDigBioEvent extends BaseEloquentModel
 {
-    use HasFactory, Presentable, UuidTrait;
+    use ClearsResponseCache, HasFactory, Presentable, UuidTrait;
 
     protected $table = 'wedigbio_events';
 

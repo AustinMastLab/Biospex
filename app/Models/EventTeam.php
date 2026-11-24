@@ -21,16 +21,20 @@
 namespace App\Models;
 
 use App\Presenters\EventTeamPresenter;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
+use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 /**
  * Class EventTeam
  */
 class EventTeam extends BaseEloquentModel
 {
-    use HasFactory, Presentable, UuidTrait;
+    use ClearsResponseCache, HasFactory, Presentable, UuidTrait;
 
     /**
      * {@inheritDoc}
@@ -77,7 +81,7 @@ class EventTeam extends BaseEloquentModel
     /**
      * Event relationship.
      */
-    public function event(): \Illuminate\Database\Eloquent\Relations\BelongsTo
+    public function event(): BelongsTo
     {
         return $this->belongsTo(Event::class);
     }
@@ -85,7 +89,7 @@ class EventTeam extends BaseEloquentModel
     /**
      * EventUser relationship.
      */
-    public function users(): \Illuminate\Database\Eloquent\Relations\BelongsToMany
+    public function users(): BelongsToMany
     {
         return $this->belongsToMany(EventUser::class, 'event_team_user', 'team_id', 'user_id');
     }
@@ -93,7 +97,7 @@ class EventTeam extends BaseEloquentModel
     /**
      * Event transcription relationship.
      */
-    public function transcriptions(): \Illuminate\Database\Eloquent\Relations\HasMany
+    public function transcriptions(): HasMany
     {
         return $this->hasMany(EventTranscription::class, 'team_id');
     }

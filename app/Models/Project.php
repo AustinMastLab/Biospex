@@ -24,6 +24,7 @@ use App\Facades\DateHelper;
 use App\Presenters\ProjectPresenter;
 use App\Services\Helpers\GeneralService;
 use App\Services\Html\RichTextSanitizer;
+use App\Traits\ClearsResponseCache;
 use App\Traits\Presentable;
 use App\Traits\UuidTrait;
 use Illuminate\Database\Eloquent\Builder;
@@ -43,7 +44,7 @@ use Str;
  */
 class Project extends BaseEloquentModel
 {
-    use HasFactory, Presentable, UuidTrait;
+    use ClearsResponseCache, HasFactory, Presentable, UuidTrait;
 
     /**
      * @var string

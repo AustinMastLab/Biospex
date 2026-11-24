@@ -28,6 +28,8 @@ Route::resource('events', EventController::class)->only(['index', 'show'])->name
     'show' => 'front.events.show',
 ]);
 
-// Event scoreboard and rate chart used for both front and admin
-Route::get('event/{event}/scoreboard', EventScoreboardController::class)->name('event.get.scoreboard');
-Route::get('event/{event}/rate/{timestamp?}', EventRateChartController::class)->name('event.get.rate');
+// Event scoreboard and rate chart used for both front and admin; live figures, never served from the response cache.
+Route::get('event/{event}/scoreboard', EventScoreboardController::class)->name('event.get.scoreboard')
+    ->middleware('doNotCacheResponse');
+Route::get('event/{event}/rate/{timestamp?}', EventRateChartController::class)->name('event.get.rate')
+    ->middleware('doNotCacheResponse');

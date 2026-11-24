@@ -36,7 +36,6 @@ class PhpVarsComposer
     public function compose(View $view)
     {
         JavaScript::put([
-            'imagePreviewPath' => '/admin/images/preview?url=',
             'habitatBannersPath' => '/images/habitat-banners/',
         ]);
 

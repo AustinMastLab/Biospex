@@ -1,3 +1,5 @@
+<?php
+
 /*
  * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
@@ -16,12 +18,25 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-/**
- * Register free-jqGrid on the global jQuery.
- *
- * As a CommonJS module, jqGrid exports a setup function instead of registering itself, so importing it isn't
- * enough: the function has to be called with the window and the jQuery to extend.
- */
-import setUpJqGrid from "free-jqgrid/js/jquery.jqgrid.min";
+namespace App\Models;
 
-setUpJqGrid(window, window.jQuery);
+use Illuminate\Database\Eloquent\Model;
+
+/**
+ * A user's chosen subject grid columns, in display order, for one project.
+ */
+class SubjectGridColumn extends Model
+{
+    protected $fillable = [
+        'user_id',
+        'project_id',
+        'columns',
+    ];
+
+    protected function casts(): array
+    {
+        return [
+            'columns' => 'array',
+        ];
+    }
+}

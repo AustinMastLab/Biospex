@@ -23,10 +23,10 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Jobs\DeleteUnassignedSubjectsJob;
 use App\Models\Project;
-use App\Services\JavascriptService;
 use App\Services\Permission\CheckPermission;
 use App\Services\Project\ProjectService;
 use Auth;
+use Illuminate\Http\RedirectResponse;
 use Redirect;
 use Throwable;
 use View;
@@ -38,21 +38,18 @@ class ProjectSubjectController extends Controller
      */
     public function __construct(
         protected ProjectService $projectService,
-        protected JavascriptService $javascriptService,
     ) {}
 
     /**
      * Display project explore page.
      */
-    public function index(Project $project): \Illuminate\View\View|\Illuminate\Http\RedirectResponse
+    public function index(Project $project): \Illuminate\View\View|RedirectResponse
     {
         $project->load(['group', 'expeditionStats']);
 
         if (! CheckPermission::handle('readProject', $project->group)) {
             return Redirect::route('admin.projects.index');
         }
-
-        $this->javascriptService->projectExplore($project);
 
         $subjectAssignedCount = $project->expeditionStats->sum('local_subject_count');
 
@@ -62,7 +59,7 @@ class ProjectSubjectController extends Controller
     /**
      * Delete all unassigned subjects for project.
      */
-    public function destroy(Project $project): \Illuminate\Http\RedirectResponse
+    public function destroy(Project $project): RedirectResponse
     {
         try {
             DeleteUnassignedSubjectsJob::dispatch(Auth::user(), $project);

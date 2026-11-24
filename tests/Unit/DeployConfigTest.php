@@ -42,6 +42,18 @@ it('restarts long-running processes after the release is published', function (s
     'Panoptes listener' => 'supervisor:restart-panoptes-listener',
 ]);
 
+it('stores the participant and state counts after the caches are cleared and the release is live', function () {
+    $contents = file_get_contents(base_path('deploy.php'));
+
+    preg_match("/task\\('deploy', \\[(.*?)\\]\\);/s", $contents, $matches);
+    preg_match_all("/'([a-z:_-]+)',/", $matches[1], $tasks);
+    $order = array_flip($tasks[1]);
+
+    expect($order)->toHaveKey('artisan:app:update-participant-counts')
+        ->and($order['artisan:app:update-participant-counts'])->toBeGreaterThan($order['artisan:cache:clear'])
+        ->and($order['artisan:app:update-participant-counts'])->toBeGreaterThan($order['artisan:responsecache:clear']);
+});
+
 it('uses the shared deploy tasks and reloads only its own Supervisor group', function () {
     $deploy = file_get_contents(base_path('deploy.php'));
     $custom = file_get_contents(base_path('deploy/custom.php'));

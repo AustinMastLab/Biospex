@@ -26,8 +26,3 @@ import "./admin.js";
 import "./admin-modals.js";
 import "./confirm-dialog.js";
 
-// The subjects grid (jqGrid and jQuery UI) is only loaded on the pages that have one. Summernote and the date
-// picker are loaded by admin.js in the same way.
-if (document.getElementById('jqGridTable')) {
-    import("./admin-grid.js");
-}

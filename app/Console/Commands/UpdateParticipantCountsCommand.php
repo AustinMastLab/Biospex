@@ -21,6 +21,7 @@
 namespace App\Console\Commands;
 
 use App\Services\Transcriptions\PanoptesTranscriptionService;
+use App\Services\Transcriptions\StateCountyService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Log;
 use Throwable;
@@ -39,29 +40,51 @@ class UpdateParticipantCountsCommand extends Command
      *
      * @var string
      */
-    protected $description = 'Count each project\'s participants again for the statistics pages, which otherwise keep the counts from the last deploy.';
+    protected $description = 'Count each project\'s participants and per-state transcriptions again, for the statistics and public project pages, which otherwise keep the counts from the last deploy.';
 
     /**
      * Execute the console command.
      */
-    public function handle(PanoptesTranscriptionService $panoptesTranscriptionService): int
+    public function handle(PanoptesTranscriptionService $panoptesTranscriptionService, StateCountyService $stateCountyService): int
+    {
+        $participantsFailed = $this->refreshEach(
+            $panoptesTranscriptionService->getTranscribedProjectIds(),
+            fn (int $projectId) => $panoptesTranscriptionService->refreshProjectParticipants($projectId),
+            'participant counts'
+        );
+
+        $statesFailed = $this->refreshEach(
+            $stateCountyService->getLocatedProjectIds(),
+            fn (int $projectId) => $stateCountyService->refreshStateTranscriptCount($projectId),
+            'state counts'
+        );
+
+        return $participantsFailed + $statesFailed === 0 ? self::SUCCESS : self::FAILURE;
+    }
+
+    /**
+     * Refresh each project, keep going past failures (a failed project keeps its previously stored counts) and
+     * return how many failed.
+     *
+     * @param  array<int, int>  $projectIds
+     * @param  callable(int): void  $refresh
+     */
+    private function refreshEach(array $projectIds, callable $refresh, string $what): int
     {
         $failed = 0;
-        $projectIds = $panoptesTranscriptionService->getTranscribedProjectIds();
 
         foreach ($projectIds as $projectId) {
             try {
-                $panoptesTranscriptionService->refreshProjectParticipants($projectId);
+                $refresh($projectId);
             } catch (Throwable $exception) {
-                // Keep going: the project keeps its previously stored counts.
                 $failed++;
-                Log::error('Participant counts failed for project '.$projectId.': '.$exception->getMessage());
+                Log::error(ucfirst($what).' failed for project '.$projectId.': '.$exception->getMessage());
                 $this->error(sprintf('Project %d: %s', $projectId, $exception->getMessage()));
             }
         }
 
-        $this->info(sprintf('Updated participant counts for %d of %d projects.', count($projectIds) - $failed, count($projectIds)));
+        $this->info(sprintf('Updated %s for %d of %d projects.', $what, count($projectIds) - $failed, count($projectIds)));
 
-        return $failed === 0 ? self::SUCCESS : self::FAILURE;
+        return $failed;
     }
 }

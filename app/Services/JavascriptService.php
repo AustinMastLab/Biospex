@@ -20,102 +20,12 @@
 
 namespace App\Services;
 
-use App\Models\Expedition;
-use App\Models\Project;
-use App\Services\Grid\JqGridEncoder;
-use App\Services\Workflow\WorkflowService;
 use Laracasts\Utilities\JavaScript\Transformers\Transformer as Javascript;
 
+/**
+ * Puts values on the page for scripts (window.Laravel), for example the project statistics chart data.
+ */
 class JavascriptService
 {
-    private string $model;
-
-    /**
-     * JavascriptService constructor.
-     */
-    public function __construct(
-        public Javascript $javascript,
-        protected JqGridEncoder $jqGridEncoder,
-        protected WorkflowService $workflowService
-    ) {}
-
-    /**
-     * Set model.
-     */
-    private function setModel(Project $project, ?string $route = null): void
-    {
-        $this->model = $this->jqGridEncoder->loadGridModel($project->id, $route);
-    }
-
-    /**
-     * Explore project.
-     */
-    public function projectExplore(Project $project): void
-    {
-        $this->setModel($project);
-
-        $this->javascript->put([
-            'model' => $this->model,
-            'subjectIds' => [],
-            'maxCount' => config('config.expedition_size'),
-            'dataUrl' => route('admin.grids.project.index', [$project]),
-            'exportUrl' => route('admin.grids.projects.export', [$project]),
-            'checkbox' => false,
-            'route' => 'explore', // used for export
-        ]);
-    }
-
-    /**
-     * Create expedition.
-     */
-    public function expeditionCreate(Project $project): void
-    {
-        $this->setModel($project, 'create');
-
-        $this->javascript->put([
-            'model' => $this->model,
-            'subjectIds' => [],
-            'maxCount' => config('config.expedition_size'),
-            'dataUrl' => route('admin.grids.expeditions.create', [$project]),
-            'exportUrl' => route('admin.grids.projects.export', [$project]),
-            'checkbox' => true,
-            'route' => 'create', // used for export and create
-        ]);
-    }
-
-    /**
-     * Show expedition.
-     */
-    public function expeditionShow(Expedition $expedition): void
-    {
-        $this->setModel($expedition->project);
-
-        $this->javascript->put([
-            'model' => $this->model,
-            'subjectIds' => [],
-            'maxCount' => config('config.expedition_size'),
-            'dataUrl' => route('admin.grids.expeditions.show', [$expedition]),
-            'exportUrl' => route('admin.grids.expeditions.export', [$expedition]),
-            'checkbox' => false,
-            'route' => 'show', // used for export
-        ]);
-    }
-
-    /**
-     * Edit expedition.
-     */
-    public function expeditionEdit(Expedition $expedition, array $subjectIds): void
-    {
-        $this->setModel($expedition->project, 'edit');
-
-        $this->javascript->put([
-            'model' => $this->model,
-            'subjectIds' => $subjectIds,
-            'maxCount' => config('config.expedition_size'),
-            'dataUrl' => route('admin.grids.expeditions.edit', [$expedition]),
-            'exportUrl' => route('admin.grids.expeditions.export', [$expedition]),
-            'checkbox' => $expedition->workflowManager === null,
-            'route' => 'edit', // used for export
-        ]);
-    }
+    public function __construct(public Javascript $javascript) {}
 }

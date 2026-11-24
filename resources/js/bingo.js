@@ -1,59 +1,30 @@
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
- * // ... existing header ...
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
+
+import {createBingoMap} from './charts/bingo-map.js';
 
 $(function () {
 
-    // Create map instance
-    let chart = am4core.create("bingodiv", am4maps.MapChart);
-
-    // Keep the map out of the tab order (amCharts may inject focusable elements)
-    makeMapNotTabbable(chart);
-
-    // Set map definition
-    chart.geodata = am4geodata_worldLow;
-
-    // Set projection
-    chart.projection = new am4maps.projections.Miller();
-
-    // Create map polygon series
-    let polygonSeries = chart.series.push(new am4maps.MapPolygonSeries());
-
-    // Make map load polygon (like country names) data from GeoJSON
-    polygonSeries.useGeodata = true;
-
-    // Configure series
-    let polygonTemplate = polygonSeries.mapPolygons.template;
-    polygonTemplate.tooltipText = "{name}";
-    polygonTemplate.fill = am4core.color("#74B266");
-
-    // Create hover state and set alternative fill color
-    let hs = polygonTemplate.states.create("hover");
-    hs.properties.fill = am4core.color("#367B25");
-
-    // Remove Antarctica
-    polygonSeries.exclude = ["AQ"];
-
-    // Create image series
-    let imageSeries = chart.series.push(new am4maps.MapImageSeries());
-
-    let imageSeriesTemplate = imageSeries.mapImages.template;
-    let marker = imageSeriesTemplate.createChild(am4core.Image);
-    marker.href = "https://s3-us-west-2.amazonaws.com/s.cdpn.io/t-160/marker.svg";
-    marker.width = 20;
-    marker.height = 20;
-    marker.nonScaling = true;
-    marker.tooltipText = "{city}";
-    marker.horizontalCenter = "middle";
-    marker.verticalCenter = "bottom";
-
-    // Set property fields
-    imageSeriesTemplate.propertyFields.latitude = "latitude";
-    imageSeriesTemplate.propertyFields.longitude = "longitude";
-    imageSeries.data = JSON.parse(Laravel.bingoUserData);
+    // Where the players are; a player who joins is added as they arrive (BingoEvent below).
+    const mapReady = createBingoMap(document.getElementById('bingodiv'), JSON.parse(Laravel.bingoUserData), {
+        list: document.getElementById('bingo-players'),
+        count: document.getElementById('bingo-players-count'),
+    });
 
     Echo.channel(Laravel.channel)
         .listen('BingoEvent', (e) => {
@@ -65,8 +36,7 @@ $(function () {
                 return;
             }
 
-            // imageSeries.addData(item.value);
-            imageSeries.addData(data.marker);
+            mapReady.then((map) => map.addPlayer(marker));
 
             if (winner === null) {
                 return;
@@ -131,7 +101,6 @@ $(function () {
         $(this).trigger('click');
     });
 
-    // ... existing code ...
 });
 
 function showWinnerModal($bingoRows, msg, owner = false) {
@@ -189,31 +158,4 @@ function initBingoCellTabOrder($bingoRows) {
 
     // Ensure the logo is not tabbable
     $bingoRows.find('.square.logo').removeAttr('tabindex').removeAttr('role').removeAttr('aria-pressed');
-}
-
-function makeMapNotTabbable(chart) {
-    const mapEl = document.getElementById('bingodiv');
-    if (!mapEl) {
-        return;
-    }
-
-    // Container itself should not be in tab order
-    mapEl.setAttribute('tabindex', '-1');
-
-    // amCharts chart container element can be focusable; remove it from tab order
-    if (chart && chart.chartContainer && chart.chartContainer.htmlElement) {
-        chart.chartContainer.htmlElement.setAttribute('tabindex', '-1');
-    }
-
-    // amCharts may insert SVG elements with tabindex="0"; neutralize them as they appear
-    const stripTabindex = () => {
-        mapEl.querySelectorAll('[tabindex]').forEach((node) => {
-            node.setAttribute('tabindex', '-1');
-        });
-    };
-
-    stripTabindex();
-
-    const observer = new MutationObserver(() => stripTabindex());
-    observer.observe(mapEl, { childList: true, subtree: true });
 }

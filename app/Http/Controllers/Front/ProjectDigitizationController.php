@@ -18,28 +18,20 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-namespace App\Filament\Resources\AmCharts\Schemas;
+namespace App\Http\Controllers\Front;
 
-use App\Filament\Components\JsonEditor;
-use Filament\Forms\Components\Select;
-use Filament\Forms\Components\TextInput;
-use Filament\Schemas\Schema;
+use App\Http\Controllers\Controller;
+use App\Models\Project;
+use App\Services\Chart\ProjectTranscriptionChart;
+use Illuminate\Http\JsonResponse;
 
-class AmChartForm
+class ProjectDigitizationController extends Controller
 {
-    public static function configure(Schema $schema): Schema
+    /**
+     * A year of the project's Digitizations chart in a neutral shape: the days and each expedition's running totals.
+     */
+    public function __invoke(Project $project, int $year, ProjectTranscriptionChart $chart): JsonResponse
     {
-        return $schema
-            ->components([
-                Select::make('project_id')
-                    ->relationship('project', 'title')
-                    ->required(),
-                TextInput::make('queued')
-                    ->required()
-                    ->numeric()
-                    ->default(0),
-                JsonEditor::make('series'),
-                JsonEditor::make('data'),
-            ]);
+        return response()->json($chart->year($project, $year));
     }
 }

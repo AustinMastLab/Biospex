@@ -27,8 +27,7 @@
 @endsection
 
 @push('scripts')
-    @include('common.amchart')
-    @vite('resources/js/amChartEventRate-entry.js')
+    @vite('resources/js/charts/event-rate-chart.js')
     <script>
         let eventConfetti;
         document.addEventListener('livewire:init', () => {

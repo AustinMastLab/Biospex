@@ -21,10 +21,10 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
+use App\Services\Chart\ProjectTranscriptionChart;
 use App\Services\Project\ProjectService;
 use App\Services\Transcriptions\StateCountyService;
 use Illuminate\Http\RedirectResponse;
-use JavaScript;
 use Redirect;
 use View;
 
@@ -38,7 +38,8 @@ class ProjectController extends Controller
      */
     public function __construct(
         protected ProjectService $projectService,
-        protected StateCountyService $stateCountyService) {}
+        protected StateCountyService $stateCountyService,
+        protected ProjectTranscriptionChart $projectTranscriptionChart) {}
 
     /**
      * Public Projects page.
@@ -59,19 +60,10 @@ class ProjectController extends Controller
             return Redirect::route('front.projects.index')->with('danger', t('Unable to locate project. Please alert the Admin.'));
         }
 
-        $years = ! isset($project->amChart) || is_null($project->amChart->data) ?
-            null : array_keys($project->amChart->data);
+        // The Digitizations chart's years; no years means no charts (Digitizations and the heat map).
+        $years = $this->projectTranscriptionChart->years($project) ?: null;
+        $states = $years === null ? collect() : $this->stateCountyService->getStateTranscriptCount($project->id);
 
-        $states = $this->stateCountyService->getStateTranscriptCount($project->id);
-        $max = abs(round(($states->max('value') + 500), -3));
-
-        JavaScript::put([
-            'max' => $max,
-            'states' => $states->toJson(),
-            'years' => $years,
-            'project' => $project->id,
-        ]);
-
-        return View::make('front.project.home', compact('project', 'years'));
+        return View::make('front.project.home', compact('project', 'years', 'states'));
     }
 }

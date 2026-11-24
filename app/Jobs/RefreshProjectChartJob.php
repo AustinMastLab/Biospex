@@ -1,7 +1,7 @@
 <?php
 
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -23,17 +23,20 @@ namespace App\Jobs;
 use App\Models\Project;
 use App\Models\User;
 use App\Notifications\Generic;
-use App\Services\Chart\TranscriptionChartService;
+use App\Services\Chart\ProjectTranscriptionChart;
 use Illuminate\Bus\Queueable;
 use Illuminate\Contracts\Queue\ShouldQueue;
 use Illuminate\Foundation\Bus\Dispatchable;
 use Illuminate\Queue\InteractsWithQueue;
 use Illuminate\Queue\SerializesModels;
+use Spatie\ResponseCache\Facades\ResponseCache;
+use Throwable;
 
 /**
- * Class AmChartJob
+ * Brings a project's Digitizations chart data up to date (from the last stored day) after its expeditions'
+ * classification counts change, and clears the cached public pages that show it.
  */
-class AmChartJob implements ShouldQueue
+class RefreshProjectChartJob implements ShouldQueue
 {
     use Dispatchable, InteractsWithQueue, Queueable, SerializesModels;
 
@@ -42,32 +45,25 @@ class AmChartJob implements ShouldQueue
      */
     public int $timeout = 300;
 
-    /**
-     * AmChartJob constructor.
-     */
     public function __construct(protected Project $project)
     {
         $this->project = $project->withoutRelations();
         $this->onQueue(config('config.queue.chart'));
     }
 
-    /**
-     * Handle job.
-     */
-    public function handle(TranscriptionChartService $service): void
+    public function handle(ProjectTranscriptionChart $chart): void
     {
-        $service->process($this->project);
+        $chart->refresh($this->project);
 
-        $this->delete();
+        if (config('responsecache.enabled')) {
+            ResponseCache::clear();
+        }
     }
 
-    /**
-     * Handle a job failure.
-     */
-    public function failed(\Throwable $throwable): void
+    public function failed(Throwable $throwable): void
     {
         $attributes = [
-            'subject' => t('AmChartJob failed'),
+            'subject' => t('RefreshProjectChartJob failed'),
             'html' => [
                 t('File: %s', $throwable->getFile()),
                 t('Line: %s', $throwable->getLine()),
@@ -75,7 +71,6 @@ class AmChartJob implements ShouldQueue
             ],
         ];
 
-        $user = User::find(config('config.admin.user_id'));
-        $user->notify(new Generic($attributes));
+        User::find(config('config.admin.user_id'))?->notify(new Generic($attributes));
     }
 }

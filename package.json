@@ -6,7 +6,7 @@
     "build": "vite build"
   },
   "devDependencies": {
-    "autoprefixer": "^10.4.2",
+    "autoprefixer": "^10.7.0",
     "bootstrap": "^4.6.2",
     "confetti-js": "^0.0.18",
     "hamburgers": "^1.2.1",
@@ -19,11 +19,11 @@
     "vite": "^8.3.5"
   },
   "dependencies": {
-    "@tiptap/core": "^3.34.0",
-    "@tiptap/extension-subscript": "^3.34.0",
-    "@tiptap/extension-superscript": "^3.34.0",
-    "@tiptap/pm": "^3.34.0",
-    "@tiptap/starter-kit": "^3.34.0",
+    "@tiptap/core": "^3.35.0",
+    "@tiptap/extension-subscript": "^3.35.0",
+    "@tiptap/extension-superscript": "^3.35.0",
+    "@tiptap/pm": "^3.35.0",
+    "@tiptap/starter-kit": "^3.35.0",
     "axios": "^1.20.0",
     "d3-geo": "^3.1.2",
     "d3-geo-projection": "^4.0.0",

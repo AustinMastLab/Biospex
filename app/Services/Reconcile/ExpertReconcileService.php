@@ -26,10 +26,11 @@ use App\Services\Csv\AwsS3CsvService;
 use App\Services\Subject\SubjectService;
 use Exception;
 use File;
+use Illuminate\Config\Repository;
+use Illuminate\Contracts\Foundation\Application;
 use Illuminate\Contracts\Pagination\LengthAwarePaginator;
 use Illuminate\Support\Collection;
 use Storage;
-use Validator;
 
 /**
  * Class ExpertReconcileService
@@ -37,7 +38,7 @@ use Validator;
 class ExpertReconcileService
 {
     /**
-     * @var \Illuminate\Config\Repository|\Illuminate\Contracts\Foundation\Application|mixed
+     * @var Repository|Application|mixed
      */
     private mixed $problemRegex;
 
@@ -57,7 +58,7 @@ class ExpertReconcileService
      *
      * Transcription fields are encoded to prevent field name errors while saving to db.
      *
-     * @throws \League\Csv\Exception|\Exception
+     * @throws \League\Csv\Exception|Exception
      */
     public function migrateReconcileCsv(string $expeditionId): void
     {
@@ -155,7 +156,7 @@ class ExpertReconcileService
     /**
      * Set problem columns in reconcile documents.
      *
-     * @throws \League\Csv\Exception|\Exception
+     * @throws \League\Csv\Exception|Exception
      */
     public function setReconcileProblems(int $expeditionId): void
     {
@@ -207,16 +208,13 @@ class ExpertReconcileService
     }
 
     /**
-     * Validate transcription to prevent duplicates.
+     * Whether the subject's reconcile record is already stored, to prevent duplicates.
+     *
+     * Queried directly: subject ids are stored as integers, and since Laravel 13.43 the unique validation rule
+     * compares as strings, so it never found an existing one.
      */
     private function validateReconcile($subject_id): bool
     {
-        $rules = ['subject_id' => 'unique:mongodb.reconciles,subject_id'];
-        $values = ['subject_id' => (int) $subject_id];
-        $validator = Validator::make($values, $rules);
-        $validator->getPresenceVerifier()->setConnection('mongodb');
-
-        // returns true if record exists.
-        return $validator->fails();
+        return $this->reconcile->where('subject_id', (int) $subject_id)->exists();
     }
 }

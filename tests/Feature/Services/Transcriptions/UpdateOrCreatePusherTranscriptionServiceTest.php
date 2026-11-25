@@ -122,3 +122,11 @@ it('fills in the expedition for a classification the live listener recorded with
 
     expect(PusherTranscription::where('classification_id', 778691035)->sole()->expedition_uuid)->toBe((string) $this->expedition->uuid);
 });
+
+it('finds a classification already stored, whether its id comes as a number or as text', function () {
+    liveTranscription();
+
+    expect($this->service->validateTranscription(778691035))->toBeTrue()
+        ->and($this->service->validateTranscription('778691035'))->toBeTrue()
+        ->and($this->service->validateTranscription(778691036))->toBeFalse();
+});

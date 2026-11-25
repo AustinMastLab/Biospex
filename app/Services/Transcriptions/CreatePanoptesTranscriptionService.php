@@ -21,13 +21,13 @@
 namespace App\Services\Transcriptions;
 
 use App\Facades\TranscriptionMapHelper;
+use App\Models\PanoptesTranscription;
 use App\Services\Csv\AwsS3CsvService;
 use App\Services\Process\CreateReportService;
 use App\Services\Subject\SubjectService;
 use League\Csv\CannotInsertRecord;
 use Str;
 use Throwable;
-use Validator;
 
 /**
  * Class CreatePanoptesTranscriptionService
@@ -136,17 +136,14 @@ class CreatePanoptesTranscriptionService
     }
 
     /**
-     * Validate transcription to prevent duplicates.
+     * Whether the classification is already stored, to prevent duplicates.
+     *
+     * Queried directly: the classification ids are stored as integers, and since Laravel 13.43 the unique validation
+     * rule compares as strings, so it never found an existing one.
      */
-    public function validateTranscription($classification_id): mixed
+    public function validateTranscription($classification_id): bool
     {
-        $rules = ['classification_id' => 'unique:mongodb.panoptes_transcriptions,classification_id'];
-        $values = ['classification_id' => (int) $classification_id];
-        $validator = Validator::make($values, $rules);
-        $validator->getPresenceVerifier()->setConnection('mongodb');
-
-        // returns true if record exists.
-        return $validator->fails();
+        return PanoptesTranscription::where('classification_id', (int) $classification_id)->exists();
     }
 
     /**

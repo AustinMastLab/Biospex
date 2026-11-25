@@ -173,7 +173,7 @@
             <div class="col-sm-10 mx-auto mt-5">
                 <h2 class="text-center content-header text-uppercase mt-5"
                     id="digitizations">{{ t('Digitizations') }}</h2>
-                <div class="text-center mt-4 mb-4">
+                <div class="year-buttons mt-4 mb-4">
                     @foreach($years as $year)
                         <button type="button" class="btn btn-primary btn-transcription" aria-pressed="false"
                                 data-digitizations-year="{{ $year }}">{{ $year }}</button>

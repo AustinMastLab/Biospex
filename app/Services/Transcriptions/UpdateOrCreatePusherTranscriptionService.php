@@ -21,7 +21,7 @@
 namespace App\Services\Transcriptions;
 
 use App\Facades\TranscriptionMapHelper;
-use Validator;
+use App\Models\PusherTranscription;
 
 /**
  * Class UpdateOrCreatePusherTranscriptionService
@@ -159,17 +159,13 @@ class UpdateOrCreatePusherTranscriptionService
     }
 
     /**
-     * Validate transcription to prevent duplicates.
+     * Whether the classification is already stored, to prevent duplicates.
+     *
+     * Queried directly: the classification ids are stored as integers, and since Laravel 13.43 the unique validation
+     * rule compares as strings, so it never found an existing one.
      */
-    public function validateTranscription($classification_id): mixed
+    public function validateTranscription($classification_id): bool
     {
-
-        $rules = ['classification_id' => 'unique:mongodb.pusher_transcriptions,classification_id'];
-        $values = ['classification_id' => $classification_id];
-        $validator = Validator::make($values, $rules);
-        $validator->getPresenceVerifier()->setConnection('mongodb');
-
-        // returns true if failed.
-        return $validator->fails();
+        return PusherTranscription::where('classification_id', (int) $classification_id)->exists();
     }
 }

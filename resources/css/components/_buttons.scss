@@ -50,6 +50,14 @@
   border-color: #1e7e34;
 }
 
+// The Digitizations year buttons: a gap between buttons and between rows when they wrap.
+.year-buttons {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: .5rem;
+}
+
 .btn-transcription-year, .btn-transcription-year:hover {
   padding: 10px 30px;
   background-color: transparent;

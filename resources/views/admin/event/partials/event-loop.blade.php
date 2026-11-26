@@ -23,9 +23,7 @@
                 <button class="btn btn-primary mb-4 text-uppercase"
                         data-remote="false"
                         data-modal-target="#scoreboard-modal"
-                        data-channel="{{ config('config.poll_scoreboard_channel') .'.'. $event->project_id }}"
-                        data-event="{{ $event->uuid }}"
-                        data-href="{{ route('event.get.scoreboard', [$event]) }}">{{ t('Scoreboard') }}
+                        data-event="{{ $event->uuid }}">{{ t('Scoreboard') }}
                 </button>
                 @if($event->teams->isNotEmpty())
                     <button class="btn btn-primary mb-4 text-uppercase"

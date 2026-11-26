@@ -18,8 +18,6 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-use App\Jobs\ScoreboardJob;
-use App\Jobs\WeDigBioEventProgressJob;
 use App\Jobs\ZooniversePusherJob;
 use App\Models\Event;
 use App\Models\EventTeam;
@@ -102,8 +100,6 @@ it('turns the last three days of reconciled transcriptions into Pusher and event
     expect(PusherTranscription::pluck('classification_id')->all())->toBe([1001])
         ->and(EventTranscription::pluck('classification_id')->all())->toBe([1001])
         ->and(WeDigBioEventTranscription::pluck('classification_id')->all())->toBe([1001]);
-    Queue::assertPushed(ScoreboardJob::class);
-    Queue::assertPushed(WeDigBioEventProgressJob::class);
 });
 
 it('records a classification once when the job runs again', function () {

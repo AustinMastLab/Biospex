@@ -24,7 +24,7 @@ use App\Models\WeDigBioEvent;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
 /**
- * @extends Factory<\App\Models\WeDigBioEvent>
+ * @extends Factory<WeDigBioEvent>
  */
 final class WeDigBioEventFactory extends Factory
 {
@@ -40,7 +40,10 @@ final class WeDigBioEventFactory extends Factory
      */
     public function definition(): array
     {
+        $slug = 'wedigbio-'.fake()->unique()->numberBetween(2015, 2099).'-'.fake()->randomElement(['spring', 'fall']);
+
         return [
+            'slug' => $slug,
             'start_date' => fake()->dateTime(),
             'end_date' => fake()->dateTime(),
             'active' => fake()->randomNumber(1),

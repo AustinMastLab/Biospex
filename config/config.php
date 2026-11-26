@@ -75,9 +75,7 @@ return [
     // Whether OCR is enabled for overnight scripts.
     'ocr_enabled' => env('OCR_ENABLED', true),
 
-    'poll_scoreboard_channel' => 'scoreboard',
     'poll_bingo_channel' => 'bingo',
-    'poll_wedigbio_progress_channel' => 'wedigbio-progress',
 
     'project_assets' => [
         'Website URL',

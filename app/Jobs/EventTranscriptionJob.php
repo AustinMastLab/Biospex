@@ -70,10 +70,7 @@ class EventTranscriptionJob implements ShouldQueue
             return;
         }
 
-        $scoreboard = $eventTranscriptionService->createEventTranscription((int) $this->data['classification_id'], $expedition->project_id, $user['login']);
-
-        if ($scoreboard) {
-            ScoreboardJob::dispatch($expedition->project_id);
-        }
+        // The scoreboard modal reads these when opened and every five minutes; nothing is broadcast per classification.
+        $eventTranscriptionService->createEventTranscription((int) $this->data['classification_id'], $expedition->project_id, $user['login']);
     }
 }

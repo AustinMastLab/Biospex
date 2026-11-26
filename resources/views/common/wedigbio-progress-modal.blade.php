@@ -1,2 +1,4 @@
-{{-- Body loaded from the trigger's data-href and kept current over Echo; see resources/js/common.js. --}}
-<x-modal id="wedigbio-progress-modal" :title="t('PROGRESS')"/>
+{{-- The body is the WeDigBioProgress Livewire component, opened by a Progress link (its data-event). --}}
+<x-modal id="wedigbio-progress-modal" :title="t('PROGRESS')">
+    @livewire('we-dig-bio-progress')
+</x-modal>

@@ -83,102 +83,27 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-// The scoreboard, WeDigBio progress and event export below still use jQuery (#664).
+// Event export (EventPresenter): ask for the export and say whether it was sent.
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('.event-export');
+    if (!link) {
+        return;
+    }
+
+    notify('info-circle', 'Request is being sent.', 'info');
+    fetch(link.dataset.href, {headers: {Accept: 'application/json', 'X-Requested-With': 'XMLHttpRequest'}})
+        .then((response) => response.json())
+        .catch(() => false)
+        .then((sent) => sent === true
+            ? notify('check-circle', link.dataset.success, 'success')
+            : notify('times-circle', link.dataset.error, 'danger'));
+});
+
+// Requests still made with jQuery (the bingo card, #665; the admin modal forms, #666) send the CSRF token.
 $(function () {
-    // Add token to any ajax requests.
     $.ajaxSetup({
         headers: {
             'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-
-    let scoreboardChannel = null;
-    $('#scoreboard-modal').on('modal:show', function (e) {
-        let $modal = $(this).find('.modal-body');
-        let $button = $(e.originalEvent.detail.relatedTarget); // Button that triggered the modal
-        let channel = $button.data('channel');
-        let eventId = $button.data('event');
-        scoreboardChannel = channel;
-
-        $modal.html('<div class="loader mx-auto"></div>');
-
-        $modal.load($button.data('href'), function () {
-            // Closed before the scoreboard arrived: don't fill it or start listening.
-            if (!$modal.closest('dialog').prop('open')) {
-                $modal.html('');
-                return;
-            }
-
-            Echo.channel(channel)
-                .listen('ScoreboardEvent', (e) => {
-                    $.each(e.data, function (id, val) {
-                        if (Number(id) === Number(eventId)) {
-                            $modal.html(val);
-                        }
-                    });
-                });
-        });
-    }).on('modal:hidden', function () {
-        $(this).find('.modal-body').html('');
-        // Stop the listener this opening added, so reopening doesn't stack them.
-        if (scoreboardChannel) {
-            Echo.channel(scoreboardChannel).stopListening('ScoreboardEvent');
-            scoreboardChannel = null;
-        }
-    });
-
-    // Used in Admin but placed in common.js because it calls notify function.
-    $('.event-export').on('click', function () {
-        let url = $(this).data('href');
-        let successMsg = $(this).data('success');
-        let errorMsg = $(this).data('error');
-        notify('info-circle', 'Request is being sent.', 'info');
-        $.get(url, function (data) {
-            let icon = data === true ? 'check-circle' : 'times-circle';
-            let msg = data === true ? successMsg : errorMsg;
-            let type = data === true ? 'success' : 'danger';
-            notify(icon, msg, type);
-        });
-    });
-
-    let progressChannel = null;
-    $('#wedigbio-progress-modal').on('modal:show', function (e) {
-        let $modal = $(this).find('.modal-body');
-        let $button = $(e.originalEvent.detail.relatedTarget); // Button that triggered the modal
-
-        let channel = $button.data('channel');
-        progressChannel = channel;
-        let uuid = $button.data('uuid');
-
-        $modal.html('<div class="loader mx-auto"></div>');
-
-        $modal.load($button.data('href'), function () {
-            // Closed before the progress arrived: don't fill it or start listening.
-            if (!$modal.closest('dialog').prop('open')) {
-                $modal.html('');
-                return;
-            }
-
-            let deadline = $modal.find('#inProgress').html(); // Sun Sep 30 2018 14:26:26 GMT-0400 (Eastern Daylight Time)
-            if (deadline === null) {
-                return;
-            }
-            // UUID is matched with the event uuid from WeDigBioEventProgressJob
-            // WeDigBioEventProgressJob called from WeDigBioTranscriptionService
-            Echo.channel(channel)
-                .listen('WeDigBioProgressEvent', (e) => {
-                    $.each(e.data, function (id, val) {
-                        if (id === uuid) {
-                            $modal.html(val);
-                        }
-                    });
-                });
-        });
-    }).on('modal:hidden', function () {
-        $(this).find('.modal-body').html('');
-        if (progressChannel) {
-            Echo.channel(progressChannel).stopListening('WeDigBioProgressEvent');
-            progressChannel = null;
         }
     });
 });

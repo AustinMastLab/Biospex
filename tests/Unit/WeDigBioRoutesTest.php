@@ -12,7 +12,6 @@ it('disables response caching for wedigbio front routes', function (string $rout
         ->and($middleware)->toContain('doNotCacheResponse');
 })->with([
     'front.wedigbio.index',
-    'front.wedigbio-progress',
     'front.get.wedigbio-rate',
     'front.get.wedigbio-projects',
 ]);

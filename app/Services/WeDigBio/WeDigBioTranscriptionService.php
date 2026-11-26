@@ -20,7 +20,6 @@
 
 namespace App\Services\WeDigBio;
 
-use App\Jobs\WeDigBioEventProgressJob;
 use App\Models\WeDigBioEvent;
 use Carbon\Carbon;
 use Illuminate\Validation\Rule;
@@ -67,9 +66,8 @@ class WeDigBioTranscriptionService
 
         $values = array_merge($attributes, ['created_at' => $timestamp->toDateTimeString(), 'updated_at' => $timestamp->toDateTimeString()]);
 
+        // The progress modal reads these when opened and every five minutes; nothing is broadcast per transcription.
         $this->weDigBioService->weDigBioEventTranscription->create($values);
-
-        WeDigBioEventProgressJob::dispatch($event);
     }
 
     /**

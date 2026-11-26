@@ -20,7 +20,6 @@
 
 use App\Http\Controllers\Front\EventController;
 use App\Http\Controllers\Front\EventRateChartController;
-use App\Http\Controllers\Front\EventScoreboardController;
 
 // Event routes: events.index, events.show
 Route::resource('events', EventController::class)->only(['index', 'show'])->names([
@@ -28,8 +27,6 @@ Route::resource('events', EventController::class)->only(['index', 'show'])->name
     'show' => 'front.events.show',
 ]);
 
-// Event scoreboard and rate chart used for both front and admin; live figures, never served from the response cache.
-Route::get('event/{event}/scoreboard', EventScoreboardController::class)->name('event.get.scoreboard')
-    ->middleware('doNotCacheResponse');
+// Event rate chart used for both front and admin; live figures, never served from the response cache.
 Route::get('event/{event}/rate/{timestamp?}', EventRateChartController::class)->name('event.get.rate')
     ->middleware('doNotCacheResponse');

@@ -24,11 +24,3 @@ Broadcast::channel(config('config.poll_bingo_channel').'.{bingo}', function (Bin
     return true;
     // return ['id' => $bingoUser->id, 'uuid' => $bingoUser->uuid];
 });
-
-Broadcast::channel(config('config.poll_scoreboard_channel').'.{project}', function () {
-    return true;
-});
-
-Broadcast::channel(config('config.poll_wedigbio_progress_channel').'.{date}', function () {
-    return true;
-});

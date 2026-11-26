@@ -12,6 +12,9 @@
     <table class="table table-striped">
         <thead>
         <tr>
+            <td colspan="3" class="color-action">{{ t('Scoreboard updates every 5 minutes.') }}</td>
+        </tr>
+        <tr>
             <th scope="col">#</th>
             <th scope="col">Team</th>
             <th scope="col">Transcriptions</th>

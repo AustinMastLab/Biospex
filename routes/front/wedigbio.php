@@ -19,17 +19,12 @@
  */
 
 use App\Http\Controllers\Front\WeDigBioController;
-use App\Http\Controllers\Front\WeDigBioProgressController;
 use App\Http\Controllers\Front\WeDigBioProjectsController;
 use App\Http\Controllers\Front\WeDigBioRateController;
 
 Route::get('wedigbio', WeDigBioController::class)
     ->middleware('doNotCacheResponse')
     ->name('front.wedigbio.index');
-
-Route::get('wedigbio/progress/{event?}', WeDigBioProgressController::class)
-    ->middleware('doNotCacheResponse')
-    ->name('front.wedigbio-progress');
 
 Route::get('wedigbio/rate/{event?}', WeDigBioRateController::class)
     ->middleware('doNotCacheResponse')

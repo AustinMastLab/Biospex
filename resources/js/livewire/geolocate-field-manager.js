@@ -46,8 +46,6 @@ export class GeolocateFieldManager {
 
         this._setupModalEventListeners();
         this._setupFormEventListeners();
-        this._setupTooltips();
-        this._setupWireClickHandlers();
 
         this.log('GeolocateFieldManager fully initialized');
     }
@@ -162,41 +160,6 @@ export class GeolocateFieldManager {
                 this.log('Could not stop Livewire:', error);
             }
         }
-    }
-
-    /**
-     * Set up tooltips
-     * @private
-     */
-    _setupTooltips() {
-        try {
-            $('[data-hover="tooltip"]').tooltip();
-            this.log('Tooltips initialized');
-        } catch (error) {
-            this._handleError('Error setting up tooltips', error);
-        }
-    }
-
-    /**
-     * Set up wire:click event handlers
-     * @private
-     */
-    _setupWireClickHandlers() {
-        const clickHandler = () => this._handleWireClick();
-
-        $(document).on('click', '[wire\\:click="addField"], [wire\\:click="removeField"]', clickHandler);
-
-        this.log('Wire click handlers set up');
-    }
-
-    /**
-     * Handle wire:click events: the add and remove buttons are re-rendered, so set up their tooltips again.
-     * @private
-     */
-    _handleWireClick() {
-        this.log('Wire click detected - refreshing tooltips');
-
-        setTimeout(() => this._setupTooltips(), 100);
     }
 
     /**

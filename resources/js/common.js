@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -19,32 +19,40 @@
 // Ensure the global Laravel object exists on every page that loads this bundle.
 window.Laravel = window.Laravel || {};
 
-$(function () {
-    // Add token to any ajax requests.
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
+// Links with .prevent-default only trigger scripts (modals, confirmations); don't follow their href.
+document.addEventListener('click', (event) => {
+    if (event.target.closest('.prevent-default')) {
+        event.preventDefault();
+    }
+});
 
-    // Remove the global aria-hidden interception / mutation-observer approach.
-    // It can introduce hard-to-debug side effects and doesn't solve the root issue (focus).
+// Open links in a configured popup window (used across front/admin).
+// Falls back to target="_blank" if window.open is blocked.
+document.addEventListener('click', (event) => {
+    const link = event.target.closest('a.js-popup-window');
+    if (!link) {
+        return;
+    }
 
-    // Set prevent default for links
-    $(document).on('click', '.prevent-default', function (e) {
-        e.preventDefault();
-    });
+    const width = Number(link.dataset.popupWidth) || 700;
+    const height = Number(link.dataset.popupHeight) || 800;
 
-    // Tooltips
-    $('[data-hover="tooltip"]').tooltip();
-    $(document).ajaxComplete(function () {
-        $('[data-hover="tooltip"]').tooltip();
-    });
+    // Try to center the popup on screen
+    const left = Math.max(0, Math.floor((window.screen.width - width) / 2));
+    const top = Math.max(0, Math.floor((window.screen.height - height) / 2));
 
-    $(".hamburger").click(function () {
-        $(this).toggleClass("is-active");
-    });
+    const popup = window.open(link.href, link.dataset.popupName || 'popup', `width=${width},height=${height},left=${left},top=${top}`);
 
+    // If the popup was created, prevent the normal navigation.
+    // If it was blocked, allow the browser to follow the link (target="_blank").
+    if (popup) {
+        event.preventDefault();
+        popup.focus();
+    }
+});
+
+// Flash messages, once the page and notify() (below) are ready.
+document.addEventListener('DOMContentLoaded', () => {
     const flashCookie = document.cookie.split('; ').find(row => row.startsWith('app_flash='));
     if (flashCookie) {
         try {
@@ -73,13 +81,15 @@ $(function () {
     if (Laravel.flashMessage && Laravel.flashMessage.length) {
         notify(Laravel.flashIcon, Laravel.flashMessage, Laravel.flashType);
     }
+});
 
-
-    $('.toggle-view-btn').on('click', function () {
-        let html = $(this).html();
-        let value = $(this).data('value');
-        $(this).html(value);
-        $(this).data('value', html);
+// The scoreboard, WeDigBio progress and event export below still use jQuery (#664).
+$(function () {
+    // Add token to any ajax requests.
+    $.ajaxSetup({
+        headers: {
+            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
+        }
     });
 
     let scoreboardChannel = null;
@@ -99,28 +109,17 @@ $(function () {
                 return;
             }
 
-            let $clock = $modal.find('.clockdiv');
-            let deadline = $modal.find('#date').html(); // Sun Sep 30 2018 14:26:26 GMT-0400 (Eastern Daylight Time)
-            if (deadline === null) {
-                return;
-            }
-            initializeClock($clock, deadline);
-
             Echo.channel(channel)
                 .listen('ScoreboardEvent', (e) => {
                     $.each(e.data, function (id, val) {
                         if (Number(id) === Number(eventId)) {
                             $modal.html(val);
-                            $clock = $modal.find('.clockdiv');
-                            deadline = $modal.find('#date').html();
-                            initializeClock($clock, deadline);
                         }
                     });
                 });
         });
     }).on('modal:hidden', function () {
         $(this).find('.modal-body').html('');
-        clearInterval(timeInterval);
         // Stop the listener this opening added, so reopening doesn't stack them.
         if (scoreboardChannel) {
             Echo.channel(scoreboardChannel).stopListening('ScoreboardEvent');
@@ -140,39 +139,6 @@ $(function () {
             let type = data === true ? 'success' : 'danger';
             notify(icon, msg, type);
         });
-    });
-
-    clockDiv();
-
-    // Open links in a configured popup window (used across front/admin).
-    // Falls back to target="_blank" if window.open is blocked.
-    $(document).on('click', 'a.js-popup-window', function (e) {
-        const $link = $(this);
-        const href = this.href;
-
-        const name = $link.data('popup-name') || 'popup';
-        const width = Number($link.data('popup-width')) || 700;
-        const height = Number($link.data('popup-height')) || 800;
-
-        // Try to center the popup on screen
-        const left = Math.max(0, Math.floor((window.screen.width - width) / 2));
-        const top = Math.max(0, Math.floor((window.screen.height - height) / 2));
-
-        const features = [
-            'width=' + width,
-            'height=' + height,
-            'left=' + left,
-            'top=' + top
-        ].join(',');
-
-        const popup = window.open(href, name, features);
-
-        // If the popup was created, prevent the normal navigation.
-        // If it was blocked, allow the browser to follow the link (target="_blank").
-        if (popup) {
-            e.preventDefault();
-            popup.focus();
-        }
     });
 
     let progressChannel = null;
@@ -210,62 +176,12 @@ $(function () {
         });
     }).on('modal:hidden', function () {
         $(this).find('.modal-body').html('');
-        clearInterval(timeInterval);
         if (progressChannel) {
             Echo.channel(progressChannel).stopListening('WeDigBioProgressEvent');
             progressChannel = null;
         }
     });
 });
-
-let timeInterval;
-
-window.getTimeRemaining = function (endTime) {
-    const now = Date.now();
-    const t = Date.parse(endTime) - now;
-    const seconds = Math.floor((t / 1000) % 60);
-    const minutes = Math.floor((t / 1000 / 60) % 60);
-    const hours = Math.floor((t / (1000 * 60 * 60)) % 24);
-    const days = Math.floor(t / (1000 * 60 * 60 * 24));
-    return {
-        'total': t,
-        'days': days,
-        'hours': hours,
-        'minutes': minutes,
-        'seconds': seconds
-    };
-}
-
-window.clockDiv = function () {
-    $('.clockdiv').each(function () {
-        const $this = $(this);
-        const deadline = $this.data('value'); // Sun Sep 30 2018 14:26:26 GMT-0400 (Eastern Daylight Time)
-        initializeClock($this, deadline);
-    });
-}
-
-window.initializeClock = function ($clock, endTime) {
-
-    const daysSpan = $clock.find('.days');
-    const hoursSpan = $clock.find('.hours');
-    const minutesSpan = $clock.find('.minutes');
-    const secondsSpan = $clock.find('.seconds');
-
-    function updateClock() {
-        const t = getTimeRemaining(endTime);
-        daysSpan.html(t.days);
-        hoursSpan.html(('0' + t.hours).slice(-2));
-        minutesSpan.html(('0' + t.minutes).slice(-2));
-        secondsSpan.html(('0' + t.seconds).slice(-2));
-
-        if (t.total <= 0) {
-            clearInterval(timeInterval);
-        }
-    }
-
-    updateClock();
-    timeInterval = setInterval(updateClock, 1000);
-}
 
 /**
  * Show a notification at the top centre of the page for six seconds (dismissible with ×).

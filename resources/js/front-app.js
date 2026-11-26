@@ -23,4 +23,5 @@ import "./modal.js";
 import "./front-globals.js";
 import "bootstrap";
 import "./common.js";
-import "./front.js";
+import "./tooltips.js";
+import "./alpine-components.js";

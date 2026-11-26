@@ -50,7 +50,8 @@
     </section>
     <!-- Carousel Section -->
     <section>
-        <div class="row">
+        {{-- The step buttons show one slide at a time (Alpine); Bootstrap's carousel CSS shows the .active slide. --}}
+        <div class="row" x-data="{ step: 0 }">
             <div class="col d-flex flex-wrap justify-content-center">
                 <div class="col-12 col-md-4 text-center" role="group" aria-label="{{ t('Process steps') }}">
                     <h2>The Process<br>
@@ -59,10 +60,11 @@
                         <li class="list-inline-item">
                             <button
                                     type="button"
-                                    data-target="#processCarousel"
-                                    data-slide-to="0"
+                                    @click="step = 0"
                                     class="carousel-step-button active"
+                                    :class="{ 'active': step === 0 }"
                                     aria-controls="processCarousel"
+                                    :aria-current="step === 0 ? 'true' : null"
                                     aria-current="true"
                                     aria-label="{{ t('Go to process step 1') }}"
                             >1</button>
@@ -70,20 +72,22 @@
                         <li class="list-inline-item">
                             <button
                                     type="button"
-                                    data-target="#processCarousel"
-                                    data-slide-to="1"
+                                    @click="step = 1"
                                     class="carousel-step-button"
+                                    :class="{ 'active': step === 1 }"
                                     aria-controls="processCarousel"
+                                    :aria-current="step === 1 ? 'true' : null"
                                     aria-label="{{ t('Go to process step 2') }}"
                             >2</button>
                         </li>
                         <li class="list-inline-item">
                             <button
                                     type="button"
-                                    data-target="#processCarousel"
-                                    data-slide-to="2"
+                                    @click="step = 2"
                                     class="carousel-step-button"
+                                    :class="{ 'active': step === 2 }"
                                     aria-controls="processCarousel"
+                                    :aria-current="step === 2 ? 'true' : null"
                                     aria-label="{{ t('Go to process step 3') }}"
                             >3</button>
                         </li>
@@ -91,7 +95,7 @@
                 </div>
                 <div id="processCarousel" class="carousel slide col-12 col-md-6">
                     <div class="carousel-inner box-shadow inside-carousel">
-                        <div class="carousel-item active"
+                        <div class="carousel-item active" :class="{ 'active': step === 0 }"
                              style="background-image: url(/images/slider/slider1.png);">
                             <div class="circle-slider p-5">
                                 <h3 class="text-center text-uppercase">{{ t('Project') }}</h3>
@@ -102,7 +106,7 @@
                                     visualizations and useful resources for participants (e.g., lesson plans) can be shared.') }}</p>
                             </div>
                         </div>
-                        <div class="carousel-item" style="background-image: url(/images/slider/slider2.png);">
+                        <div class="carousel-item" :class="{ 'active': step === 1 }" style="background-image: url(/images/slider/slider2.png);">
                             <div class="circle-slider p-5">
                                 <h3 class="text-center text-uppercase">{{ t('Expeditions') }}</h3>
                                 <p>{{ t('If you have many specimens from which you need data, circumscribe subsets using what you
@@ -113,7 +117,7 @@
                                 scoreboard to follow progress of your event’s teams.') }}</p>
                             </div>
                         </div>
-                        <div class="carousel-item" style="background-image: url(/images/slider/slider3.png);">
+                        <div class="carousel-item" :class="{ 'active': step === 2 }" style="background-image: url(/images/slider/slider3.png);">
                             <div class="circle-slider p-5">
                                 <h3 class="text-center text-uppercase">{{ t('Export') }}</h3>
                                 <p>{{ t('Use the BIOSPEX admin tools, including leaderboards and summary statistics, to
@@ -247,27 +251,5 @@
     </script>
     <script src="https://cdn.jsdelivr.net/gh/cferdinandi/smooth-scroll/dist/smooth-scroll.polyfills.min.js"></script>
     <script>var scroll = new SmoothScroll('a[href*="#"]');</script>
-    <script>
-        (function () {
-            const container = document.getElementById('external-carousel-btns');
-            if (!container) return;
-
-            container.addEventListener('click', function (e) {
-                const button = e.target && e.target.closest
-                    ? e.target.closest('button[data-target][data-slide-to]')
-                    : null;
-
-                if (!button) return;
-
-                container.querySelectorAll('.carousel-step-button[aria-current="true"]').forEach(function (n) {
-                    n.removeAttribute('aria-current');
-                    n.classList.remove('active');
-                });
-
-                button.setAttribute('aria-current', 'true');
-                button.classList.add('active');
-            });
-        })();
-    </script>
 
 @endpush

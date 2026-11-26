@@ -1,27 +1,37 @@
+{{--
+    Menu state in Alpine. "display: contents" keeps the navbar's layout: the button and the menu stay its children.
+    On medium screens and up, Bootstrap's navbar CSS always shows the menu; x-show only applies below that.
+--}}
+<div x-data="{ menuOpen: false }" style="display: contents">
 {{-- Mobile hamburger toggler (must be focusable for keyboard/ADA) --}}
 <button
         type="button"
         class="navbar-toggler d-block d-sm-block d-md-none ml-auto p-0 border-0 bg-transparent"
-        data-toggle="collapse"
-        data-target="#navbarsExampleDefault"
+        @click="menuOpen = !menuOpen"
         aria-controls="navbarsExampleDefault"
+        :aria-expanded="menuOpen.toString()"
         aria-expanded="false"
         aria-label="Toggle navigation"
 >
-    <span class="hamburger" id="hamburger-9" aria-hidden="true">
+    <span class="hamburger" :class="{ 'is-active': menuOpen }" id="hamburger-9" aria-hidden="true">
         <span class="line"></span>
         <span class="line"></span>
         <span class="line"></span>
     </span>
 </button>
 
-<div class="collapse navbar-collapse w-100" id="navbarsExampleDefault">
+<div class="navbar-collapse w-100" id="navbarsExampleDefault" x-show="menuOpen" x-cloak>
     <ul class="navbar-nav ml-auto">
-        <li class="nav-item mr-2 dropdown">
-            <a class="nav-link nav-audit-contrast dropdown-toggle text-uppercase" href="#" id="dropdown00" data-toggle="dropdown"
+        <li class="nav-item mr-2 dropdown" :class="{ 'show': open }" x-data="{ open: false }"
+            @keydown.escape="if (open) { open = false; $refs.toggle.focus() }"
+            @click.outside="open = false"
+            @focusout="if (! $el.contains($event.relatedTarget)) open = false">
+            <a class="nav-link nav-audit-contrast dropdown-toggle text-uppercase" href="#" id="dropdown00" x-ref="toggle"
+               @click.prevent="open = ! open"
                aria-haspopup="true"
+               :aria-expanded="open.toString()"
                aria-expanded="false">{{ t('About') }}</a>
-            <div class="dropdown-menu" aria-labelledby="dropdown00">
+            <div class="dropdown-menu" :class="{ 'show': open }" @click="open = false" aria-labelledby="dropdown00">
                 <a class="dropdown-item text-uppercase" href="{{ route('front.teams.index') }}">{{ t('Team') }}</a>
                 <a class="dropdown-item text-uppercase" href="{{ route('front.faqs.index') }}">{{ t('FAQ') }}</a>
                 <a class="dropdown-item text-uppercase"
@@ -43,11 +53,16 @@
             <a class="nav-link nav-audit-contrast text-uppercase" href="{{ route('front.events.index') }}">{{ t('Events') }}</a>
         </li>
 
-        <li class="nav-item mr-2 dropdown">
-            <a class="nav-link nav-audit-contrast dropdown-toggle text-uppercase" href="#" id="dropdown01" data-toggle="dropdown"
+        <li class="nav-item mr-2 dropdown" :class="{ 'show': open }" x-data="{ open: false }"
+            @keydown.escape="if (open) { open = false; $refs.toggle.focus() }"
+            @click.outside="open = false"
+            @focusout="if (! $el.contains($event.relatedTarget)) open = false">
+            <a class="nav-link nav-audit-contrast dropdown-toggle text-uppercase" href="#" id="dropdown01" x-ref="toggle"
+               @click.prevent="open = ! open"
                aria-haspopup="true"
+               :aria-expanded="open.toString()"
                aria-expanded="false">{{ t('WeDigBio') }}</a>
-            <div class="dropdown-menu" aria-labelledby="dropdown01">
+            <div class="dropdown-menu" :class="{ 'show': open }" @click="open = false" aria-labelledby="dropdown01">
                 @isset($event)
                     <a class="dropdown-item text-uppercase" href="#"
                        data-modal-target="#wedigbio-progress-modal"
@@ -79,12 +94,17 @@
         </li>
 
         @if(Auth::check())
-            <li class="nav-item nav-btn dropdown">
-                <a class="nav-link dropdown-toggle text-uppercase" href="#" id="dropdown02" data-toggle="dropdown"
+            <li class="nav-item nav-btn dropdown" :class="{ 'show': open }" x-data="{ open: false }"
+                @keydown.escape="if (open) { open = false; $refs.toggle.focus() }"
+                @click.outside="open = false"
+                @focusout="if (! $el.contains($event.relatedTarget)) open = false">
+                <a class="nav-link dropdown-toggle text-uppercase" href="#" id="dropdown02" x-ref="toggle"
+                   @click.prevent="open = ! open"
                    aria-haspopup="true"
+                   :aria-expanded="open.toString()"
                    aria-expanded="false">{{ t('Admin') }}</a>
 
-                <div class="dropdown-menu dropdown-menu-right" aria-labelledby="dropdown02">
+                <div class="dropdown-menu dropdown-menu-right" :class="{ 'show': open }" @click="open = false" aria-labelledby="dropdown02">
                     <a href="{{ route('admin.groups.index') }}" class="dropdown-item text-uppercase"
                        type="button">{{ t('Manage Groups') }}</a>
                     <a href="{{ route('admin.projects.index') }}" class="dropdown-item text-uppercase"
@@ -129,4 +149,5 @@
             </li>
         @endif
     </ul>
+</div>
 </div>

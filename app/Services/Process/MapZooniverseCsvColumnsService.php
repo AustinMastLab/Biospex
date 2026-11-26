@@ -24,11 +24,13 @@ use App\Models\ExportQueue;
 use App\Models\ExportQueueFile;
 use App\Models\Subject;
 use App\Services\Subject\SubjectService;
+use Illuminate\Config\Repository;
+use Illuminate\Contracts\Foundation\Application;
 
 class MapZooniverseCsvColumnsService
 {
     /**
-     * @var \Illuminate\Config\Repository|\Illuminate\Contracts\Foundation\Application|mixed
+     * @var Repository|Application|mixed
      */
     private mixed $zooniverseCsvMap;
 
@@ -63,7 +65,8 @@ class MapZooniverseCsvColumnsService
 
             // If item is not array, direct translation
             if (! is_array($item)) {
-                $csvArray[$key] = $item === '' ? '' : $subject->{$item};
+                // A subject without the field (e.g. no imageId) gets an empty cell.
+                $csvArray[$key] = $item === '' ? '' : ($subject->{$item} ?? '');
 
                 continue;
             }

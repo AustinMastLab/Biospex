@@ -19,8 +19,6 @@
  */
 
 use App\Events\BingoEvent;
-use App\Events\ScoreboardEvent;
-use App\Events\WeDigBioProgressEvent;
 use App\Models\Bingo;
 use Illuminate\Broadcasting\BroadcastException;
 use Illuminate\Contracts\Broadcasting\Broadcaster;
@@ -29,8 +27,6 @@ use Illuminate\Support\Facades\Exceptions;
 use Illuminate\Support\Facades\Queue;
 
 dataset('live update events', [
-    'scoreboard' => fn () => new ScoreboardEvent(1, ['teams' => []]),
-    'WeDigBio progress' => fn () => new WeDigBioProgressEvent('event-uuid', ['total' => 0]),
     'bingo' => fn () => new BingoEvent(Bingo::factory()->create(), '{}'),
 ]);
 

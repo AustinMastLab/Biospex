@@ -20,9 +20,7 @@
                 <button class="btn btn-primary mb-4 text-uppercase"
                         data-remote="false"
                         data-modal-target="#wedigbio-progress-modal"
-                        data-href="{{ route('front.wedigbio-progress', [$event]) }}"
-                        data-channel="{{ config('config.poll_wedigbio_progress_channel') . '.' . $event->channel_key }}"
-                        data-uuid="{{ $event->channel_key }}">{{ t('Progress') }}
+                        data-event="{{ $event->slug }}">{{ t('Progress') }}
                 </button>
 
                 <button class="btn btn-primary mb-4 text-uppercase"

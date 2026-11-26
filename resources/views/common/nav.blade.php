@@ -66,9 +66,7 @@
                 @isset($event)
                     <a class="dropdown-item text-uppercase" href="#"
                        data-modal-target="#wedigbio-progress-modal"
-                       data-href="{{ route('front.wedigbio-progress', [$event]) }}"
-                       data-channel="{{ config('config.poll_wedigbio_progress_channel') . '.' . $event->channel_key }}"
-                       data-uuid="{{ $event->channel_key }}">{{ t('Progress') }}</a>
+                       data-event="{{ $event->slug }}">{{ t('Progress') }}</a>
 
                     <a class="dropdown-item text-uppercase" href="#"
                        data-modal-target="#wedigbio-rate-modal"

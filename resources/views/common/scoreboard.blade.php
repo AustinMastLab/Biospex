@@ -1,2 +1,4 @@
-{{-- Body loaded from the trigger's data-href and kept current over Echo; see resources/js/common.js. --}}
-<x-modal id="scoreboard-modal" title="SCOREBOARD" title-id="scoreboardModalTitle"/>
+{{-- The body is the EventScoreboard Livewire component, opened by a Scoreboard button (its data-event). --}}
+<x-modal id="scoreboard-modal" title="SCOREBOARD" title-id="scoreboardModalTitle">
+    @livewire('event-scoreboard')
+</x-modal>

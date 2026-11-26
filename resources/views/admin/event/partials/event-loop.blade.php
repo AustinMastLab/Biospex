@@ -7,24 +7,7 @@
                 <p class="card-text event-card-status event-card-status-completed">{{ t('Completed') }}</p>
             @else
                 <p class="card-text event-card-status">{{ t('Time Remaining') }}</p>
-                <div class="clockdiv" data-value="{{ $event->present()->scoreboard_date }}">
-                    <div>
-                        <span class="days"></span>
-                        <div class="smalltext">{{ t('Days') }}</div>
-                    </div>
-                    <div>
-                        <span class="hours"></span>
-                        <div class="smalltext">{{ t('Hours') }}</div>
-                    </div>
-                    <div>
-                        <span class="minutes"></span>
-                        <div class="smalltext">{{ t('Minutes') }}</div>
-                    </div>
-                    <div>
-                        <span class="seconds"></span>
-                        <div class="smalltext">{{ t('Seconds') }}</div>
-                    </div>
-                </div>
+                <x-countdown :deadline="$event->present()->scoreboard_date" />
             @endif
             <h3 class="text-center pt-4 event-card-title">{{ $event->title }}</h3>
             <p class="text-center color-action event-card-meta">

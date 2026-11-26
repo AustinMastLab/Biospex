@@ -128,6 +128,8 @@ sub footer -->
 @include('common.php-vars-javascript')
 @vite('resources/js/front-app.js')
 @vite('resources/js/charts/wedigbio-rate-chart.js')
+{{-- Livewire's scripts carry Alpine, which every page uses (menus, accordions), with or without a Livewire component. --}}
+@livewireScripts
 
 @stack('scripts')
 </body>

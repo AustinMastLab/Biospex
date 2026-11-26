@@ -13,19 +13,24 @@
     <div class="col-12 col-md-10 offset-md-1">
         <div class="jumbotron box-shadow py-5 my-5 p-sm-5">
             <div class="col-sm-12 mb-5">
-                <div id="accordion">
+                {{-- One update open at a time. --}}
+                <div id="accordion" x-data="{ openUpdate: null }">
                     @foreach($updates as $update)
                         <div class="card update">
                             <div class="card-header" id="heading{{ $update->id }}">
-                                <button class="update btn text-left p-0" data-toggle="collapse"
-                                        data-target="#collapse{{ $update->id }}" aria-expanded="true"
+                                <button type="button" class="update btn text-left p-0"
+                                        @click="openUpdate = openUpdate === {{ $update->id }} ? null : {{ $update->id }}"
+                                        :aria-expanded="(openUpdate === {{ $update->id }}).toString()"
+                                        aria-expanded="false"
                                         aria-controls="collapse{{ $update->id }}">
                                     {{ $update->created_at }} - {{ $update->title }}
                                 </button>
                             </div>
-                            <div id="collapse{{ $update->id }}" class="collapse"
+                            <div id="collapse{{ $update->id }}"
                                  aria-labelledby="heading{{ $update->id }}"
-                                 data-parent="#accordion">
+                                 x-show="openUpdate === {{ $update->id }}"
+                                 x-collapse
+                                 x-cloak>
                                 <div class="card-body">
                                     {!! $update->message !!}
                                 </div>

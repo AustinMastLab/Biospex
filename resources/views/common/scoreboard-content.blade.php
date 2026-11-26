@@ -33,25 +33,7 @@
     <!-- countdown clock -->
     @if(event_active($event))
         <h2 class="text-center color-action pt-4">{{ t('Time Remaining') }}</h2>
-        <div class="clockdiv mx-auto">
-            <div>
-                <span class="days"></span>
-                <div class="smalltext">{{ t('Days') }}</div>
-            </div>
-            <div>
-                <span class="hours"></span>
-                <div class="smalltext">{{ t('Hours') }}</div>
-            </div>
-            <div>
-                <span class="minutes"></span>
-                <div class="smalltext">{{ t('Minutes') }}</div>
-            </div>
-            <div>
-                <span class="seconds"></span>
-                <div class="smalltext">{{ t('Seconds') }}</div>
-            </div>
-        </div>
-        <div id="date" style="display: none">{{ $event->present()->scoreboard_date }}</div>
+        <x-countdown :deadline="$event->present()->scoreboard_date" class="mx-auto" />
     @else
         <h2 class="text-center pt-4">{{ t('Completed') }}</h2>
     @endif

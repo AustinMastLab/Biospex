@@ -20,6 +20,7 @@
 
 use App\Models\Event;
 use App\Models\Group;
+use App\Models\PanoptesProject;
 use App\Models\Project;
 use App\Models\User;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -239,6 +240,25 @@ describe('Admin Event Controller Tests', function () {
             $viewEvent = $response->viewData('event');
             $this->assertTrue($viewEvent->relationLoaded('project'));
             $this->assertTrue($viewEvent->relationLoaded('teams'));
+        });
+
+        it('names the project\'s Zooniverse project in its link on the show page', function () {
+            PanoptesProject::factory()->create([
+                'project_id' => $this->project->id,
+                'panoptes_workflow_id' => 12345,
+                'title' => 'Ferns of Florida',
+            ]);
+            // The Zooniverse link shows while the event is running.
+            $event = Event::factory()->create([
+                'project_id' => $this->project->id,
+                'owner_id' => $this->user->id,
+                'start_date' => now()->subDay(),
+                'end_date' => now()->addDay(),
+            ]);
+
+            $this->get(route('admin.events.show', $event))
+                ->assertOk()
+                ->assertSee('View Ferns of Florida on Zooniverse', false);
         });
     });
 

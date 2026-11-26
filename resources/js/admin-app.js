@@ -22,6 +22,8 @@ import "./app.js";
 import "./modal.js";
 import "./admin-globals.js";
 import "./common.js";
+import "./tooltips.js";
+import "./alpine-components.js";
 import "./admin.js";
 import "./admin-modals.js";
 import "./confirm-dialog.js";

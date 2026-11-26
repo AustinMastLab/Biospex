@@ -9,11 +9,13 @@
 @endpush
 
 @section('content')
+    {{-- Zoom, page selects and copying answers: the Alpine "expertReview" component (resources/js/expertReview.js). --}}
+    <div x-data="expertReview">
 
     <div class="row mt-5 justify-content-center">
         {{ $reconciles->links() }}
-        <select name="pagination" id="pagination" class="form-control custom-select ml-2 a11y-form-control a11y-form-control" style="width: 100px"
-                required>
+        <select name="pagination" id="pagination" class="form-control custom-select ml-2 a11y-form-control" style="width: 100px"
+                aria-label="{{ t('Page') }}" @change="goToPage($event.target.value)" required>
             @foreach($reconciles->getUrlRange(1, $reconciles->total()) as $page => $url)
                 <option value="{{ $url }}" {{ $reconciles->url($reconciles->currentPage()) === $url ? ' selected=selected' : '' }}>{{ $page }}</option>
             @endforeach
@@ -22,15 +24,15 @@
     <div class="row">
         <div class="col-6">
             <div class="buttons text-center">
-                <button id="btnZoomIn" class="btn btn-primary p-2 m-1">Zoom in</button>
-                <button id="btnZoomOut" class="btn btn-primary p-2 m-1">Zoom out</button>
-                <button id="btnZoomReset" class="btn btn-primary p-2 m-1">Reset</button>
+                <button type="button" id="btnZoomIn" class="btn btn-primary p-2 m-1" @click="zoomIn">Zoom in</button>
+                <button type="button" id="btnZoomOut" class="btn btn-primary p-2 m-1" @click="zoomOut">Zoom out</button>
+                <button type="button" id="btnZoomReset" class="btn btn-primary p-2 m-1" @click="resetZoom">Reset</button>
                 <label>(or Mouse Wheel)</label>
             </div>
             <div>
-                <div id="panzoom">
-                    <div class="loader mx-auto"></div>
-                    <img src="{{ $imgUrl }}" class="img-fluid lazy" alt="Image">
+                <div id="panzoom" x-ref="panzoom">
+                    <div class="loader mx-auto" x-show="loading"></div>
+                    <img src="{{ $imgUrl }}" class="img-fluid lazy" alt="Image" x-ref="image" @load="loading = false">
                 </div>
             </div>
         </div>
@@ -57,7 +59,7 @@
                                     <br> {{ $decodedColumn }}:</label>
                                 <textarea class="form-control a11y-form-control" rows="3"
                                           id="{{ $encodedColumn }}"
-                                          name="{{ $encodedColumn }}">{{ $reconciles->first()->{$encodedColumn} }}</textarea>
+                                          name="{{ $encodedColumn }}">{{ $reconciles->first()->getAttributes()[$encodedColumn] ?? '' }}</textarea>
                             </div>
                             <div class="col-5">
                                 <label class="col-form-label">{{ t('Participants entered for') }} {{ $decodedColumn }}
@@ -65,16 +67,25 @@
                                 @foreach($reconciles->first()->transcriptions as $transcription)
                                     @php
                                         $count = CountHelper::getTranscriptionCountForTranscriber($transcription->subject_projectId, $transcription->user_name);
+                                        // A participant's transcription has no field for a column they left out.
+                                        $answer = (string) ($transcription->getAttributes()[$encodedColumn] ?? '');
+                                        $answerId = 'answer-'.$encodedColumn.'-'.$transcription->_id;
                                     @endphp
                                     <div class="form-check">
                                         <input class="form-check-input" type="radio" name="radio"
+                                               id="{{ $answerId }}"
                                                data-column="{{ $encodedColumn }}"
-                                               value="{{ $transcription->{$encodedColumn} }}">
-                                        <label class="form-check-label" for="{{ $transcription->_id }}">
+                                               @change="useAnswer($event.target)"
+                                               value="{{ $answer }}">
+                                        <label class="form-check-label" for="{{ $answerId }}">
                                             <i class="fa fa-flag {{ $count < 500 ? 'fa-flag-grey' : 'fa-flag-green' }}"
                                                 data-hover="tooltip"
                                                title="{{ $transcription->user_name }} has {{ $count }} transcriptions"></i>
-                                            {!! $transcription->{$encodedColumn} ?: '<i>'.t('participant left blank').'</i>' !!}
+                                            @if($answer !== '')
+                                                {{ $answer }}
+                                            @else
+                                                <i>{{ t('participant left blank') }}</i>
+                                            @endif
                                         </label>
                                     </div>
                                 @endforeach
@@ -115,15 +126,14 @@
                 </div>
             @endif
             @if(! empty($comments))
-                <div class="row">
+                <div class="row" x-data="{ talk: false }">
                     <div class="text-center mx-auto my-4">
-                        <button class="toggle-view-btn btn btn-primary pl-4 pr-4 text-uppercase"
-                                data-toggle="collapse"
-                                data-target="#talk"
-                                data-value="{{ t('toggle talk comments') }}"
+                        <button type="button" class="btn btn-primary pl-4 pr-4 text-uppercase"
+                                @click="talk = ! talk"
+                                :aria-expanded="talk.toString()" aria-expanded="false" aria-controls="talk"
                         >{{ t('toggle talk comments') }}</button>
                     </div>
-                    <div id="talk" class="col-sm-12 collapse">
+                    <div id="talk" class="col-sm-12" x-show="talk" x-collapse x-cloak>
                         <div id="comments" class="row col-sm-12 mx-auto justify-content-center">
                             @each('admin.reconcile.partials.comments-loop', $comments, 'comment')
                         </div>
@@ -134,12 +144,13 @@
     </div>
     <div class="row mt-5 justify-content-center">
         {{ $reconciles->links() }}
-        <select name="pagination" id="pagination" class="form-control custom-select ml-2 a11y-form-control a11y-form-control" style="width: 100px"
-                required>
+        <select name="pagination" id="pagination-bottom" class="form-control custom-select ml-2 a11y-form-control" style="width: 100px"
+                aria-label="{{ t('Page') }}" @change="goToPage($event.target.value)" required>
             @foreach($reconciles->getUrlRange(1, $reconciles->total()) as $page => $url)
                 <option value="{{ $url }}" {{ $reconciles->url($reconciles->currentPage()) === $url ? ' selected=selected' : '' }}>{{ $page }}</option>
             @endforeach
         </select>
+    </div>
     </div>
 @stop
 

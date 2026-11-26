@@ -1,11 +1,14 @@
 <div class="col-md-10 mx-auto mt-3 mb-3">
+    <div x-data="{ example: false }">
     <p class="text-center">
-        <a href="#coge-example" data-toggle="collapse" aria-expanded="false"
-           aria-controls="cogeExample">Example</a>
+        <a href="#coge-example" @click.prevent="example = ! example" role="button"
+           :aria-expanded="example.toString()" aria-expanded="false"
+           aria-controls="coge-example">Example</a>
     </p>
-    <div class="collapse" id="coge-example">
+    <div id="coge-example" x-show="example" x-collapse x-cloak>
         <img src="{{ asset('images/examples/coge-community-data.jpg') }}" width="525"
              alt="coge example image"/>
+    </div>
     </div>
 
     <form id="geolocate-community-form" class="modal-form" method="post"

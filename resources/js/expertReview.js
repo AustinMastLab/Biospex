@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2014 - 2025, Biospex
+ * Copyright (C) 2014 - 2026, Biospex
  * biospex@gmail.com
  *
  * This program is free software: you can redistribute it and/or modify
@@ -16,29 +16,49 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-const elem = document.getElementById('panzoom');
-const panzoom = Panzoom(elem);
-const parent = elem.parentElement
-// No function bind needed
-parent.addEventListener('wheel', panzoom.zoomWithWheel)
+/**
+ * The expert review page (admin/reconcile/index): zoom the subject image (Panzoom, loaded by the page), go to a page
+ * from either page select, and copy a participant's answer into the expert opinion it belongs to.
+ */
+document.addEventListener('alpine:init', () => {
+    window.Alpine.data('expertReview', () => ({
+        loading: true,
+        panzoom: null,
 
-$('#btnZoomIn').on('click', panzoom.zoomIn);
-$('#btnZoomOut').on('click', panzoom.zoomOut);
-$('#btnZoomReset').on('click', panzoom.reset);
+        init() {
+            this.panzoom = Panzoom(this.$refs.panzoom);
+            this.$refs.panzoom.parentElement.addEventListener('wheel', this.panzoom.zoomWithWheel);
 
-$("form input:radio").on("change", function () {
-    let id = $(this).data("column");
-    $("[id='" + id + "']").text($(this).val());
-});
+            // The image may have loaded before Alpine started.
+            if (this.$refs.image.complete) {
+                this.loading = false;
+            }
+        },
 
-$("img.lazy").one("load", function () {
-    $(".loader").remove();
-}).each(function () {
-    if (this.complete) {
-        $(this).trigger("load");
-    }
-});
+        zoomIn() {
+            this.panzoom.zoomIn();
+        },
 
-$('#pagination').on('change', function () {
-    window.location.replace($(this).val());
+        zoomOut() {
+            this.panzoom.zoomOut();
+        },
+
+        resetZoom() {
+            this.panzoom.reset();
+        },
+
+        goToPage(url) {
+            window.location.replace(url);
+        },
+
+        /**
+         * A participant's answer (a radio) becomes the expert opinion for its column (the textarea with that id).
+         */
+        useAnswer(radio) {
+            const opinion = document.getElementById(radio.dataset.column);
+            if (opinion) {
+                opinion.value = radio.value;
+            }
+        },
+    }));
 });

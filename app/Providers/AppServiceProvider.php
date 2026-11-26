@@ -29,12 +29,14 @@ use App\Observers\ExpeditionPublicCacheObserver;
 use App\Observers\ProjectLogoObserver;
 use App\Observers\ProjectPublicCacheObserver;
 use Illuminate\Cache\RateLimiting\Limit;
+use Illuminate\Database\Eloquent\MissingAttributeException;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Http\Request;
 use Illuminate\Pagination\Paginator;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Facades\Redis;
 use Illuminate\Support\ServiceProvider;
+use MongoDB\Laravel\Eloquent\Model as MongoModel;
 use Schema;
 
 /**
@@ -61,6 +63,17 @@ class AppServiceProvider extends ServiceProvider
 
         Model::preventLazyLoading(! $this->app->isProduction());
         Model::preventAccessingMissingAttributes(! $this->app->isProduction());
+
+        // MongoDB documents (subjects, transcriptions, reconciles) have no fixed fields: a participant can leave a
+        // field out and an import can lack a column. A missing field there reads as null, as in production; a column
+        // missing from a MySQL query is still an error.
+        Model::handleMissingAttributeViolationUsing(function (Model $model, string $key, MissingAttributeException $exception) {
+            if ($model instanceof MongoModel) {
+                return null;
+            }
+
+            throw $exception;
+        });
 
         // Register model observers
         Event::observe(EventPublicCacheObserver::class);

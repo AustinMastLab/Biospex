@@ -3,24 +3,7 @@
         <div class="card-body text-center">
             @if(event_before($event, 'UTC'))
                 <p class="card-text event-card-status">{{ t('Starting') }}</p>
-                <div class="clockdiv" data-value="{{ $event->present()->progress_date }}">
-                    <div>
-                        <span class="days"></span>
-                        <div class="smalltext">{{ t('Days') }}</div>
-                    </div>
-                    <div>
-                        <span class="hours"></span>
-                        <div class="smalltext">{{ t('Hours') }}</div>
-                    </div>
-                    <div>
-                        <span class="minutes"></span>
-                        <div class="smalltext">{{ t('Minutes') }}</div>
-                    </div>
-                    <div>
-                        <span class="seconds"></span>
-                        <div class="smalltext">{{ t('Seconds') }}</div>
-                    </div>
-                </div>
+                <x-countdown :deadline="$event->present()->progress_date" />
             @elseif(event_active($event, 'UTC'))
                 <p class="card-text event-card-status">{{ t('Happening Now!') }}</p>
             @else

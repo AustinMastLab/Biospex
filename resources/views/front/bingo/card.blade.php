@@ -41,6 +41,7 @@
 @include('common.php-vars-javascript')
 @vite('resources/js/front-app.js')
 @vite('resources/js/bingo-entry.js')
+@livewireScripts
 <script type="module">
     let bingoConfetti = new ConfettiGenerator({target: 'bingo-conffeti'});
     bingoConfetti.render();

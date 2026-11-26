@@ -1,28 +1,27 @@
-<div id="import-accordion">
+{{-- One import section open at a time (the file upload first); each "Instructions" link shows its text. --}}
+<div id="import-accordion" x-data="{ section: 'dwc-upload' }">
     <div class="card">
         <div class="card-header" id="dwc-file-import">
             <h5 class="mb-0">
-                <button class="import btn" data-toggle="collapse" data-target="#dwc-upload"
-                        aria-expanded="true" aria-controls="dwc-upload">
+                <button type="button" class="import btn" @click="section = section === 'dwc-upload' ? null : 'dwc-upload'"
+                        :aria-expanded="(section === 'dwc-upload').toString()" aria-expanded="true" aria-controls="dwc-upload">
                     {{ t('Import Darwin Core File') }}
                 </button>
             </h5>
         </div>
 
-        <div id="dwc-upload" class="collapse show" aria-labelledby="dwc-file-import"
-             data-parent="#import-accordion">
+        <div id="dwc-upload" aria-labelledby="dwc-file-import" x-show="section === 'dwc-upload'" x-collapse>
             <div class="card-body">
                 <form action="{{ route('admin.imports.dwcfile') }}"
                       method="post" role="form" class="form-horizontal" id="form-dwc-file"
                       enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="project_id" value="{{ $project->id }}">
-                    <div class="mt-2 mb-4">
-                        <a href="#" class="btn btn-outline-primary collapsed prevent-default"
-                           data-toggle="collapse" data-target="#dwc-file-instruction"
-                           aria-expanded="true"
+                    <div class="mt-2 mb-4" x-data="{ instructions: false }">
+                        <a href="#" class="btn btn-outline-primary" @click.prevent="instructions = ! instructions"
+                           role="button" :aria-expanded="instructions.toString()" aria-expanded="false"
                            aria-controls="dwc-file-instruction">{{ t('Instructions') }}</a>
-                        <span id="dwc-file-instruction" class="collapse">
+                        <span id="dwc-file-instruction" x-show="instructions" x-cloak>
                                                 {{ t('Only zipped Darwin Core files are accepted.') }}
                                                 <a href="{{ '/darwin-core-example.zip' }}"
                                                    class="link">{{ t('Download Example DWC File.') }}</a>
@@ -44,26 +43,24 @@
     <div class="import card">
         <div class="card-header" id="record-set-import">
             <h5 class="mb-0">
-                <button class="import btn collapsed" data-toggle="collapse"
-                        data-target="#recordset" aria-expanded="false" aria-controls="recordset">
+                <button type="button" class="import btn" @click="section = section === 'recordset' ? null : 'recordset'"
+                        :aria-expanded="(section === 'recordset').toString()" aria-expanded="false" aria-controls="recordset">
                     {{ t('Record Set Id/Url') }}
                 </button>
             </h5>
         </div>
-        <div id="recordset" class="collapse" aria-labelledby="record-set-import"
-             data-parent="#import-accordion">
+        <div id="recordset" aria-labelledby="record-set-import" x-show="section === 'recordset'" x-collapse x-cloak>
             <div class="card-body">
                 <form action="{{ route('admin.imports.recordset') }}"
                       method="post" role="form" class="form-horizontal" id="form-dwc-recordset"
                       enctype="multipart/form-data">
                     @csrf
                     <input type="hidden" name="project_id" value="{{ $project->id }}">
-                    <div class="mt-2 mb-4">
-                        <a href="#" class="btn btn-outline-primary collapsed prevent-default"
-                           data-toggle="collapse" data-target="#recordset-instruction"
-                           aria-expanded="true"
+                    <div class="mt-2 mb-4" x-data="{ instructions: false }">
+                        <a href="#" class="btn btn-outline-primary" @click.prevent="instructions = ! instructions"
+                           role="button" :aria-expanded="instructions.toString()" aria-expanded="false"
                            aria-controls="recordset-instruction">{{ t('Instructions') }}</a>
-                        <span id="recordset-instruction" class="collapse">
+                        <span id="recordset-instruction" x-show="instructions" x-cloak>
                                 <ol class="mt-2">
                                     <li>{{ p('directions', 'Go to') }} <a
                                                 href="https://www.idigbio.org/portal/publishers"
@@ -98,27 +95,25 @@
         <div class="import card">
             <div class="card-header" id="dwc-url-import">
                 <h5 class="mb-0">
-                    <button class="import btn collapsed" data-toggle="collapse"
-                            data-target="#dwc-uri" aria-expanded="false"
+                    <button type="button" class="import btn" @click="section = section === 'dwc-uri' ? null : 'dwc-uri'"
+                            :aria-expanded="(section === 'dwc-uri').toString()" aria-expanded="false"
                             aria-controls="dwc-uri">
                         {{ t('Import Darwin Core Url') }}
                     </button>
                 </h5>
             </div>
-            <div id="dwc-uri" class="collapse" aria-labelledby="dwc-url-import"
-                 data-parent="#import-accordion">
+            <div id="dwc-uri" aria-labelledby="dwc-url-import" x-show="section === 'dwc-uri'" x-collapse x-cloak>
                 <div class="card-body">
                     <form action="{{ route('admin.imports.dwcuri') }}"
                           method="post" role="form" class="form-horizontal" id="form-dwc-url"
                           enctype="multipart/form-data">
                         @csrf
                         <input type="hidden" name="project_id" value="{{ $project->id }}">
-                        <div class="mt-2 mb-4">
-                            <a href="#" class="btn btn-outline-primary collapsed prevent-default"
-                               data-toggle="collapse" data-target="#dwc-uri-instruction"
-                               aria-expanded="true"
+                        <div class="mt-2 mb-4" x-data="{ instructions: false }">
+                            <a href="#" class="btn btn-outline-primary" @click.prevent="instructions = ! instructions"
+                               role="button" :aria-expanded="instructions.toString()" aria-expanded="false"
                                aria-controls="dwc-uri-instruction">{{ t('Instructions') }}</a>
-                            <span id="dwc-uri-instruction" class="collapse">
+                            <span id="dwc-uri-instruction" x-show="instructions" x-cloak>
                                             {{ t('Copy and paste a url link to the zip file. Only zipped Darwin Core files are accepted.') }}
                                             <a href="{{ '/darwin-core-example.zip' }}"
                                                class="link">{{ t('Download Example DWC File.') }}</a>

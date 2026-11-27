@@ -24,4 +24,7 @@ use App\Http\Controllers\Front\BingoJoinController;
 Route::get('bingos', [BingoController::class, 'index'])->name('front.bingos.index');
 Route::get('bingos/{bingo}', [BingoController::class, 'show'])->name('front.bingos.show');
 
-Route::get('bingos/{bingo}/join', [BingoJoinController::class, 'index'])->name('front.bingos.join');
+// Each visitor's card is their own player, so the card page is never served from the response cache.
+Route::get('bingos/{bingo}/join', [BingoJoinController::class, 'index'])
+    ->middleware('doNotCacheResponse')
+    ->name('front.bingos.join');

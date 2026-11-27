@@ -27,7 +27,7 @@
         <h1 class="page-title m-auto">{{ $bingo->title }}</h1>
         <p class="text-center">{{ $bingo->directions }}</p>
     </div>
-    <div class="row mb-0 mt-3">
+    <div class="mt-3 mb-3">
         @livewire('bingo-card', ['bingo' => $bingo, 'bingoUser' => $bingoUser])
     </div>
     <div id="bingodiv" aria-hidden="true" style="width: 100%; height: 500px"></div>

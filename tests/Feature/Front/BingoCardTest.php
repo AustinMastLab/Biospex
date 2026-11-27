@@ -93,9 +93,13 @@ it('passes other players joining and winning to the page, but not this player\'s
     bingoCard()
         ->call('playerUpdate', ['data' => json_encode(['marker' => $marker, 'winner' => null])])
         ->assertDispatched('bingo-player-joined', marker: $marker)
-        ->assertNotDispatched('bingo-won')
+        ->assertNotDispatched('bingo-won');
+
+    // A win announces the winner without adding their map pin a second time.
+    bingoCard()
         ->call('playerUpdate', ['data' => json_encode(['marker' => $marker, 'winner' => ['city' => 'Austin', 'uuid' => 'other-player']])])
-        ->assertDispatched('bingo-won', message: t('We Have A Winner In %s!!', 'Austin'));
+        ->assertDispatched('bingo-won', message: t('We Have A Winner In %s!!', 'Austin'))
+        ->assertNotDispatched('bingo-player-joined');
 
     bingoCard()
         ->call('playerUpdate', ['data' => json_encode(['marker' => [...$marker, 'uuid' => test()->bingoUser->uuid], 'winner' => null])])

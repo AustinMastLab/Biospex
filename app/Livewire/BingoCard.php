@@ -152,7 +152,7 @@ class BingoCard extends Component
     }
 
     /**
-     * Another player joined (their map pin) or won.
+     * Another player joined (their map pin) or won. A win's marker is the winner's existing pin, so it is not added again.
      *
      * @param  array{data?: string}  $event
      */
@@ -165,11 +165,13 @@ class BingoCard extends Component
             return;
         }
 
-        $this->dispatch('bingo-player-joined', marker: $marker);
-
         if (! empty($data['winner'])) {
             $this->dispatch('bingo-won', message: t('We Have A Winner In %s!!', (string) ($data['winner']['city'] ?? '')));
+
+            return;
         }
+
+        $this->dispatch('bingo-player-joined', marker: $marker);
     }
 
     public function render(): View

@@ -1,4 +1,4 @@
-{{-- Winner message, filled in and opened by resources/js/bingo.js. --}}
+{{-- Winner message, filled in and opened by resources/js/bingo.js when App\Livewire\BingoCard announces a win. --}}
 <x-modal id="bingo-modal" title="WINNER" title-id="bingoModalTitle" body-class="text-center" :backdrop="false">
     <x-slot:footer>
         <button type="button" class="btn btn-outline-primary color-action align-self-center"

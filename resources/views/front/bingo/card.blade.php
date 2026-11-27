@@ -21,15 +21,14 @@
 </head>
 <body>
 <div class="container">
-    <canvas id="bingo-conffeti" class="collapse" style="z-index: -1; position:fixed; top:0;left:0"></canvas>
+    {{-- Shown while a winner message is open (resources/js/bingo.js). --}}
+    <canvas id="bingo-conffeti" hidden style="z-index: -1; position:fixed; top:0;left:0"></canvas>
     <div class="row mb-0 mt-3">
         <h1 class="page-title m-auto">{{ $bingo->title }}</h1>
         <p class="text-center">{{ $bingo->directions }}</p>
     </div>
     <div class="row mb-0 mt-3">
-        <div id="bingo-rows" class="bingo m-auto">
-
-        </div>
+        @livewire('bingo-card', ['bingo' => $bingo, 'bingoUser' => $bingoUser])
     </div>
     <div id="bingodiv" aria-hidden="true" style="width: 100%; height: 500px"></div>
     <details class="container mb-4">

@@ -94,15 +94,34 @@
 }
 
 .square:hover {
-  background-color: #a7abab;
+  background-color: #6c757d;
   color: #fff;
   cursor: pointer
 }
 
+// Marked bingo squares: white on #6c757d is 4.7:1 (the old #a7abab was 2.3:1).
 .clicked {
-  background-color: #a7abab;
+  background-color: #6c757d;
   color: #fff;
   cursor: pointer
+}
+
+// Bingo squares are buttons: keep the square look, and show keyboard focus.
+button.square {
+  padding: 0;
+  background-color: transparent;
+  color: inherit;
+  line-height: inherit;
+
+  &.clicked {
+    background-color: #6c757d;
+    color: #fff;
+  }
+
+  &:focus-visible {
+    outline: 3px solid #005fcc;
+    outline-offset: 1px;
+  }
 }
 
 .logo {

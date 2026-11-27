@@ -37,27 +37,14 @@ class BingoJoinController extends Controller
         $bingoUser = $this->bingoService->getOrCreateBingoUser($bingo);
         $bingoUserData = $this->bingoService->getBingoUserData($bingo);
 
+        // The map's players so far; the card itself is App\Livewire\BingoCard.
         JavaScript::put([
-            'channel' => config('config.poll_bingo_channel').'.'.$bingo->uuid,
-            'rowsUrl' => route('front.bingos.create', $bingo),
-            'winnerUrl' => route('front.get.bingo-winner', [$bingo, $bingoUser]),
-            'bingoUserUuid' => $bingoUser->uuid,
             'bingoUserData' => $bingoUserData,
         ]);
 
+        // Tell the other players this one joined (their map pin).
         BingoJob::dispatch($bingo, $bingoUser);
 
-        return View::make('front.bingo.card', compact('bingo'));
-    }
-
-    /**
-     * Generate bingo card.
-     */
-    public function create(Bingo $bingo): \Illuminate\View\View
-    {
-        $bingo->load('project', 'words');
-        $rows = $this->bingoService->generateBingoCard($bingo);
-
-        return View::make('front.bingo.partials.card-rows', ['project' => $bingo->project, 'rows' => $rows]);
+        return View::make('front.bingo.card', compact('bingo', 'bingoUser'));
     }
 }

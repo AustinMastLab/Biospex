@@ -16,7 +16,5 @@
  * along with this program.  If not, see <https://www.gnu.org/licenses/>.
  */
 
-// Bingo card entry point: jQuery first, then the card and its map
-import "./jquery-global.js";
-
+// Bingo card page entry point: the players map and the winner message (the card is App\Livewire\BingoCard)
 import "./bingo.js";

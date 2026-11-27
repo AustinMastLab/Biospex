@@ -3,7 +3,7 @@
     the server; when the marks complete a line, claimWin() checks it on the server. A new card ($deal) starts fresh.
 --}}
 <div>
-    <div id="bingo-rows" class="bingo m-auto" wire:key="card-{{ $deal }}"
+    <div id="bingo-rows" class="bingo" wire:key="card-{{ $deal }}"
          x-data="{
             marked: [@js(\App\Livewire\BingoCard::FREE)],
             lines: @js($lines),
@@ -17,10 +17,10 @@
             },
          }">
         @foreach($rows as $rowIndex => $row)
-            <div class="row" wire:key="card-{{ $deal }}-row-{{ $rowIndex }}">
+            <div class="bingo-row" wire:key="card-{{ $deal }}-row-{{ $rowIndex }}">
                 @foreach($row as $cellId => $values)
                     @if ($cellId === \App\Livewire\BingoCard::FREE)
-                        <div class="square logo d-inline float-left d-flex text-center justify-content-center align-items-center"
+                        <div class="square logo"
                              wire:key="card-{{ $deal }}-{{ $cellId }}">
                             <img src="{{ $project?->present()->show_logo }}"
                                  onerror="this.onerror=null;this.src='{{ config('config.missing_project_logo') }}'"
@@ -29,7 +29,7 @@
                         @continue
                     @endif
                     <button type="button"
-                            class="square d-inline float-left d-flex text-center justify-content-center align-items-center"
+                            class="square"
                             id="{{ $cellId }}"
                             wire:key="card-{{ $deal }}-{{ $cellId }}"
                             @click="toggle(@js($cellId))"

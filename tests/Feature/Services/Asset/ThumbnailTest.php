@@ -58,3 +58,18 @@ it('generates a resized jpg thumbnail from a downloaded image', function () {
         ->and($generated->height())->toBe(30)
         ->and($generated->origin()->mediaType())->toBe('image/jpeg');
 });
+
+it('returns the placeholder from public/images when the image can\'t be downloaded, even with an empty storage disk', function () {
+    Storage::fake('public');
+    $url = 'https://images.example.org/gone.jpg';
+
+    mock(HttpRequest::class)
+        ->shouldReceive('createDirectHttpClient')
+        ->once()
+        ->andReturn(new Client(['handler' => HandlerStack::create(new MockHandler([new Response(404)]))]));
+
+    $thumbnail = app(Thumbnail::class)->getThumbnail($url);
+
+    expect($thumbnail)->toBe(file_get_contents(public_path('images/default_thumb.png')));
+    Storage::disk('public')->assertMissing('thumbs/'.config('config.thumb_width').'_'.config('config.thumb_height').'/'.md5($url).'.jpg');
+});

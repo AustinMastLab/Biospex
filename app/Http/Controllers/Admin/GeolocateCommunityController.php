@@ -21,13 +21,14 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\GeoLocateCommunityRequest;
 use App\Models\Expedition;
 use App\Models\GeoLocateCommunity;
 use App\Services\Actor\GeoLocate\GeoLocateFormService;
 use App\Services\Actor\GeoLocate\GeoLocateStatService;
 use App\Services\Helpers\GeneralService;
 use App\Services\Permission\CheckPermission;
+use Illuminate\Http\JsonResponse;
+use Illuminate\Http\RedirectResponse;
 use Redirect;
 use Request;
 use Response;
@@ -60,12 +61,12 @@ class GeolocateCommunityController extends Controller
      * Handles the editing process for an expedition.
      *
      * @param  Expedition  $expedition  The expedition instance to be edited, including related loaded data and permission checks.
-     * @return \Illuminate\View\View|\Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
-     *                                                                                               Returns a view containing the expedition edit form if the request is valid and permissions are granted.
-     *                                                                                               Returns a JSON response with an error message if the request is not made via AJAX.
-     *                                                                                               Redirects to the expedition details page if the user lacks proper permissions.
+     * @return \Illuminate\View\View|JsonResponse|RedirectResponse
+     *                                                             Returns a view containing the expedition edit form if the request is valid and permissions are granted.
+     *                                                             Returns a JSON response with an error message if the request is not made via AJAX.
+     *                                                             Redirects to the expedition details page if the user lacks proper permissions.
      */
-    public function edit(Expedition $expedition): \Illuminate\View\View|\Illuminate\Http\JsonResponse|\Illuminate\Http\RedirectResponse
+    public function edit(Expedition $expedition): \Illuminate\View\View|JsonResponse|RedirectResponse
     {
         if (! Request::ajax()) {
             return Response::json(['message' => t('Request must be ajax.')], 400);
@@ -83,38 +84,10 @@ class GeolocateCommunityController extends Controller
     }
 
     /**
-     * Updates the community data source for a given expedition based on the request data.
-     *
-     * @param  GeoLocateCommunityRequest  $request  The request object containing community data and source information.
-     * @param  Expedition  $expedition  The expedition being updated with the provided community data.
-     * @return \Illuminate\Http\JsonResponse A JSON response indicating the status of the operation.
-     */
-    public function update(GeoLocateCommunityRequest $request, Expedition $expedition): \Illuminate\Http\JsonResponse
-    {
-        try {
-            if (! Request::ajax()) {
-                return Response::json(['message' => t('Request must be ajax.')], 400);
-            }
-
-            $expedition->load('project.group');
-
-            if (! CheckPermission::handle('updateProject', $expedition->project->group)) {
-                return Response::json(['message' => t('You are not authorized for this action.')], 401);
-            }
-
-            $this->geoLocateStatService->saveCommunityDataSource($request->all(), $expedition);
-
-            return Response::json(['message' => t('Community and data source added.')]);
-        } catch (Throwable $throwable) {
-            return Response::json(['message' => t($throwable->getMessage())], 400);
-        }
-    }
-
-    /**
      * Deletes the specified community if conditions are met.
      *
      * @param  GeoLocateCommunity  $community  The community model instance to be deleted.
-     * @return \Illuminate\Http\RedirectResponse A redirect response with a success or error message.
+     * @return RedirectResponse A redirect response with a success or error message.
      */
     public function destroy(GeoLocateCommunity $community)
     {

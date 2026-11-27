@@ -159,7 +159,7 @@ return [
 
     /* Images */
     /* Min and max logo and banner sizes used in Project model. Max Zoonviverse image. Thumb sizes. */
-    'thumb_default_img' => 'thumbs/default_thumb.png',
+    'thumb_default_img' => 'images/default_thumb.png', // In public/, so every server has it after a deploy
     'thumb_output_dir' => 'thumbs',
     'thumb_width' => 300,
     'thumb_height' => 300,

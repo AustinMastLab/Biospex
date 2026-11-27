@@ -67,11 +67,12 @@ class Thumbnail
     }
 
     /**
-     * Set default thumbnail image.
+     * Set the placeholder shown when a subject's image can't be downloaded. It is in public/ (in the repository), not
+     * on the storage disk, which deploys don't fill.
      */
     private function setDefaultThumbnailImage(): void
     {
-        $this->defaultThumbImg = $this->storage->disk('public')->path(config('config.thumb_default_img'));
+        $this->defaultThumbImg = public_path(config('config.thumb_default_img'));
     }
 
     /**

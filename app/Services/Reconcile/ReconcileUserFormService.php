@@ -37,15 +37,15 @@ class ReconcileUserFormService
     ) {}
 
     /**
-     * Upload reconciled with user file.
+     * Store the user-reviewed reconciled CSV (the file at $path) as the expedition's Reconciled With User Opinion file.
      */
-    public function reconciledWithUserFile(Expedition $expedition): bool
+    public function reconciledWithUserFile(Expedition $expedition, string $path): bool
     {
         if ($this->storage->disk('s3')->exists(config('zooniverse.directory.reconciled-with-user').'/'.$expedition->id.'.csv')) {
             $this->storage->disk('s3')->delete(config('zooniverse.directory.reconciled-with-user').'/'.$expedition->id.'.csv');
         }
 
-        if ($this->storage->disk('s3')->put(config('zooniverse.directory.reconciled-with-user').'/'.$expedition->id.'.csv', file_get_contents(request()->file('file')->getRealPath()))) {
+        if ($this->storage->disk('s3')->put(config('zooniverse.directory.reconciled-with-user').'/'.$expedition->id.'.csv', file_get_contents($path))) {
             $this->updateOrCreateReviewDownload($expedition->id, 'reconciled-with-user');
 
             return true;

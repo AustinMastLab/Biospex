@@ -112,22 +112,6 @@ class GeoLocateFormService
     }
 
     /**
-     * Build and render form fields for the given expedition and form data.
-     *
-     * @param  Expedition  $expedition  The expedition object used to build form fields.
-     * @param  array  $form  The array of form data to be used.
-     * @return string The rendered HTML of the form fields.
-     *
-     * @throws \Throwable
-     */
-    public function buildFormFields(Expedition $expedition, array $form): string
-    {
-        $disabled = $this->checkExportDisabled($expedition, $form);
-
-        return view('admin.geolocate.partials.form-fields', compact('expedition', 'form', 'disabled'))->render();
-    }
-
-    /**
      * Check if the export is disabled for the given expedition and form data.
      *
      * @param  Expedition  $expedition  The expedition instance being checked.

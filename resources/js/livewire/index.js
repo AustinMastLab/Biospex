@@ -25,27 +25,21 @@
 import {LivewireFileUploadHandler} from './file-upload-handler.js';
 import {ProjectManager} from './project-manager.js';
 import {ExpeditionManager} from './expedition-manager.js';
-import {GroupInviteManager} from './group-invite-manager.js';
 import {EventTeamManager} from './event-team-manager.js';
-import {GeolocateFieldManager} from './geolocate-field-manager.js';
 
 // Export classes for use in blade templates
 export {
     LivewireFileUploadHandler,
     ProjectManager,
     ExpeditionManager,
-    GroupInviteManager,
-    EventTeamManager,
-    GeolocateFieldManager
+    EventTeamManager
 };
 
 // Make classes available globally for backward compatibility
 window.LivewireFileUploadHandler = LivewireFileUploadHandler;
 window.ProjectManager = ProjectManager;
 window.ExpeditionManager = ExpeditionManager;
-window.GroupInviteManager = GroupInviteManager;
 window.EventTeamManager = EventTeamManager;
-window.GeolocateFieldManager = GeolocateFieldManager;
 
 // Auto-initialize based on current page context
 document.addEventListener('DOMContentLoaded', function () {
@@ -59,16 +53,7 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelector('form[action*="expeditions"]') ||
         (document.getElementById('logo_path') && window.location.href.includes('expedition'));
 
-    const isGeolocatePage = body.classList.contains('geolocate-page') ||
-        document.querySelector('.geolocate-field') ||
-        document.getElementById('geolocate-form') ||
-        window.location.href.includes('geolocate') ||
-        document.querySelector('[wire\\:click="addField"], [wire\\:click="removeField"]');
-
-    if (isGeolocatePage) {
-        const geolocateManager = new GeolocateFieldManager({debug: false});
-        geolocateManager.init();
-    } else if (isProjectPage && !isExpeditionPage) {
+    if (isProjectPage && !isExpeditionPage) {
         const projectManager = new ProjectManager({debug: false});
         projectManager.init();
     } else if (isExpeditionPage) {

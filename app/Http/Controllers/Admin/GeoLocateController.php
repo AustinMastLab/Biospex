@@ -29,7 +29,6 @@ use App\Services\Permission\CheckPermission;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Redirect;
-use Request;
 use Response;
 use Throwable;
 
@@ -54,33 +53,6 @@ class GeoLocateController extends Controller
         protected GeoLocateStatService $geoLocateStatService,
         protected GeoLocateExportService $geoLocateExportService
     ) {}
-
-    /**
-     * Stores the GeoLocate export form data for the given expedition.
-     *
-     * @param  Expedition  $expedition  The expedition instance for which the form data is being stored.
-     * @return JsonResponse A JSON response indicating the result of the operation, including success or error messages.
-     */
-    public function store(Expedition $expedition): JsonResponse
-    {
-        if (! Request::ajax()) {
-            return Response::json(['message' => t('Request must be ajax.')], 400);
-        }
-
-        try {
-            $expedition->load('project.group');
-
-            if (! CheckPermission::handle('updateProject', $expedition->project->group)) {
-                return Response::json(['message' => t('You do not have permissions for this action.')], 401);
-            }
-
-            $this->geoLocateFormService->saveForm(Request::all(), $expedition);
-
-            return Response::json(['message' => t('GeoLocate export form saved.')]);
-        } catch (Throwable $throwable) {
-            return Response::json(['message' => $throwable->getMessage()], 500);
-        }
-    }
 
     /**
      * Deletes the GeoLocate export form data and associated file for the given expedition.

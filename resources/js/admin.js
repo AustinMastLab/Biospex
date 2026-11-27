@@ -74,16 +74,3 @@ setInterval(() => {
     const footerBottom = footer.offsetTop - (parseFloat(footer.style.marginTop) || 0) + footer.offsetHeight;
     footer.style.marginTop = footerBottom < window.innerHeight ? `${window.innerHeight - footerBottom + 10}px` : '0px';
 }, 250);
-
-// Home page "load more" projects still uses jQuery (#666).
-$(function () {
-    let homeProjectList = $('a.home-project-list')
-    homeProjectList.click(function (e) {
-        let count = $(this).data('count')
-        $.get($(this).attr('href') + '/' + count, function (data) {
-            $('.recent-projects-pane').html(data)
-            homeProjectList.data('count', count + 5)
-        })
-        e.preventDefault()
-    })
-});

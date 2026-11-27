@@ -21,11 +21,9 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Http\Requests\WorkflowIdFormRequest;
-use App\Jobs\PanoptesProjectUpdateJob;
 use App\Models\Expedition;
 use App\Models\PanoptesProject;
-use App\Services\Permission\CheckPermission;
+use Illuminate\Http\JsonResponse;
 use Request;
 use Response;
 use View;
@@ -40,7 +38,7 @@ class PanoptesWorkflowFormController extends Controller
     /**
      * Return workflow id form.
      */
-    public function edit(Expedition $expedition): \Illuminate\Contracts\View\View|\Illuminate\Http\JsonResponse
+    public function edit(Expedition $expedition): \Illuminate\Contracts\View\View|JsonResponse
     {
         if (! Request::ajax()) {
             return Response::json(['message' => t('Request must be ajax.')], 400);
@@ -49,42 +47,5 @@ class PanoptesWorkflowFormController extends Controller
         $expedition->load('panoptesProject');
 
         return View::make('admin.expedition.partials.workflow-modal-body', compact('expedition'));
-    }
-
-    /**
-     * Update or create the workflow id.
-     */
-    public function update(WorkflowIdFormRequest $request, Expedition $expedition): \Illuminate\Http\JsonResponse
-    {
-        if (! Request::ajax()) {
-            return Response::json(['message' => t('Request must be ajax.')], 400);
-        }
-
-        $expedition->load('project.group');
-
-        if (! CheckPermission::handle('updateProject', $expedition->project->group)) {
-            return Response::json(['message' => t('You are not authorized for this action.')], 401);
-        }
-
-        if (! empty($request->input('panoptes_workflow_id'))) {
-            $attributes = [
-                'project_id' => $expedition->project->id,
-                'expedition_id' => $expedition->id,
-            ];
-
-            $values = [
-                'project_id' => $expedition->project->id,
-                'expedition_id' => $expedition->id,
-                'panoptes_workflow_id' => $request->input('panoptes_workflow_id'),
-            ];
-
-            $panoptesProject = $this->panoptesProject->updateOrCreate($attributes, $values);
-
-            PanoptesProjectUpdateJob::dispatch($panoptesProject);
-
-            return Response::json(['message' => t('Workflow id is updated.')]);
-        }
-
-        return Response::json(['message' => t('Could not update Panoptes Workflow Id.')], 500);
     }
 }

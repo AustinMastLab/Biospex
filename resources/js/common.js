@@ -99,15 +99,6 @@ document.addEventListener('click', (event) => {
             : notify('times-circle', link.dataset.error, 'danger'));
 });
 
-// Requests still made with jQuery (the bingo card, #665; the admin modal forms, #666) send the CSRF token.
-$(function () {
-    $.ajaxSetup({
-        headers: {
-            'X-CSRF-TOKEN': $('meta[name="csrf-token"]').attr('content')
-        }
-    });
-});
-
 /**
  * Show a notification at the top centre of the page for six seconds (dismissible with ×).
  * Notifications stack below each other; styles are in components/_notifications.scss. The message is shown as text.

@@ -22,9 +22,6 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Expedition;
-use App\Services\Reconcile\ReconcileUserFormService;
-use Request;
-use Response;
 use View;
 
 class ExpertReconcileFormController extends Controller
@@ -35,23 +32,5 @@ class ExpertReconcileFormController extends Controller
     public function edit(Expedition $expedition): \Illuminate\View\View
     {
         return View::make('admin.reconcile.partials.upload', compact('expedition'));
-    }
-
-    /**
-     * Upload user file for reconciliation.
-     */
-    public function update(Expedition $expedition, ReconcileUserFormService $reconcileUserFormService): \Illuminate\Http\JsonResponse
-    {
-        $expedition->load('project');
-
-        if (! Request::hasFile('file') || Request::file('file')->getClientOriginalExtension() !== 'csv') {
-            return Response::json(['error' => true, 'message' => t('File must be a CSV.')]);
-        }
-
-        $result = $reconcileUserFormService->reconciledWithUserFile($expedition);
-
-        return $result ?
-            Response::json(['message' => t('File upload was successful. It will now be listed in your downloads section of the Expedition.')]) :
-            Response::json(['error' => true, 'message' => t('Error uploading file. Please try again or contact the Administration.')]);
     }
 }

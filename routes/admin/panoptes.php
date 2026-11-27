@@ -21,4 +21,3 @@
 use App\Http\Controllers\Admin\PanoptesWorkflowFormController;
 
 Route::get('expeditions/{expedition}/workflow', [PanoptesWorkflowFormController::class, 'edit'])->name('admin.panoptes-workflow.edit');
-Route::post('expeditions/{expedition}/workflow', [PanoptesWorkflowFormController::class, 'update'])->name('admin.panoptes-workflow.update');

@@ -20,24 +20,15 @@
 
 use App\Http\Controllers\Admin\GeolocateCommunityController;
 use App\Http\Controllers\Admin\GeoLocateController;
-use App\Http\Controllers\Admin\GeolocateExportController;
-use App\Http\Controllers\Admin\GeolocateFieldsController;
 use App\Http\Controllers\Admin\GeolocateFormController;
 use App\Http\Controllers\Admin\GeoLocateStatController;
 
-Route::post('geolocates/{expedition}/store', [GeoLocateController::class, 'store'])->name('admin.geolocates.store');
 Route::delete('geolocates/{expedition}/destroy', [GeoLocateController::class, 'destroy'])->name('admin.geolocates.destroy');
 
 Route::get('geolocates/stat/{expedition}', [GeoLocateStatController::class, 'index'])->name('admin.geolocate-stat.index');
 Route::post('geolocates/stat/{expedition}/update', [GeoLocateStatController::class, 'update'])->name('admin.geolocate-stat.update');
 
-Route::get('geolocates/form/{expedition}', [GeoLocateFormController::class, 'index'])->name('admin.geolocate-form.index');
-Route::post('geolocates/form/{expedition}/show', [GeoLocateFormController::class, 'show'])->name('admin.geolocate-form.show');
+Route::get('geolocates/form/{expedition}', [GeolocateFormController::class, 'index'])->name('admin.geolocate-form.index');
 
-Route::post('geolocates/field/{expedition}', GeoLocateFieldsController::class)->name('admin.geolocate-field.index');
-
-Route::get('geolocates/community/{expedition}/edit', [GeoLocateCommunityController::class, 'edit'])->name('admin.geolocate-community.edit');
-Route::post('geolocates/community/{expedition}/update', [GeoLocateCommunityController::class, 'update'])->name('admin.geolocate-community.update');
-Route::delete('geolocates/community/{community}/destroy', [GeoLocateCommunityController::class, 'destroy'])->name('admin.geolocate-community.destroy');
-
-Route::post('geolocates/{expedition}/export', GeoLocateExportController::class)->name('admin.geolocate-export.index');
+Route::get('geolocates/community/{expedition}/edit', [GeolocateCommunityController::class, 'edit'])->name('admin.geolocate-community.edit');
+Route::delete('geolocates/community/{community}/destroy', [GeolocateCommunityController::class, 'destroy'])->name('admin.geolocate-community.destroy');

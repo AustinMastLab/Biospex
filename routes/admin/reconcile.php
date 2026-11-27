@@ -29,4 +29,3 @@ Route::put('reconciles/{expedition}', [ExpertReconcileController::class, 'update
 Route::post('reconciles/{expedition}/publish', ExpertReconcilePublishController::class)->name('admin.reconciles.publish');
 
 Route::get('reconciles/{expedition}/edit', [ExpertReconcileFormController::class, 'edit'])->name('admin.reconcile-user-form.edit');
-Route::post('reconciles/{expedition}/update', [ExpertReconcileFormController::class, 'update'])->name('admin.reconcile-user-form.upload');
